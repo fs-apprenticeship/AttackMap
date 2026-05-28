@@ -1,0 +1,125 @@
+{
+  "id": "scan_web-server",
+  "user_id": "user_mock_001",
+  "filename": "web-server.xml",
+  "uploaded_at": "2026-05-28T17:54:06.000Z",
+  "parsed_at": "2026-05-28T17:54:35.000Z",
+  "summary": {
+    "total_hosts": 1,
+    "open_ports": 3,
+    "risky_services": 0,
+    "findings": 3
+  },
+  "hosts": [
+    {
+      "id": "host_web-server_001",
+      "scan_id": "scan_web-server",
+      "ip_address": "10.129.7.31",
+      "hostname": null,
+      "operating_system": "Linux",
+      "role": "web_server",
+      "internet_exposed": false,
+      "services": [
+        {
+          "id": "service_web-server_001",
+          "host_id": "host_web-server_001",
+          "port": 22,
+          "protocol": "tcp",
+          "service_name": "ssh",
+          "product": "OpenSSH",
+          "version": "9.2p1 Debian 2+deb12u7",
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_web-server_002",
+          "host_id": "host_web-server_001",
+          "port": 80,
+          "protocol": "tcp",
+          "service_name": "http",
+          "product": null,
+          "version": null,
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_web-server_003",
+          "host_id": "host_web-server_001",
+          "port": 443,
+          "protocol": "tcp",
+          "service_name": "https",
+          "product": null,
+          "version": null,
+          "risk_level": "medium"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding_web-server_001",
+      "scan_id": "scan_web-server",
+      "severity": "high",
+      "title": "Administrative web interface is reachable",
+      "evidence": "HTTP and HTTPS responses include the title Mirth Connect Administrator.",
+      "remediation": "Restrict the administrative interface to trusted networks or a VPN and require strong authentication."
+    },
+    {
+      "id": "finding_web-server_002",
+      "scan_id": "scan_web-server",
+      "severity": "medium",
+      "title": "Potentially risky HTTP method enabled",
+      "evidence": "The http-methods script reports TRACE as a potentially risky method.",
+      "remediation": "Disable TRACE unless explicitly required by the application."
+    },
+    {
+      "id": "finding_web-server_003",
+      "scan_id": "scan_web-server",
+      "severity": "medium",
+      "title": "SSH is exposed",
+      "evidence": "Port 22/tcp is open and identified as OpenSSH 9.2p1 Debian.",
+      "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
+    }
+  ],
+  "ai_summary": {
+    "id": "ai_summary_web-server",
+    "scan_id": "scan_web-server",
+    "executive": "The scan found one Linux web server exposing SSH and a Mirth Connect Administrator interface over HTTP and HTTPS. The primary concern is access to the administrative web interface, with TRACE support as an additional web hardening issue.",
+    "top_risks": [
+      {
+        "severity": "high",
+        "title": "Administrative web interface is reachable",
+        "evidence": "HTTP and HTTPS responses include the title Mirth Connect Administrator.",
+        "remediation": "Restrict the administrative interface to trusted networks or a VPN and require strong authentication."
+      },
+      {
+        "severity": "medium",
+        "title": "Potentially risky HTTP method enabled",
+        "evidence": "The http-methods script reports TRACE as a potentially risky method.",
+        "remediation": "Disable TRACE unless explicitly required by the application."
+      },
+      {
+        "severity": "medium",
+        "title": "SSH is exposed",
+        "evidence": "Port 22/tcp is open and identified as OpenSSH 9.2p1 Debian.",
+        "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
+      }
+    ],
+    "remediation": [
+      {
+        "priority": "now",
+        "title": "Administrative web interface is reachable",
+        "description": "Restrict the administrative interface to trusted networks or a VPN and require strong authentication."
+      },
+      {
+        "priority": "next",
+        "title": "Potentially risky HTTP method enabled",
+        "description": "Disable TRACE unless explicitly required by the application."
+      },
+      {
+        "priority": "later",
+        "title": "SSH is exposed",
+        "description": "Limit SSH access to trusted sources and enforce key-based authentication."
+      }
+    ],
+    "created_at": "2026-05-28T17:54:35.000Z"
+  }
+}

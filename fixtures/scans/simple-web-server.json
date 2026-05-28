@@ -1,0 +1,115 @@
+{
+  "id": "scan_simple-web-server",
+  "user_id": "user_mock_001",
+  "filename": "simple-web-server.xml",
+  "uploaded_at": "2026-05-28T18:12:25.000Z",
+  "parsed_at": "2026-05-28T18:12:35.000Z",
+  "summary": {
+    "total_hosts": 1,
+    "open_ports": 2,
+    "risky_services": 0,
+    "findings": 3
+  },
+  "hosts": [
+    {
+      "id": "host_simple-web-server_001",
+      "scan_id": "scan_simple-web-server",
+      "ip_address": "10.129.7.33",
+      "hostname": "helix.htb",
+      "operating_system": "Linux",
+      "role": "web_server",
+      "internet_exposed": false,
+      "services": [
+        {
+          "id": "service_simple-web-server_001",
+          "host_id": "host_simple-web-server_001",
+          "port": 22,
+          "protocol": "tcp",
+          "service_name": "ssh",
+          "product": "OpenSSH",
+          "version": "8.9p1 Ubuntu 3ubuntu0.15",
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_simple-web-server_002",
+          "host_id": "host_simple-web-server_001",
+          "port": 80,
+          "protocol": "tcp",
+          "service_name": "http",
+          "product": "nginx",
+          "version": "1.18.0",
+          "risk_level": "medium"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding_simple-web-server_001",
+      "scan_id": "scan_simple-web-server",
+      "severity": "medium",
+      "title": "Web service is reachable",
+      "evidence": "Port 80/tcp is open and identified as nginx 1.18.0 on Ubuntu.",
+      "remediation": "Confirm the web service is intended to be reachable and keep nginx and the host operating system patched."
+    },
+    {
+      "id": "finding_simple-web-server_002",
+      "scan_id": "scan_simple-web-server",
+      "severity": "medium",
+      "title": "SSH is exposed",
+      "evidence": "Port 22/tcp is open and identified as OpenSSH 8.9p1 Ubuntu.",
+      "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
+    },
+    {
+      "id": "finding_simple-web-server_003",
+      "scan_id": "scan_simple-web-server",
+      "severity": "low",
+      "title": "Limited attack surface observed",
+      "evidence": "Only SSH and HTTP were found open in this scan.",
+      "remediation": "Continue monitoring for unexpected service exposure and remove any services that are not required."
+    }
+  ],
+  "ai_summary": {
+    "id": "ai_summary_simple-web-server",
+    "scan_id": "scan_simple-web-server",
+    "executive": "The scan found one Linux web server with a small attack surface: SSH and an nginx HTTP service. The main follow-up is to confirm both services are intentionally reachable and protected by normal hardening controls.",
+    "top_risks": [
+      {
+        "severity": "medium",
+        "title": "Web service is reachable",
+        "evidence": "Port 80/tcp is open and identified as nginx 1.18.0 on Ubuntu.",
+        "remediation": "Confirm the web service is intended to be reachable and keep nginx and the host operating system patched."
+      },
+      {
+        "severity": "medium",
+        "title": "SSH is exposed",
+        "evidence": "Port 22/tcp is open and identified as OpenSSH 8.9p1 Ubuntu.",
+        "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
+      },
+      {
+        "severity": "low",
+        "title": "Limited attack surface observed",
+        "evidence": "Only SSH and HTTP were found open in this scan.",
+        "remediation": "Continue monitoring for unexpected service exposure and remove any services that are not required."
+      }
+    ],
+    "remediation": [
+      {
+        "priority": "now",
+        "title": "Web service is reachable",
+        "description": "Confirm the web service is intended to be reachable and keep nginx and the host operating system patched."
+      },
+      {
+        "priority": "next",
+        "title": "SSH is exposed",
+        "description": "Limit SSH access to trusted sources and enforce key-based authentication."
+      },
+      {
+        "priority": "later",
+        "title": "Limited attack surface observed",
+        "description": "Continue monitoring for unexpected service exposure and remove any services that are not required."
+      }
+    ],
+    "created_at": "2026-05-28T18:12:35.000Z"
+  }
+}

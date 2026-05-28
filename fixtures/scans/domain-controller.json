@@ -1,0 +1,225 @@
+{
+  "id": "scan_domain-controller",
+  "user_id": "user_mock_001",
+  "filename": "domain-controller.xml",
+  "uploaded_at": "2026-05-28T00:05:58.000Z",
+  "parsed_at": "2026-05-28T00:07:09.000Z",
+  "summary": {
+    "total_hosts": 1,
+    "open_ports": 13,
+    "risky_services": 6,
+    "findings": 3
+  },
+  "hosts": [
+    {
+      "id": "host_domain-controller_001",
+      "scan_id": "scan_domain-controller",
+      "ip_address": "10.129.244.207",
+      "hostname": "DC01.garfield.htb",
+      "operating_system": "Windows",
+      "role": "domain_controller",
+      "internet_exposed": false,
+      "services": [
+        {
+          "id": "service_domain-controller_001",
+          "host_id": "host_domain-controller_001",
+          "port": 53,
+          "protocol": "tcp",
+          "service_name": "domain",
+          "product": "Simple DNS Plus",
+          "version": null,
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_domain-controller_002",
+          "host_id": "host_domain-controller_001",
+          "port": 88,
+          "protocol": "tcp",
+          "service_name": "kerberos-sec",
+          "product": "Microsoft Windows Kerberos",
+          "version": null,
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_domain-controller_003",
+          "host_id": "host_domain-controller_001",
+          "port": 135,
+          "protocol": "tcp",
+          "service_name": "msrpc",
+          "product": "Microsoft Windows RPC",
+          "version": null,
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_domain-controller_004",
+          "host_id": "host_domain-controller_001",
+          "port": 139,
+          "protocol": "tcp",
+          "service_name": "netbios-ssn",
+          "product": "Microsoft Windows netbios-ssn",
+          "version": null,
+          "risk_level": "high"
+        },
+        {
+          "id": "service_domain-controller_005",
+          "host_id": "host_domain-controller_001",
+          "port": 389,
+          "protocol": "tcp",
+          "service_name": "ldap",
+          "product": "Microsoft Windows Active Directory LDAP",
+          "version": null,
+          "risk_level": "high"
+        },
+        {
+          "id": "service_domain-controller_006",
+          "host_id": "host_domain-controller_001",
+          "port": 445,
+          "protocol": "tcp",
+          "service_name": "microsoft-ds",
+          "product": null,
+          "version": null,
+          "risk_level": "high"
+        },
+        {
+          "id": "service_domain-controller_007",
+          "host_id": "host_domain-controller_001",
+          "port": 464,
+          "protocol": "tcp",
+          "service_name": "kpasswd5",
+          "product": null,
+          "version": null,
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_domain-controller_008",
+          "host_id": "host_domain-controller_001",
+          "port": 593,
+          "protocol": "tcp",
+          "service_name": "ncacn_http",
+          "product": "Microsoft Windows RPC over HTTP",
+          "version": "1.0",
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_domain-controller_009",
+          "host_id": "host_domain-controller_001",
+          "port": 636,
+          "protocol": "tcp",
+          "service_name": "tcpwrapped",
+          "product": null,
+          "version": null,
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_domain-controller_010",
+          "host_id": "host_domain-controller_001",
+          "port": 2179,
+          "protocol": "tcp",
+          "service_name": "vmrdp",
+          "product": null,
+          "version": null,
+          "risk_level": "high"
+        },
+        {
+          "id": "service_domain-controller_011",
+          "host_id": "host_domain-controller_001",
+          "port": 3268,
+          "protocol": "tcp",
+          "service_name": "ldap",
+          "product": "Microsoft Windows Active Directory LDAP",
+          "version": null,
+          "risk_level": "high"
+        },
+        {
+          "id": "service_domain-controller_012",
+          "host_id": "host_domain-controller_001",
+          "port": 3269,
+          "protocol": "tcp",
+          "service_name": "tcpwrapped",
+          "product": null,
+          "version": null,
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_domain-controller_013",
+          "host_id": "host_domain-controller_001",
+          "port": 3389,
+          "protocol": "tcp",
+          "service_name": "ms-wbt-server",
+          "product": "Microsoft Terminal Services",
+          "version": null,
+          "risk_level": "high"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding_domain-controller_001",
+      "scan_id": "scan_domain-controller",
+      "severity": "high",
+      "title": "Remote Desktop service is reachable",
+      "evidence": "Port 3389/tcp is open and identified as Microsoft Terminal Services.",
+      "remediation": "Restrict RDP access to trusted networks, require multi-factor authentication, and monitor authentication attempts."
+    },
+    {
+      "id": "finding_domain-controller_002",
+      "scan_id": "scan_domain-controller",
+      "severity": "high",
+      "title": "SMB and NetBIOS services are exposed",
+      "evidence": "Ports 139/tcp and 445/tcp are open.",
+      "remediation": "Limit SMB access to required internal hosts, disable legacy NetBIOS where possible, and verify SMB signing and patch status."
+    },
+    {
+      "id": "finding_domain-controller_003",
+      "scan_id": "scan_domain-controller",
+      "severity": "medium",
+      "title": "Active Directory services are broadly reachable",
+      "evidence": "DNS, Kerberos, LDAP, LDAPS, RPC, Global Catalog, and password change services are open.",
+      "remediation": "Confirm domain controller services are only reachable from expected internal network segments."
+    }
+  ],
+  "ai_summary": {
+    "id": "ai_summary_domain-controller",
+    "scan_id": "scan_domain-controller",
+    "executive": "The scan found one Windows domain controller with 13 open TCP services, including DNS, Kerberos, LDAP, SMB, RPC, Global Catalog, and RDP. The highest-priority risks are remote administration and file-sharing services that can support credential attacks or lateral movement if exposed too broadly.",
+    "top_risks": [
+      {
+        "severity": "high",
+        "title": "Remote Desktop service is reachable",
+        "evidence": "Port 3389/tcp is open and identified as Microsoft Terminal Services.",
+        "remediation": "Restrict RDP access to trusted networks, require multi-factor authentication, and monitor authentication attempts."
+      },
+      {
+        "severity": "high",
+        "title": "SMB and NetBIOS services are exposed",
+        "evidence": "Ports 139/tcp and 445/tcp are open.",
+        "remediation": "Limit SMB access to required internal hosts, disable legacy NetBIOS where possible, and verify SMB signing and patch status."
+      },
+      {
+        "severity": "medium",
+        "title": "Active Directory services are broadly reachable",
+        "evidence": "DNS, Kerberos, LDAP, LDAPS, RPC, Global Catalog, and password change services are open.",
+        "remediation": "Confirm domain controller services are only reachable from expected internal network segments."
+      }
+    ],
+    "remediation": [
+      {
+        "priority": "now",
+        "title": "Remote Desktop service is reachable",
+        "description": "Restrict RDP access to trusted networks, require multi-factor authentication, and monitor authentication attempts."
+      },
+      {
+        "priority": "next",
+        "title": "SMB and NetBIOS services are exposed",
+        "description": "Limit SMB access to required internal hosts, disable legacy NetBIOS where possible, and verify SMB signing and patch status."
+      },
+      {
+        "priority": "later",
+        "title": "Active Directory services are broadly reachable",
+        "description": "Confirm domain controller services are only reachable from expected internal network segments."
+      }
+    ],
+    "created_at": "2026-05-28T00:07:09.000Z"
+  }
+}
