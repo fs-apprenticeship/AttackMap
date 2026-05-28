@@ -1,0 +1,135 @@
+{
+  "id": "scan_scanme-public-host",
+  "user_id": "user_mock_001",
+  "filename": "scanme-public-host.xml",
+  "uploaded_at": "2026-05-28T19:45:21.000Z",
+  "parsed_at": "2026-05-28T19:46:28.000Z",
+  "summary": {
+    "total_hosts": 1,
+    "open_ports": 4,
+    "risky_services": 0,
+    "findings": 3
+  },
+  "hosts": [
+    {
+      "id": "host_scanme-public-host_001",
+      "scan_id": "scan_scanme-public-host",
+      "ip_address": "45.33.32.156",
+      "hostname": "scanme.nmap.org",
+      "operating_system": "Linux",
+      "role": "public_demo_host",
+      "internet_exposed": true,
+      "services": [
+        {
+          "id": "service_scanme-public-host_001",
+          "host_id": "host_scanme-public-host_001",
+          "port": 22,
+          "protocol": "tcp",
+          "service_name": "ssh",
+          "product": "OpenSSH",
+          "version": "6.6.1p1 Ubuntu 2ubuntu2.13",
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_scanme-public-host_002",
+          "host_id": "host_scanme-public-host_001",
+          "port": 80,
+          "protocol": "tcp",
+          "service_name": "http",
+          "product": "Apache httpd",
+          "version": "2.4.7",
+          "risk_level": "medium"
+        },
+        {
+          "id": "service_scanme-public-host_003",
+          "host_id": "host_scanme-public-host_001",
+          "port": 9929,
+          "protocol": "tcp",
+          "service_name": "nping-echo",
+          "product": "Nping echo",
+          "version": null,
+          "risk_level": "low"
+        },
+        {
+          "id": "service_scanme-public-host_004",
+          "host_id": "host_scanme-public-host_001",
+          "port": 31337,
+          "protocol": "tcp",
+          "service_name": "tcpwrapped",
+          "product": null,
+          "version": null,
+          "risk_level": "low"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "finding_scanme-public-host_001",
+      "scan_id": "scan_scanme-public-host",
+      "severity": "medium",
+      "title": "SSH is reachable from the network",
+      "evidence": "Port 22/tcp is open and identified as OpenSSH 6.6.1p1 Ubuntu.",
+      "remediation": "Restrict SSH access to trusted sources and require key-based authentication."
+    },
+    {
+      "id": "finding_scanme-public-host_002",
+      "scan_id": "scan_scanme-public-host",
+      "severity": "medium",
+      "title": "Public web service is reachable",
+      "evidence": "Port 80/tcp is open and identified as Apache httpd 2.4.7 with the title Go ahead and ScanMe!",
+      "remediation": "Keep the web server patched and review exposed content and headers."
+    },
+    {
+      "id": "finding_scanme-public-host_003",
+      "scan_id": "scan_scanme-public-host",
+      "severity": "low",
+      "title": "Nonstandard ports are open",
+      "evidence": "Ports 9929/tcp and 31337/tcp are open.",
+      "remediation": "Confirm each nonstandard service is expected and document its purpose."
+    }
+  ],
+  "ai_summary": {
+    "id": "ai_summary_scanme-public-host",
+    "scan_id": "scan_scanme-public-host",
+    "executive": "The scan found a public demo host with SSH, Apache HTTP, Nping echo, and one tcpwrapped service exposed. This is a useful baseline internet-facing example with a small number of services and recognizable Nmap demo content.",
+    "top_risks": [
+      {
+        "severity": "medium",
+        "title": "SSH is reachable from the network",
+        "evidence": "Port 22/tcp is open and identified as OpenSSH 6.6.1p1 Ubuntu.",
+        "remediation": "Restrict SSH access to trusted sources and require key-based authentication."
+      },
+      {
+        "severity": "medium",
+        "title": "Public web service is reachable",
+        "evidence": "Port 80/tcp is open and identified as Apache httpd 2.4.7 with the title Go ahead and ScanMe!",
+        "remediation": "Keep the web server patched and review exposed content and headers."
+      },
+      {
+        "severity": "low",
+        "title": "Nonstandard ports are open",
+        "evidence": "Ports 9929/tcp and 31337/tcp are open.",
+        "remediation": "Confirm each nonstandard service is expected and document its purpose."
+      }
+    ],
+    "remediation": [
+      {
+        "priority": "now",
+        "title": "SSH is reachable from the network",
+        "description": "Restrict SSH access to trusted sources and require key-based authentication."
+      },
+      {
+        "priority": "next",
+        "title": "Public web service is reachable",
+        "description": "Keep the web server patched and review exposed content and headers."
+      },
+      {
+        "priority": "later",
+        "title": "Nonstandard ports are open",
+        "description": "Confirm each nonstandard service is expected and document its purpose."
+      }
+    ],
+    "created_at": "2026-05-28T19:46:28.000Z"
+  }
+}
