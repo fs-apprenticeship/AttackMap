@@ -1,225 +1,145 @@
 {
-  "id": "scan_domain-controller",
-  "user_id": "user_mock_001",
+  "id": "db460df1b9a94df6",
   "filename": "domain-controller.xml",
-  "uploaded_at": "2026-05-28T00:05:58.000Z",
-  "parsed_at": "2026-05-28T00:07:09.000Z",
-  "summary": {
-    "total_hosts": 1,
-    "open_ports": 13,
-    "risky_services": 6,
-    "findings": 3
-  },
+  "target": "DC01.garfield.htb",
+  "uploadedAt": "2026-05-29T00:00:00.000Z",
+  "parsedAt": "2026-05-29T00:00:00.000Z",
   "hosts": [
     {
-      "id": "host_domain-controller_001",
-      "scan_id": "scan_domain-controller",
-      "ip_address": "10.129.244.207",
+      "id": "10.129.244.207",
+      "ipAddress": "10.129.244.207",
       "hostname": "DC01.garfield.htb",
-      "operating_system": "Windows",
-      "role": "domain_controller",
-      "internet_exposed": false,
+      "operatingSystem": "Windows Server 2019",
+      "role": "Domain Controller",
+      "internetExposed": false,
       "services": [
         {
-          "id": "service_domain-controller_001",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:53",
           "port": 53,
           "protocol": "tcp",
-          "service_name": "domain",
+          "serviceName": "domain",
           "product": "Simple DNS Plus",
-          "version": null,
-          "risk_level": "medium"
+          "riskLevel": "low"
         },
         {
-          "id": "service_domain-controller_002",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:88",
           "port": 88,
           "protocol": "tcp",
-          "service_name": "kerberos-sec",
+          "serviceName": "kerberos-sec",
           "product": "Microsoft Windows Kerberos",
-          "version": null,
-          "risk_level": "medium"
+          "extrainfo": "server time: 2026-05-28 08:06:12Z",
+          "riskLevel": "low"
         },
         {
-          "id": "service_domain-controller_003",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:135",
           "port": 135,
           "protocol": "tcp",
-          "service_name": "msrpc",
+          "serviceName": "msrpc",
           "product": "Microsoft Windows RPC",
-          "version": null,
-          "risk_level": "medium"
+          "riskLevel": "low"
         },
         {
-          "id": "service_domain-controller_004",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:139",
           "port": 139,
           "protocol": "tcp",
-          "service_name": "netbios-ssn",
+          "serviceName": "netbios-ssn",
           "product": "Microsoft Windows netbios-ssn",
-          "version": null,
-          "risk_level": "high"
+          "riskLevel": "medium"
         },
         {
-          "id": "service_domain-controller_005",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:389",
           "port": 389,
           "protocol": "tcp",
-          "service_name": "ldap",
+          "serviceName": "ldap",
           "product": "Microsoft Windows Active Directory LDAP",
-          "version": null,
-          "risk_level": "high"
+          "extrainfo": "Domain: garfield.htb0., Site: Default-First-Site-Name",
+          "riskLevel": "medium"
         },
         {
-          "id": "service_domain-controller_006",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:445",
           "port": 445,
           "protocol": "tcp",
-          "service_name": "microsoft-ds",
-          "product": null,
-          "version": null,
-          "risk_level": "high"
+          "serviceName": "microsoft-ds",
+          "riskLevel": "medium"
         },
         {
-          "id": "service_domain-controller_007",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:464",
           "port": 464,
           "protocol": "tcp",
-          "service_name": "kpasswd5",
-          "product": null,
-          "version": null,
-          "risk_level": "medium"
+          "serviceName": "kpasswd5",
+          "riskLevel": "low"
         },
         {
-          "id": "service_domain-controller_008",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:593",
           "port": 593,
           "protocol": "tcp",
-          "service_name": "ncacn_http",
+          "serviceName": "ncacn_http",
           "product": "Microsoft Windows RPC over HTTP",
           "version": "1.0",
-          "risk_level": "medium"
+          "riskLevel": "low"
         },
         {
-          "id": "service_domain-controller_009",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:636",
           "port": 636,
           "protocol": "tcp",
-          "service_name": "tcpwrapped",
-          "product": null,
-          "version": null,
-          "risk_level": "medium"
+          "serviceName": "tcpwrapped",
+          "riskLevel": "info"
         },
         {
-          "id": "service_domain-controller_010",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:2179",
           "port": 2179,
           "protocol": "tcp",
-          "service_name": "vmrdp",
-          "product": null,
-          "version": null,
-          "risk_level": "high"
+          "serviceName": "vmrdp",
+          "riskLevel": "low"
         },
         {
-          "id": "service_domain-controller_011",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:3268",
           "port": 3268,
           "protocol": "tcp",
-          "service_name": "ldap",
+          "serviceName": "ldap",
           "product": "Microsoft Windows Active Directory LDAP",
-          "version": null,
-          "risk_level": "high"
+          "extrainfo": "Domain: garfield.htb0., Site: Default-First-Site-Name",
+          "riskLevel": "medium"
         },
         {
-          "id": "service_domain-controller_012",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:3269",
           "port": 3269,
           "protocol": "tcp",
-          "service_name": "tcpwrapped",
-          "product": null,
-          "version": null,
-          "risk_level": "medium"
+          "serviceName": "tcpwrapped",
+          "riskLevel": "info"
         },
         {
-          "id": "service_domain-controller_013",
-          "host_id": "host_domain-controller_001",
+          "id": "10.129.244.207:tcp:3389",
           "port": 3389,
           "protocol": "tcp",
-          "service_name": "ms-wbt-server",
+          "serviceName": "ms-wbt-server",
           "product": "Microsoft Terminal Services",
-          "version": null,
-          "risk_level": "high"
+          "riskLevel": "high"
         }
       ]
     }
   ],
   "findings": [
     {
-      "id": "finding_domain-controller_001",
-      "scan_id": "scan_domain-controller",
-      "severity": "high",
-      "title": "Remote Desktop service is reachable",
-      "evidence": "Port 3389/tcp is open and identified as Microsoft Terminal Services.",
-      "remediation": "Restrict RDP access to trusted networks, require multi-factor authentication, and monitor authentication attempts."
-    },
-    {
-      "id": "finding_domain-controller_002",
-      "scan_id": "scan_domain-controller",
-      "severity": "high",
-      "title": "SMB and NetBIOS services are exposed",
-      "evidence": "Ports 139/tcp and 445/tcp are open.",
-      "remediation": "Limit SMB access to required internal hosts, disable legacy NetBIOS where possible, and verify SMB signing and patch status."
-    },
-    {
-      "id": "finding_domain-controller_003",
-      "scan_id": "scan_domain-controller",
-      "severity": "medium",
-      "title": "Active Directory services are broadly reachable",
-      "evidence": "DNS, Kerberos, LDAP, LDAPS, RPC, Global Catalog, and password change services are open.",
-      "remediation": "Confirm domain controller services are only reachable from expected internal network segments."
+      "id": "10.129.244.207:clock-skew",
+      "hostId": "10.129.244.207",
+      "host": "DC01.garfield.htb (10.129.244.207)",
+      "severity": "low",
+      "title": "Significant host clock skew",
+      "evidence": "mean: 8h00m02s, deviation: 0s, median: 8h00m02s",
+      "remediation": "Synchronize the host clock via NTP to within a few seconds."
     }
   ],
-  "ai_summary": {
-    "id": "ai_summary_domain-controller",
-    "scan_id": "scan_domain-controller",
-    "executive": "The scan found one Windows domain controller with 13 open TCP services, including DNS, Kerberos, LDAP, SMB, RPC, Global Catalog, and RDP. The highest-priority risks are remote administration and file-sharing services that can support credential attacks or lateral movement if exposed too broadly.",
-    "top_risks": [
-      {
-        "severity": "high",
-        "title": "Remote Desktop service is reachable",
-        "evidence": "Port 3389/tcp is open and identified as Microsoft Terminal Services.",
-        "remediation": "Restrict RDP access to trusted networks, require multi-factor authentication, and monitor authentication attempts."
-      },
-      {
-        "severity": "high",
-        "title": "SMB and NetBIOS services are exposed",
-        "evidence": "Ports 139/tcp and 445/tcp are open.",
-        "remediation": "Limit SMB access to required internal hosts, disable legacy NetBIOS where possible, and verify SMB signing and patch status."
-      },
-      {
-        "severity": "medium",
-        "title": "Active Directory services are broadly reachable",
-        "evidence": "DNS, Kerberos, LDAP, LDAPS, RPC, Global Catalog, and password change services are open.",
-        "remediation": "Confirm domain controller services are only reachable from expected internal network segments."
-      }
+  "summary": {
+    "executive": "Scan covers 1 host(s) exposing 13 open service(s). No hosts are directly internet-exposed, and 1 higher-risk service(s) were observed. 1 finding(s) were identified; address the highest-severity items first.",
+    "riskScore": 30,
+    "riskLevel": "medium",
+    "topRisks": [
+      "Significant host clock skew — DC01.garfield.htb (10.129.244.207)"
     ],
     "remediation": [
-      {
-        "priority": "now",
-        "title": "Remote Desktop service is reachable",
-        "description": "Restrict RDP access to trusted networks, require multi-factor authentication, and monitor authentication attempts."
-      },
-      {
-        "priority": "next",
-        "title": "SMB and NetBIOS services are exposed",
-        "description": "Limit SMB access to required internal hosts, disable legacy NetBIOS where possible, and verify SMB signing and patch status."
-      },
-      {
-        "priority": "later",
-        "title": "Active Directory services are broadly reachable",
-        "description": "Confirm domain controller services are only reachable from expected internal network segments."
-      }
+      "Synchronize the host clock via NTP to within a few seconds."
     ],
-    "created_at": "2026-05-28T00:07:09.000Z"
+    "source": "rule-based"
   }
 }

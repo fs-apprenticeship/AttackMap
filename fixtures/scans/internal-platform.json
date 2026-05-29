@@ -1,115 +1,59 @@
 {
-  "id": "scan_internal-platform",
-  "user_id": "user_mock_001",
+  "id": "68aa30e78b827a1d",
   "filename": "internal-platform.xml",
-  "uploaded_at": "2026-05-28T19:02:12.000Z",
-  "parsed_at": "2026-05-28T19:02:31.000Z",
-  "summary": {
-    "total_hosts": 1,
-    "open_ports": 2,
-    "risky_services": 0,
-    "findings": 3
-  },
+  "target": "10.129.244.220",
+  "uploadedAt": "2026-05-29T00:00:00.000Z",
+  "parsedAt": "2026-05-29T00:00:00.000Z",
   "hosts": [
     {
-      "id": "host_internal-platform_001",
-      "scan_id": "scan_internal-platform",
-      "ip_address": "10.129.244.220",
-      "hostname": null,
-      "operating_system": "Linux",
-      "role": "internal_platform",
-      "internet_exposed": false,
+      "id": "10.129.244.220",
+      "ipAddress": "10.129.244.220",
+      "operatingSystem": "Linux (Ubuntu)",
+      "role": "Application Server",
+      "internetExposed": false,
       "services": [
         {
-          "id": "service_internal-platform_001",
-          "host_id": "host_internal-platform_001",
+          "id": "10.129.244.220:tcp:22",
           "port": 22,
           "protocol": "tcp",
-          "service_name": "ssh",
+          "serviceName": "ssh",
           "product": "OpenSSH",
           "version": "9.6p1 Ubuntu 3ubuntu13.14",
-          "risk_level": "medium"
+          "extrainfo": "Ubuntu Linux; protocol 2.0",
+          "riskLevel": "low"
         },
         {
-          "id": "service_internal-platform_002",
-          "host_id": "host_internal-platform_001",
+          "id": "10.129.244.220:tcp:8080",
           "port": 8080,
           "protocol": "tcp",
-          "service_name": "http-proxy",
+          "serviceName": "http-proxy",
           "product": "Jetty",
-          "version": null,
-          "risk_level": "medium"
+          "riskLevel": "medium"
         }
       ]
     }
   ],
   "findings": [
     {
-      "id": "finding_internal-platform_001",
-      "scan_id": "scan_internal-platform",
-      "severity": "medium",
-      "title": "Internal platform login is reachable",
-      "evidence": "Port 8080/tcp redirects to /login and has the title Principal Internal Platform - Login.",
-      "remediation": "Confirm the platform is only reachable from trusted networks and protected by strong authentication."
-    },
-    {
-      "id": "finding_internal-platform_002",
-      "scan_id": "scan_internal-platform",
-      "severity": "medium",
-      "title": "Proxy-like behavior detected",
-      "evidence": "The http-open-proxy script reports that the proxy might be redirecting requests.",
-      "remediation": "Verify the service is not operating as an unintended open proxy and restrict proxy behavior where possible."
-    },
-    {
-      "id": "finding_internal-platform_003",
-      "scan_id": "scan_internal-platform",
-      "severity": "medium",
-      "title": "SSH is exposed",
-      "evidence": "Port 22/tcp is open and identified as OpenSSH 9.6p1 Ubuntu.",
-      "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
+      "id": "10.129.244.220:http-open-proxy",
+      "hostId": "10.129.244.220",
+      "host": "10.129.244.220",
+      "severity": "high",
+      "title": "Open HTTP proxy",
+      "evidence": "Server relays arbitrary proxy requests (http-open-proxy).",
+      "remediation": "Restrict the proxy to trusted clients with authentication, or disable open relaying."
     }
   ],
-  "ai_summary": {
-    "id": "ai_summary_internal-platform",
-    "scan_id": "scan_internal-platform",
-    "executive": "The scan found one Linux host exposing SSH and a Jetty-backed internal platform on port 8080. The web service redirects to a login page and shows proxy-like behavior, so the main concerns are access control, authentication hardening, and confirming it is not usable as an unintended open proxy.",
-    "top_risks": [
-      {
-        "severity": "medium",
-        "title": "Internal platform login is reachable",
-        "evidence": "Port 8080/tcp redirects to /login and has the title Principal Internal Platform - Login.",
-        "remediation": "Confirm the platform is only reachable from trusted networks and protected by strong authentication."
-      },
-      {
-        "severity": "medium",
-        "title": "Proxy-like behavior detected",
-        "evidence": "The http-open-proxy script reports that the proxy might be redirecting requests.",
-        "remediation": "Verify the service is not operating as an unintended open proxy and restrict proxy behavior where possible."
-      },
-      {
-        "severity": "medium",
-        "title": "SSH is exposed",
-        "evidence": "Port 22/tcp is open and identified as OpenSSH 9.6p1 Ubuntu.",
-        "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
-      }
+  "summary": {
+    "executive": "Scan covers 1 host(s) exposing 2 open service(s). No hosts are directly internet-exposed, and no high-risk services were observed. 1 finding(s) were identified; address the highest-severity items first.",
+    "riskScore": 22,
+    "riskLevel": "low",
+    "topRisks": [
+      "Open HTTP proxy — 10.129.244.220"
     ],
     "remediation": [
-      {
-        "priority": "now",
-        "title": "Internal platform login is reachable",
-        "description": "Confirm the platform is only reachable from trusted networks and protected by strong authentication."
-      },
-      {
-        "priority": "next",
-        "title": "Proxy-like behavior detected",
-        "description": "Verify the service is not operating as an unintended open proxy and restrict proxy behavior where possible."
-      },
-      {
-        "priority": "later",
-        "title": "SSH is exposed",
-        "description": "Limit SSH access to trusted sources and enforce key-based authentication."
-      }
+      "Restrict the proxy to trusted clients with authentication, or disable open relaying."
     ],
-    "created_at": "2026-05-28T19:02:31.000Z"
+    "source": "rule-based"
   }
 }
