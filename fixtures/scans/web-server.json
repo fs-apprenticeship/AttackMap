@@ -1,125 +1,56 @@
 {
-  "id": "scan_web-server",
-  "user_id": "user_mock_001",
+  "id": "b2c660c2179e090b",
   "filename": "web-server.xml",
-  "uploaded_at": "2026-05-28T17:54:06.000Z",
-  "parsed_at": "2026-05-28T17:54:35.000Z",
-  "summary": {
-    "total_hosts": 1,
-    "open_ports": 3,
-    "risky_services": 0,
-    "findings": 3
-  },
+  "target": "10.129.7.31",
+  "uploadedAt": "2026-05-29T00:00:00.000Z",
+  "parsedAt": "2026-05-29T00:00:00.000Z",
   "hosts": [
     {
-      "id": "host_web-server_001",
-      "scan_id": "scan_web-server",
-      "ip_address": "10.129.7.31",
-      "hostname": null,
-      "operating_system": "Linux",
-      "role": "web_server",
-      "internet_exposed": false,
+      "id": "10.129.7.31",
+      "ipAddress": "10.129.7.31",
+      "operatingSystem": "Linux (Debian)",
+      "role": "Web Server",
+      "internetExposed": false,
       "services": [
         {
-          "id": "service_web-server_001",
-          "host_id": "host_web-server_001",
+          "id": "10.129.7.31:tcp:22",
           "port": 22,
           "protocol": "tcp",
-          "service_name": "ssh",
+          "serviceName": "ssh",
           "product": "OpenSSH",
           "version": "9.2p1 Debian 2+deb12u7",
-          "risk_level": "medium"
+          "extrainfo": "protocol 2.0",
+          "riskLevel": "low"
         },
         {
-          "id": "service_web-server_002",
-          "host_id": "host_web-server_001",
+          "id": "10.129.7.31:tcp:80",
           "port": 80,
           "protocol": "tcp",
-          "service_name": "http",
-          "product": null,
-          "version": null,
-          "risk_level": "medium"
+          "serviceName": "http",
+          "riskLevel": "medium"
         },
         {
-          "id": "service_web-server_003",
-          "host_id": "host_web-server_001",
+          "id": "10.129.7.31:tcp:443",
           "port": 443,
           "protocol": "tcp",
-          "service_name": "https",
-          "product": null,
-          "version": null,
-          "risk_level": "medium"
+          "serviceName": "https",
+          "riskLevel": "low"
         }
       ]
     }
   ],
-  "findings": [
-    {
-      "id": "finding_web-server_001",
-      "scan_id": "scan_web-server",
-      "severity": "high",
-      "title": "Administrative web interface is reachable",
-      "evidence": "HTTP and HTTPS responses include the title Mirth Connect Administrator.",
-      "remediation": "Restrict the administrative interface to trusted networks or a VPN and require strong authentication."
-    },
-    {
-      "id": "finding_web-server_002",
-      "scan_id": "scan_web-server",
-      "severity": "medium",
-      "title": "Potentially risky HTTP method enabled",
-      "evidence": "The http-methods script reports TRACE as a potentially risky method.",
-      "remediation": "Disable TRACE unless explicitly required by the application."
-    },
-    {
-      "id": "finding_web-server_003",
-      "scan_id": "scan_web-server",
-      "severity": "medium",
-      "title": "SSH is exposed",
-      "evidence": "Port 22/tcp is open and identified as OpenSSH 9.2p1 Debian.",
-      "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
-    }
-  ],
-  "ai_summary": {
-    "id": "ai_summary_web-server",
-    "scan_id": "scan_web-server",
-    "executive": "The scan found one Linux web server exposing SSH and a Mirth Connect Administrator interface over HTTP and HTTPS. The primary concern is access to the administrative web interface, with TRACE support as an additional web hardening issue.",
-    "top_risks": [
-      {
-        "severity": "high",
-        "title": "Administrative web interface is reachable",
-        "evidence": "HTTP and HTTPS responses include the title Mirth Connect Administrator.",
-        "remediation": "Restrict the administrative interface to trusted networks or a VPN and require strong authentication."
-      },
-      {
-        "severity": "medium",
-        "title": "Potentially risky HTTP method enabled",
-        "evidence": "The http-methods script reports TRACE as a potentially risky method.",
-        "remediation": "Disable TRACE unless explicitly required by the application."
-      },
-      {
-        "severity": "medium",
-        "title": "SSH is exposed",
-        "evidence": "Port 22/tcp is open and identified as OpenSSH 9.2p1 Debian.",
-        "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
-      }
+  "findings": [],
+  "summary": {
+    "executive": "Scan covers 1 host(s) exposing 3 open service(s). No hosts are directly internet-exposed, and no high-risk services were observed. No notable findings were generated from the scan scripts.",
+    "riskScore": 6,
+    "riskLevel": "info",
+    "topRisks": [
+      "No significant risks identified in this scan."
     ],
     "remediation": [
-      {
-        "priority": "now",
-        "title": "Administrative web interface is reachable",
-        "description": "Restrict the administrative interface to trusted networks or a VPN and require strong authentication."
-      },
-      {
-        "priority": "next",
-        "title": "Potentially risky HTTP method enabled",
-        "description": "Disable TRACE unless explicitly required by the application."
-      },
-      {
-        "priority": "later",
-        "title": "SSH is exposed",
-        "description": "Limit SSH access to trusted sources and enforce key-based authentication."
-      }
+      "Maintain least-exposure: close unused ports and restrict admin services to private networks.",
+      "Keep services patched to current stable versions."
     ],
-    "created_at": "2026-05-28T17:54:35.000Z"
+    "source": "rule-based"
   }
 }

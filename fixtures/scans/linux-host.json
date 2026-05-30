@@ -1,155 +1,95 @@
 {
-  "id": "scan_linux-host",
-  "user_id": "user_mock_001",
+  "id": "983a66861167c442",
   "filename": "linux-host.xml",
-  "uploaded_at": "2026-05-28T17:46:28.000Z",
-  "parsed_at": "2026-05-28T17:48:03.000Z",
-  "summary": {
-    "total_hosts": 1,
-    "open_ports": 6,
-    "risky_services": 1,
-    "findings": 3
-  },
+  "target": "devarea.htb",
+  "uploadedAt": "2026-05-29T00:00:00.000Z",
+  "parsedAt": "2026-05-29T00:00:00.000Z",
   "hosts": [
     {
-      "id": "host_linux-host_001",
-      "scan_id": "scan_linux-host",
-      "ip_address": "10.129.7.29",
+      "id": "10.129.7.29",
+      "ipAddress": "10.129.7.29",
       "hostname": "devarea.htb",
-      "operating_system": "Linux",
-      "role": "application_server",
-      "internet_exposed": false,
+      "operatingSystem": "Linux (Ubuntu)",
+      "role": "File Server",
+      "internetExposed": false,
       "services": [
         {
-          "id": "service_linux-host_001",
-          "host_id": "host_linux-host_001",
+          "id": "10.129.7.29:tcp:21",
           "port": 21,
           "protocol": "tcp",
-          "service_name": "ftp",
+          "serviceName": "ftp",
           "product": "vsftpd",
           "version": "3.0.5",
-          "risk_level": "high"
+          "riskLevel": "high"
         },
         {
-          "id": "service_linux-host_002",
-          "host_id": "host_linux-host_001",
+          "id": "10.129.7.29:tcp:22",
           "port": 22,
           "protocol": "tcp",
-          "service_name": "ssh",
+          "serviceName": "ssh",
           "product": "OpenSSH",
           "version": "9.6p1 Ubuntu 3ubuntu13.15",
-          "risk_level": "medium"
+          "extrainfo": "Ubuntu Linux; protocol 2.0",
+          "riskLevel": "low"
         },
         {
-          "id": "service_linux-host_003",
-          "host_id": "host_linux-host_001",
+          "id": "10.129.7.29:tcp:80",
           "port": 80,
           "protocol": "tcp",
-          "service_name": "http",
+          "serviceName": "http",
           "product": "Apache httpd",
           "version": "2.4.58",
-          "risk_level": "medium"
+          "riskLevel": "medium"
         },
         {
-          "id": "service_linux-host_004",
-          "host_id": "host_linux-host_001",
+          "id": "10.129.7.29:tcp:8080",
           "port": 8080,
           "protocol": "tcp",
-          "service_name": "http",
+          "serviceName": "http",
           "product": "Jetty",
           "version": "9.4.27.v20200227",
-          "risk_level": "medium"
+          "riskLevel": "medium"
         },
         {
-          "id": "service_linux-host_005",
-          "host_id": "host_linux-host_001",
+          "id": "10.129.7.29:tcp:8500",
           "port": 8500,
           "protocol": "tcp",
-          "service_name": "fmtp",
-          "product": null,
-          "version": null,
-          "risk_level": "medium"
+          "serviceName": "fmtp",
+          "riskLevel": "low"
         },
         {
-          "id": "service_linux-host_006",
-          "host_id": "host_linux-host_001",
+          "id": "10.129.7.29:tcp:8888",
           "port": 8888,
           "protocol": "tcp",
-          "service_name": "http",
+          "serviceName": "http",
           "product": "Golang net/http server",
-          "version": null,
-          "risk_level": "medium"
+          "extrainfo": "Go-IPFS json-rpc or InfluxDB API",
+          "riskLevel": "medium"
         }
       ]
     }
   ],
   "findings": [
     {
-      "id": "finding_linux-host_001",
-      "scan_id": "scan_linux-host",
+      "id": "10.129.7.29:ftp-anon",
+      "hostId": "10.129.7.29",
+      "host": "devarea.htb (10.129.7.29)",
       "severity": "high",
-      "title": "Anonymous FTP login is allowed",
-      "evidence": "The ftp-anon script reports anonymous FTP login allowed on port 21/tcp.",
-      "remediation": "Disable anonymous FTP unless it is explicitly required, and restrict access to trusted networks."
-    },
-    {
-      "id": "finding_linux-host_002",
-      "scan_id": "scan_linux-host",
-      "severity": "medium",
-      "title": "Multiple web services are reachable",
-      "evidence": "Ports 80/tcp, 8080/tcp, 8500/tcp, and 8888/tcp are open.",
-      "remediation": "Review whether each web service must be reachable and place administrative services behind access controls."
-    },
-    {
-      "id": "finding_linux-host_003",
-      "scan_id": "scan_linux-host",
-      "severity": "medium",
-      "title": "SSH is exposed",
-      "evidence": "Port 22/tcp is open and identified as OpenSSH 9.6p1 Ubuntu.",
-      "remediation": "Require key-based authentication, disable password login where possible, and limit SSH access to trusted sources."
+      "title": "Anonymous FTP login allowed",
+      "evidence": "Anonymous FTP login allowed (FTP code 230)&#xa;drwxr-xr-x    2 ftp      ftp          4096 Sep 22  2025 pub",
+      "remediation": "Disable anonymous FTP access, or replace FTP with SFTP/FTPS and require authentication."
     }
   ],
-  "ai_summary": {
-    "id": "ai_summary_linux-host",
-    "scan_id": "scan_linux-host",
-    "executive": "The scan found one Linux host with FTP, SSH, Apache, Jetty, a proxy-like service, and a web dashboard exposed. Anonymous FTP access is the top issue, followed by the number of reachable web and administrative services.",
-    "top_risks": [
-      {
-        "severity": "high",
-        "title": "Anonymous FTP login is allowed",
-        "evidence": "The ftp-anon script reports anonymous FTP login allowed on port 21/tcp.",
-        "remediation": "Disable anonymous FTP unless it is explicitly required, and restrict access to trusted networks."
-      },
-      {
-        "severity": "medium",
-        "title": "Multiple web services are reachable",
-        "evidence": "Ports 80/tcp, 8080/tcp, 8500/tcp, and 8888/tcp are open.",
-        "remediation": "Review whether each web service must be reachable and place administrative services behind access controls."
-      },
-      {
-        "severity": "medium",
-        "title": "SSH is exposed",
-        "evidence": "Port 22/tcp is open and identified as OpenSSH 9.6p1 Ubuntu.",
-        "remediation": "Require key-based authentication, disable password login where possible, and limit SSH access to trusted sources."
-      }
+  "summary": {
+    "executive": "Scan covers 1 host(s) exposing 6 open service(s). No hosts are directly internet-exposed, and 1 higher-risk service(s) were observed. 1 finding(s) were identified; address the highest-severity items first.",
+    "riskScore": 37,
+    "riskLevel": "medium",
+    "topRisks": [
+      "Anonymous FTP login allowed — devarea.htb (10.129.7.29)"
     ],
     "remediation": [
-      {
-        "priority": "now",
-        "title": "Anonymous FTP login is allowed",
-        "description": "Disable anonymous FTP unless it is explicitly required, and restrict access to trusted networks."
-      },
-      {
-        "priority": "next",
-        "title": "Multiple web services are reachable",
-        "description": "Review whether each web service must be reachable and place administrative services behind access controls."
-      },
-      {
-        "priority": "later",
-        "title": "SSH is exposed",
-        "description": "Require key-based authentication, disable password login where possible, and limit SSH access to trusted sources."
-      }
+      "Disable anonymous FTP access, or replace FTP with SFTP/FTPS and require authentication."
     ],
-    "created_at": "2026-05-28T17:48:03.000Z"
+    "source": "rule-based"
   }
 }
