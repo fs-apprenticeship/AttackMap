@@ -63,6 +63,16 @@ export function getScanStats(scan: Scan): ScanStats {
   };
 }
 
+export function getHostsForScan(scan: Scan): HostWithScan[] {
+  return scan.hosts.map((host) => ({ ...host, scanFilename: scan.filename }));
+}
+
+export function getServicesForScan(scan: Scan) {
+  return getHostsForScan(scan).flatMap((host) =>
+    host.services.map((service) => ({ ...service, host })),
+  );
+}
+
 export function getScanRisks(scan: Scan): DashboardRisk[] {
   if (scan.findings.length > 0) {
     return scan.findings.map(({ severity, title, evidence, remediation }) => ({
@@ -134,10 +144,29 @@ export const serviceBreakdown: ServiceBreakdownItem[] = Object.entries(
   .sort((a, b) => b[1] - a[1])
   .slice(0, 7);
 
+export function getServiceBreakdown(scan: Scan): ServiceBreakdownItem[] {
+  return Object.entries(
+    getServicesForScan(scan).reduce<Record<string, number>>((counts, service) => {
+      const key = service.serviceName || "unknown";
+      counts[key] = (counts[key] ?? 0) + 1;
+      return counts;
+    }, {}),
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 7);
+}
+
 export const severityCounts: SeverityCount[] = severityOrder.map((severity) => ({
   severity,
   count: allFindings.filter((finding) => finding.severity === severity).length,
 }));
+
+export function getSeverityCounts(scan: Scan): SeverityCount[] {
+  return severityOrder.map((severity) => ({
+    severity,
+    count: scan.findings.filter((finding) => finding.severity === severity).length,
+  }));
+}
 
 export const riskScore = Math.min(
   100,
@@ -146,6 +175,25 @@ export const riskScore = Math.min(
     riskyServices * 8 +
     exposedAssets * 10,
 );
+
+export function getRiskScore(scan: Scan) {
+  const stats = getScanStats(scan);
+  const exposedAssets = scan.hosts.filter((host) => host.internetExposed).length;
+  const highFindings = scan.findings.filter((finding) =>
+    ["critical", "high"].includes(finding.severity),
+  ).length;
+  const mediumFindings = scan.findings.filter(
+    (finding) => finding.severity === "medium",
+  ).length;
+
+  return Math.min(
+    100,
+    highFindings * 18 +
+      mediumFindings * 7 +
+      stats.riskyServices * 8 +
+      exposedAssets * 10,
+  );
+}
 
 export const summaryCards = [
   {
@@ -177,3 +225,42 @@ export const summaryCards = [
     tone: "emerald",
   },
 ] as const;
+
+export function getSummaryCards(scan: Scan) {
+  const stats = getScanStats(scan);
+  const exposedAssets = scan.hosts.filter((host) => host.internetExposed).length;
+  const highFindings = scan.findings.filter((finding) =>
+    ["critical", "high"].includes(finding.severity),
+  ).length;
+
+  return [
+    {
+      label: "Hosts",
+      value: stats.totalHosts,
+      detail: `${exposedAssets} internet exposed`,
+      icon: Server,
+      tone: "cyan",
+    },
+    {
+      label: "Open ports",
+      value: stats.openPorts,
+      detail: `${stats.riskyServices} high-risk services`,
+      icon: Network,
+      tone: "amber",
+    },
+    {
+      label: "Findings",
+      value: stats.findings,
+      detail: `${highFindings} need priority review`,
+      icon: ShieldAlert,
+      tone: "rose",
+    },
+    {
+      label: "AI risk score",
+      value: getRiskScore(scan),
+      detail: "rule-backed preview",
+      icon: Brain,
+      tone: "emerald",
+    },
+  ] as const;
+}

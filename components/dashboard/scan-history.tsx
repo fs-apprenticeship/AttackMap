@@ -10,9 +10,14 @@ import { getScanStats } from "./data";
 type ScanHistoryProps = {
   scans: Scan[];
   activeScanId: string;
+  onSelectScan: (scanId: string) => void;
 };
 
-export function ScanHistory({ scans, activeScanId }: ScanHistoryProps) {
+export function ScanHistory({
+  scans,
+  activeScanId,
+  onSelectScan,
+}: ScanHistoryProps) {
   return (
     <Card className="rounded-md border bg-white py-0 shadow-sm">
       <CardContent className="p-3">
@@ -30,6 +35,7 @@ export function ScanHistory({ scans, activeScanId }: ScanHistoryProps) {
             return (
               <Button
                 key={scan.id}
+                type="button"
                 variant={isActive ? "default" : "outline"}
                 className={cn(
                   "h-auto w-full justify-start rounded-md border px-3 py-2 text-left",
@@ -37,6 +43,7 @@ export function ScanHistory({ scans, activeScanId }: ScanHistoryProps) {
                     ? "border-zinc-950 bg-zinc-950 text-white"
                     : "border-zinc-200 bg-white text-zinc-700",
                 )}
+                onClick={() => onSelectScan(scan.id)}
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">
