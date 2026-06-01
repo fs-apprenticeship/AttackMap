@@ -2,21 +2,20 @@ import { XMLParser } from "fast-xml-parser";
 import { randomUUID } from "crypto";
 import { ParsedScanSchema, type ParsedScan, type Host, type Service, type Finding } from "./schema";
 
+
+
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@_",
   isArray: (name) =>
     ["host", "port", "hostname", "cpe", "script", "elem", "table", "osmatch"].includes(name),
-  // Leave all attribute values as strings so "1.0" is not coerced to the number 1.
-  // Numeric conversions (portid etc.) are handled explicitly with Number() at point of use.
   parseAttributeValue: false,
   trimValues: true,
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyNode = any;
 
-// ─── Risk levels ──────────────────────────────────────────────────────────────
+// ─── Risk level assignment ─────────────────────────────────────────────────
 
 const HIGH_RISK_PORTS = new Set([
   21, 23, 25, 139, 389, 445, 2179, 3268, 3389, 4444, 5900, 1433, 3306, 5432,
@@ -33,7 +32,7 @@ function serviceRisk(port: number, serviceName: string): Service["risk_level"] {
   return "low";
 }
 
-// ─── Role inference ───────────────────────────────────────────────────────────
+// ─── Role inference ─────────────────────────────────────────────────────────
 
 const WEB_PORTS = new Set([80, 443, 8080, 8443, 8500, 8888, 8000]);
 
@@ -82,7 +81,7 @@ function extractOS(rawHost: AnyNode, services: Service[]): string | undefined {
     const ostype = p.service?.["@_ostype"];
     if (ostype) ostypes.push(String(ostype));
   }
-  // Prefer Linux/Windows over generic "Unix"
+
   if (ostypes.includes("Linux")) return "Linux";
   if (ostypes.includes("Windows")) return "Windows";
   if (ostypes.length > 0) return ostypes[0];
@@ -117,7 +116,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
     const rawHost = rawHosts[hi];
     const rawPorts: AnyNode[] = rawHost.ports?.port ?? [];
 
-    // Build per-port script lookup
+
     const scriptMap = new Map<number, Map<string, string>>();
     for (const rawPort of rawPorts) {
       if (rawPort.state?.["@_state"] !== "open") continue;
@@ -202,7 +201,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
       }
     }
 
-    // http-methods: risky methods (TRACE etc.)
+    // http-methods: risky methods 
     if (!handledCategories.has("http-methods")) {
       for (const ws of webSvcs) {
         const out = getScript(ws.port, "http-methods").toLowerCase();
@@ -362,7 +361,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
       handledPorts.add(sshSvc.port);
     }
 
-    // HTTP (private, single service, no special conditions)
+    // HTTP
     if (
       !handledCategories.has("admin-web") &&
       !handledCategories.has("internal-login") &&
