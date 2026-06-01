@@ -1,5 +1,5 @@
 {
-  "id": "68aa30e78b827a1d",
+  "id": "scan_internal-platform",
   "filename": "internal-platform.xml",
   "target": "10.129.244.220",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
@@ -8,8 +8,8 @@
     {
       "id": "10.129.244.220",
       "ipAddress": "10.129.244.220",
-      "operatingSystem": "Linux (Ubuntu)",
-      "role": "Application Server",
+      "operatingSystem": "Linux",
+      "role": "internal_platform",
       "internetExposed": false,
       "services": [
         {
@@ -20,7 +20,7 @@
           "product": "OpenSSH",
           "version": "9.6p1 Ubuntu 3ubuntu13.14",
           "extrainfo": "Ubuntu Linux; protocol 2.0",
-          "riskLevel": "low"
+          "riskLevel": "medium"
         },
         {
           "id": "10.129.244.220:tcp:8080",
@@ -35,24 +35,46 @@
   ],
   "findings": [
     {
-      "id": "10.129.244.220:http-open-proxy",
+      "id": "finding_internal-platform_001",
       "hostId": "10.129.244.220",
       "host": "10.129.244.220",
-      "severity": "high",
-      "title": "Open HTTP proxy",
-      "evidence": "Server relays arbitrary proxy requests (http-open-proxy).",
-      "remediation": "Restrict the proxy to trusted clients with authentication, or disable open relaying."
+      "severity": "medium",
+      "title": "Internal platform login is reachable",
+      "evidence": "Port 8080/tcp redirects to /login and has the title Principal Internal Platform - Login&#xa;Requested resource was /login.",
+      "remediation": "Confirm the platform is only reachable from trusted networks and protected by strong authentication."
+    },
+    {
+      "id": "finding_internal-platform_002",
+      "hostId": "10.129.244.220",
+      "host": "10.129.244.220",
+      "severity": "medium",
+      "title": "Proxy-like behavior detected",
+      "evidence": "The http-open-proxy script reports that the proxy might be redirecting requests.",
+      "remediation": "Verify the service is not operating as an unintended open proxy and restrict proxy behavior where possible."
+    },
+    {
+      "id": "finding_internal-platform_003",
+      "hostId": "10.129.244.220",
+      "host": "10.129.244.220",
+      "severity": "medium",
+      "title": "SSH is exposed",
+      "evidence": "Port 22/tcp is open and identified as OpenSSH 9.6p1 Ubuntu 3ubuntu13.14.",
+      "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
     }
   ],
   "summary": {
-    "executive": "Scan covers 1 host(s) exposing 2 open service(s). No hosts are directly internet-exposed, and no high-risk services were observed. 1 finding(s) were identified; address the highest-severity items first.",
-    "riskScore": 22,
-    "riskLevel": "low",
+    "executive": "Scan covers 1 host exposing 2 open service(s). No hosts are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
+    "riskScore": 21,
+    "riskLevel": "medium",
     "topRisks": [
-      "Open HTTP proxy — 10.129.244.220"
+      "Internal platform login is reachable",
+      "Proxy-like behavior detected",
+      "SSH is exposed"
     ],
     "remediation": [
-      "Restrict the proxy to trusted clients with authentication, or disable open relaying."
+      "Confirm the platform is only reachable from trusted networks and protected by strong authentication.",
+      "Verify the service is not operating as an unintended open proxy and restrict proxy behavior where possible.",
+      "Limit SSH access to trusted sources and enforce key-based authentication."
     ],
     "source": "rule-based"
   }

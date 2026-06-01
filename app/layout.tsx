@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 // controls below when authentication is back in scope.
 // import { ClerkProvider, Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import { Geist, Geist_Mono, Inter } from 'next/font/google'
+import Link from 'next/link'
 import { ShieldCheck } from 'lucide-react'
 import './globals.css'
 import { cn } from "@/lib/utils";
@@ -34,7 +35,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} bg-zinc-100 antialiased`}>
         {/* <ClerkProvider> */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-white/95 px-4 backdrop-blur lg:px-6">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 rounded-md transition-opacity hover:opacity-80">
             <div className="flex size-9 items-center justify-center rounded-md bg-zinc-950 text-white">
               <ShieldCheck className="size-5" />
             </div>
@@ -44,7 +45,7 @@ export default function RootLayout({
                 Network scan intelligence
               </p>
             </div>
-          </div>
+          </Link>
           {/*
           <div className="flex items-center gap-3">
             <Show when="signed-out">

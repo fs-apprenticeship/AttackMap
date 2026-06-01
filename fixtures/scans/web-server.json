@@ -1,5 +1,5 @@
 {
-  "id": "b2c660c2179e090b",
+  "id": "scan_web-server",
   "filename": "web-server.xml",
   "target": "10.129.7.31",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
@@ -8,8 +8,8 @@
     {
       "id": "10.129.7.31",
       "ipAddress": "10.129.7.31",
-      "operatingSystem": "Linux (Debian)",
-      "role": "Web Server",
+      "operatingSystem": "Linux",
+      "role": "web_server",
       "internetExposed": false,
       "services": [
         {
@@ -20,7 +20,7 @@
           "product": "OpenSSH",
           "version": "9.2p1 Debian 2+deb12u7",
           "extrainfo": "protocol 2.0",
-          "riskLevel": "low"
+          "riskLevel": "medium"
         },
         {
           "id": "10.129.7.31:tcp:80",
@@ -34,22 +34,53 @@
           "port": 443,
           "protocol": "tcp",
           "serviceName": "https",
-          "riskLevel": "low"
+          "riskLevel": "medium"
         }
       ]
     }
   ],
-  "findings": [],
+  "findings": [
+    {
+      "id": "finding_web-server_001",
+      "hostId": "10.129.7.31",
+      "host": "10.129.7.31",
+      "severity": "high",
+      "title": "Administrative web interface is reachable",
+      "evidence": "HTTP and HTTPS responses include the title Mirth Connect Administrator.",
+      "remediation": "Restrict the administrative interface to trusted networks or a VPN and require strong authentication."
+    },
+    {
+      "id": "finding_web-server_002",
+      "hostId": "10.129.7.31",
+      "host": "10.129.7.31",
+      "severity": "medium",
+      "title": "Potentially risky HTTP method enabled",
+      "evidence": "The http-methods script reports TRACE as a potentially risky method.",
+      "remediation": "Disable TRACE unless explicitly required by the application."
+    },
+    {
+      "id": "finding_web-server_003",
+      "hostId": "10.129.7.31",
+      "host": "10.129.7.31",
+      "severity": "medium",
+      "title": "SSH is exposed",
+      "evidence": "Port 22/tcp is open and identified as OpenSSH 9.2p1 Debian 2+deb12u7.",
+      "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
+    }
+  ],
   "summary": {
-    "executive": "Scan covers 1 host(s) exposing 3 open service(s). No hosts are directly internet-exposed, and no high-risk services were observed. No notable findings were generated from the scan scripts.",
-    "riskScore": 6,
-    "riskLevel": "info",
+    "executive": "Scan covers 1 host exposing 3 open service(s). No hosts are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
+    "riskScore": 32,
+    "riskLevel": "medium",
     "topRisks": [
-      "No significant risks identified in this scan."
+      "Administrative web interface is reachable",
+      "Potentially risky HTTP method enabled",
+      "SSH is exposed"
     ],
     "remediation": [
-      "Maintain least-exposure: close unused ports and restrict admin services to private networks.",
-      "Keep services patched to current stable versions."
+      "Restrict the administrative interface to trusted networks or a VPN and require strong authentication.",
+      "Disable TRACE unless explicitly required by the application.",
+      "Limit SSH access to trusted sources and enforce key-based authentication."
     ],
     "source": "rule-based"
   }

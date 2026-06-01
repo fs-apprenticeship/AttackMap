@@ -1,8 +1,14 @@
 import { XMLParser } from "fast-xml-parser";
 import { randomUUID } from "crypto";
-import { ParsedScanSchema, type ParsedScan, type Host, type Service, type Finding } from "./schema";
-
-
+import {
+  ScanSchema,
+  type Scan,
+  type Host,
+  type Service,
+  type Finding,
+  type AISummary,
+  type RiskLevel,
+} from "./schema";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -13,7 +19,8 @@ const parser = new XMLParser({
   trimValues: true,
 });
 
-type AnyNode = any;
+// Raw fast-xml-parser nodes are dynamically shaped; treat them as loose records.
+type AnyNode = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // ─── Risk level assignment ─────────────────────────────────────────────────
 
@@ -24,7 +31,7 @@ const MEDIUM_RISK_PORTS = new Set([
   22, 53, 80, 88, 135, 443, 464, 593, 636, 3269, 8000, 8080, 8500, 8888,
 ]);
 
-function serviceRisk(port: number, serviceName: string): Service["risk_level"] {
+function serviceRisk(port: number, serviceName: string): RiskLevel {
   if (serviceName === "telnet" || port === 23) return "critical";
   if (HIGH_RISK_PORTS.has(port)) return "high";
   if (MEDIUM_RISK_PORTS.has(port)) return "medium";
@@ -38,7 +45,7 @@ const WEB_PORTS = new Set([80, 443, 8080, 8443, 8500, 8888, 8000]);
 
 function inferRole(services: Service[]): string {
   const ports = new Set(services.map((s) => s.port));
-  const names = services.map((s) => s.service_name);
+  const names = services.map((s) => s.serviceName);
 
   if (ports.has(88) && (ports.has(445) || ports.has(389))) return "domain_controller";
   if (ports.has(3306) || ports.has(5432) || ports.has(1433)) return "database_server";
@@ -46,7 +53,7 @@ function inferRole(services: Service[]): string {
   if (names.includes("nping-echo")) return "public_demo_host";
 
   const webCount = services.filter(
-    (s) => WEB_PORTS.has(s.port) || s.service_name.includes("http")
+    (s) => WEB_PORTS.has(s.port) || s.serviceName.includes("http")
   ).length;
   if (ports.has(21) && webCount >= 2) return "application_server";
   if (ports.has(53)) return "dns_server";
@@ -105,17 +112,23 @@ const STANDARD_PORTS = new Set([
 
 function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Finding[] {
   const findings: Finding[] = [];
+  let activeHost: Host;
 
-  function addFinding(f: Omit<Finding, "id" | "scan_id">) {
+  function addFinding(f: Omit<Finding, "id" | "hostId" | "host">) {
     const idx = String(findings.length + 1).padStart(3, "0");
-    findings.push({ id: `finding_${scanId}_${idx}`, scan_id: scanId, ...f });
+    findings.push({
+      id: `finding_${scanId}_${idx}`,
+      hostId: activeHost.id,
+      host: activeHost.hostname ?? activeHost.ipAddress,
+      ...f,
+    });
   }
 
   for (let hi = 0; hi < hosts.length; hi++) {
     const host = hosts[hi];
+    activeHost = host;
     const rawHost = rawHosts[hi];
     const rawPorts: AnyNode[] = rawHost.ports?.port ?? [];
-
 
     const scriptMap = new Map<number, Map<string, string>>();
     for (const rawPort of rawPorts) {
@@ -139,13 +152,13 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
     let scriptFindingGenerated = false;
 
     const webSvcs = services.filter(
-      (s) => WEB_PORTS.has(s.port) || s.service_name.includes("http")
+      (s) => WEB_PORTS.has(s.port) || s.serviceName.includes("http")
     );
 
     // ── Script-based findings ──────────────────────────────────────────────
 
     // ftp-anon
-    const ftpSvc = services.find((s) => s.port === 21 || s.service_name === "ftp");
+    const ftpSvc = services.find((s) => s.port === 21 || s.serviceName === "ftp");
     if (ftpSvc) {
       const out = getScript(ftpSvc.port, "ftp-anon").toLowerCase();
       if (out.includes("anonymous ftp login allowed")) {
@@ -201,7 +214,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
       }
     }
 
-    // http-methods: risky methods 
+    // http-methods: risky methods
     if (!handledCategories.has("http-methods")) {
       for (const ws of webSvcs) {
         const out = getScript(ws.port, "http-methods").toLowerCase();
@@ -255,7 +268,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
 
     // Multiple web services (≥3)
     const webSvcCount = services.filter(
-      (s) => WEB_PORTS.has(s.port) || s.service_name.includes("http")
+      (s) => WEB_PORTS.has(s.port) || s.serviceName.includes("http")
     ).length;
     if (
       webSvcCount >= 3 &&
@@ -264,7 +277,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
       !handledCategories.has("multiple-web")
     ) {
       const portList = services
-        .filter((s) => WEB_PORTS.has(s.port) || s.service_name.includes("http"))
+        .filter((s) => WEB_PORTS.has(s.port) || s.serviceName.includes("http"))
         .map((s) => `${s.port}/tcp`)
         .join(", ");
       addFinding({
@@ -276,7 +289,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
       });
       handledCategories.add("multiple-web");
       services
-        .filter((s) => WEB_PORTS.has(s.port) || s.service_name.includes("http"))
+        .filter((s) => WEB_PORTS.has(s.port) || s.serviceName.includes("http"))
         .forEach((s) => handledPorts.add(s.port));
     }
 
@@ -308,7 +321,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
         addFinding({
           severity: "high",
           title: "SMB is exposed",
-          evidence: `Port 445/tcp is open on ${host.ip_address}.`,
+          evidence: `Port 445/tcp is open on ${host.ipAddress}.`,
           remediation:
             "Block SMB at the perimeter. Ensure patching against EternalBlue-class vulnerabilities.",
         });
@@ -317,12 +330,12 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
     }
 
     // Telnet
-    const telnetSvc = services.find((s) => s.port === 23 || s.service_name === "telnet");
+    const telnetSvc = services.find((s) => s.port === 23 || s.serviceName === "telnet");
     if (telnetSvc && !handledPorts.has(telnetSvc.port)) {
       addFinding({
         severity: "critical",
         title: "Telnet is exposed",
-        evidence: `Port ${telnetSvc.port}/tcp (telnet) is open on ${host.ip_address}.`,
+        evidence: `Port ${telnetSvc.port}/tcp (telnet) is open on ${host.ipAddress}.`,
         remediation: "Disable Telnet immediately and replace with SSH.",
       });
       handledPorts.add(telnetSvc.port);
@@ -333,17 +346,17 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
       addFinding({
         severity: "high",
         title: "FTP is exposed",
-        evidence: `Port ${ftpSvc.port}/tcp (FTP) is open on ${host.ip_address}.`,
+        evidence: `Port ${ftpSvc.port}/tcp (FTP) is open on ${host.ipAddress}.`,
         remediation: "Replace FTP with SFTP or SCP. Disable anonymous access.",
       });
       handledPorts.add(ftpSvc.port);
     }
 
     // SSH
-    const sshSvc = services.find((s) => s.service_name === "ssh" || s.port === 22);
+    const sshSvc = services.find((s) => s.serviceName === "ssh" || s.port === 22);
     if (sshSvc && !handledPorts.has(sshSvc.port)) {
       const ver = [sshSvc.product, sshSvc.version].filter(Boolean).join(" ");
-      if (host.internet_exposed) {
+      if (host.internetExposed) {
         addFinding({
           severity: "medium",
           title: "SSH is reachable from the network",
@@ -368,11 +381,11 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
       !handledCategories.has("multiple-web")
     ) {
       const httpSvc = services.find(
-        (s) => (s.service_name === "http" || s.port === 80) && !handledPorts.has(s.port)
+        (s) => (s.serviceName === "http" || s.port === 80) && !handledPorts.has(s.port)
       );
       if (httpSvc) {
         const ver = [httpSvc.product, httpSvc.version].filter(Boolean).join(" ");
-        if (host.internet_exposed) {
+        if (host.internetExposed) {
           const titleOut = getScript(httpSvc.port, "http-title").split("\n")[0].trim();
           const titlePart = titleOut ? ` with the title ${titleOut}` : "";
           addFinding({
@@ -385,7 +398,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
           addFinding({
             severity: "medium",
             title: "Web service is reachable",
-            evidence: `Port ${httpSvc.port}/tcp is open and identified as ${ver || "HTTP"} on ${host.ip_address}.`,
+            evidence: `Port ${httpSvc.port}/tcp is open and identified as ${ver || "HTTP"} on ${host.ipAddress}.`,
             remediation:
               "Confirm the web service is intended to be reachable and keep the web server patched.",
           });
@@ -396,7 +409,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
 
     // Nonstandard ports
     const nonstandardSvcs = services.filter(
-      (s) => !STANDARD_PORTS.has(s.port) && !s.service_name.includes("http")
+      (s) => !STANDARD_PORTS.has(s.port) && !s.serviceName.includes("http")
     );
     if (nonstandardSvcs.length > 0 && !handledCategories.has("nonstandard")) {
       const portList = nonstandardSvcs.map((s) => `${s.port}/tcp`).join(" and ");
@@ -418,7 +431,7 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
       addFinding({
         severity: "low",
         title: "Limited attack surface observed",
-        evidence: `Only ${services.map((s) => s.service_name.toUpperCase()).join(" and ")} were found open in this scan.`,
+        evidence: `Only ${services.map((s) => s.serviceName.toUpperCase()).join(" and ")} were found open in this scan.`,
         remediation:
           "Continue monitoring for unexpected service exposure and remove any services that are not required.",
       });
@@ -428,9 +441,81 @@ function buildFindings(scanId: string, hosts: Host[], rawHosts: AnyNode[]): Find
   return findings;
 }
 
+// ─── Rule-based summary (AI guardrail / placeholder) ────────────────────────
+
+const SEVERITY_ORDER: Record<RiskLevel, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+  info: 4,
+};
+
+function riskLevelFromScore(score: number): RiskLevel {
+  if (score >= 70) return "critical";
+  if (score >= 45) return "high";
+  if (score >= 20) return "medium";
+  if (score > 0) return "low";
+  return "info";
+}
+
+function buildSummary(hosts: Host[], findings: Finding[]): AISummary {
+  const allServices = hosts.flatMap((h) => h.services);
+  const riskyServices = allServices.filter(
+    (s) => s.riskLevel === "high" || s.riskLevel === "critical"
+  ).length;
+  const exposed = hosts.filter((h) => h.internetExposed).length;
+  const highFindings = findings.filter(
+    (f) => f.severity === "high" || f.severity === "critical"
+  ).length;
+  const mediumFindings = findings.filter((f) => f.severity === "medium").length;
+
+  const riskScore = Math.min(
+    100,
+    highFindings * 18 + mediumFindings * 7 + riskyServices * 8 + exposed * 10
+  );
+  const riskLevel = riskLevelFromScore(riskScore);
+
+  const sorted = [...findings].sort(
+    (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
+  );
+  const topRisks = sorted.slice(0, 5).map((f) => f.title);
+  const remediation = Array.from(new Set(sorted.map((f) => f.remediation))).slice(0, 5);
+
+  const hostWord = hosts.length === 1 ? "host" : "hosts";
+  const parts = [
+    `Scan covers ${hosts.length} ${hostWord} exposing ${allServices.length} open service(s).`,
+    exposed > 0
+      ? `${exposed} host(s) are directly internet-exposed.`
+      : "No hosts are directly internet-exposed.",
+    riskyServices > 0
+      ? `${riskyServices} high-risk service(s) were observed.`
+      : "No high-risk services were observed.",
+    findings.length > 0
+      ? `${findings.length} finding(s) were generated from the scan.`
+      : "No notable findings were generated from the scan.",
+  ];
+
+  return {
+    executive: parts.join(" "),
+    riskScore,
+    riskLevel,
+    topRisks: topRisks.length
+      ? topRisks
+      : ["No significant risks identified in this scan."],
+    remediation: remediation.length
+      ? remediation
+      : [
+          "Maintain least-exposure: close unused ports and restrict admin services to private networks.",
+          "Keep all detected services patched and monitor for unexpected exposure.",
+        ],
+    source: "rule-based",
+  };
+}
+
 // ─── Main parser ──────────────────────────────────────────────────────────────
 
-export function parseNmapScan(xml: string, filename: string, userId = "user_local"): ParsedScan {
+export function parseNmapScan(xml: string, filename: string): Scan {
   const raw = parser.parse(xml);
   const nmaprun = raw.nmaprun ?? {};
   const allRawHosts: AnyNode[] = nmaprun.host ?? [];
@@ -439,25 +524,9 @@ export function parseNmapScan(xml: string, filename: string, userId = "user_loca
   const scanId = `scan_${randomUUID()}`;
   const now = new Date().toISOString();
 
-  const hosts: Host[] = upRawHosts.map((rawHost: AnyNode, hostIdx: number) => {
-    const hostId = `host_${scanId}_${String(hostIdx + 1).padStart(3, "0")}`;
+  const hosts: Host[] = upRawHosts.map((rawHost: AnyNode) => {
     const rawPorts: AnyNode[] = rawHost.ports?.port ?? [];
     const openPorts = rawPorts.filter((p: AnyNode) => p.state?.["@_state"] === "open");
-
-    const services: Service[] = openPorts.map((p: AnyNode, svcIdx: number) => {
-      const port = Number(p["@_portid"]);
-      const svcName: string = String(p.service?.["@_name"] ?? "unknown");
-      return {
-        id: `service_${hostId}_${String(svcIdx + 1).padStart(3, "0")}`,
-        host_id: hostId,
-        port,
-        protocol: String(p["@_protocol"] ?? "tcp"),
-        service_name: svcName,
-        product: p.service?.["@_product"] ? String(p.service["@_product"]) : undefined,
-        version: p.service?.["@_version"] ? String(p.service["@_version"]) : undefined,
-        risk_level: serviceRisk(port, svcName),
-      };
-    });
 
     const addresses: AnyNode[] = Array.isArray(rawHost.address)
       ? rawHost.address
@@ -466,37 +535,49 @@ export function parseNmapScan(xml: string, filename: string, userId = "user_loca
     const ip = String(ipv4?.["@_addr"] ?? addresses[0]?.["@_addr"] ?? "0.0.0.0");
     const hostname = rawHost.hostnames?.hostname?.[0]?.["@_name"];
 
+    const services: Service[] = openPorts.map((p: AnyNode) => {
+      const port = Number(p["@_portid"]);
+      const protocol = String(p["@_protocol"] ?? "tcp");
+      const svcName: string = String(p.service?.["@_name"] ?? "unknown");
+      return {
+        id: `${ip}:${protocol}:${port}`,
+        port,
+        protocol,
+        serviceName: svcName,
+        product: p.service?.["@_product"] ? String(p.service["@_product"]) : undefined,
+        version: p.service?.["@_version"] ? String(p.service["@_version"]) : undefined,
+        extrainfo: p.service?.["@_extrainfo"] ? String(p.service["@_extrainfo"]) : undefined,
+        riskLevel: serviceRisk(port, svcName),
+      };
+    });
+
     return {
-      id: hostId,
-      scan_id: scanId,
-      ip_address: ip,
+      id: ip,
+      ipAddress: ip,
       hostname: hostname ? String(hostname) : undefined,
-      operating_system: extractOS(rawHost, services),
+      operatingSystem: extractOS(rawHost, services) ?? "Unknown",
       role: inferRole(services),
-      internet_exposed: !isPrivateIP(ip),
+      internetExposed: !isPrivateIP(ip),
       services,
     };
   });
 
   const findings = buildFindings(scanId, hosts, upRawHosts);
-  const allServices = hosts.flatMap((h) => h.services);
-  const riskyServices = allServices.filter(
-    (s) => s.risk_level === "high" || s.risk_level === "critical"
-  ).length;
+  const summary = buildSummary(hosts, findings);
 
-  return ParsedScanSchema.parse({
+  const firstHost = hosts[0];
+  const target = firstHost
+    ? firstHost.hostname ?? firstHost.ipAddress
+    : filename.replace(/\.xml$/i, "");
+
+  return ScanSchema.parse({
     id: scanId,
-    user_id: userId,
     filename,
-    uploaded_at: now,
-    parsed_at: now,
-    summary: {
-      total_hosts: hosts.length,
-      open_ports: allServices.length,
-      risky_services: riskyServices,
-      findings: findings.length,
-    },
+    target,
+    uploadedAt: now,
+    parsedAt: now,
     hosts,
     findings,
+    summary,
   });
 }
