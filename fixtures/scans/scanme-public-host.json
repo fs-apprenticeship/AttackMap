@@ -1,5 +1,5 @@
 {
-  "id": "fb3338a615f81102",
+  "id": "scan_scanme-public-host",
   "filename": "scanme-public-host.xml",
   "target": "scanme.nmap.org",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
@@ -9,8 +9,8 @@
       "id": "45.33.32.156",
       "ipAddress": "45.33.32.156",
       "hostname": "scanme.nmap.org",
-      "operatingSystem": "Linux (Ubuntu)",
-      "role": "Web Server",
+      "operatingSystem": "Linux",
+      "role": "public_demo_host",
       "internetExposed": true,
       "services": [
         {
@@ -31,7 +31,7 @@
           "product": "Apache httpd",
           "version": "2.4.7",
           "extrainfo": "(Ubuntu)",
-          "riskLevel": "high"
+          "riskLevel": "medium"
         },
         {
           "id": "45.33.32.156:tcp:9929",
@@ -39,38 +39,60 @@
           "protocol": "tcp",
           "serviceName": "nping-echo",
           "product": "Nping echo",
-          "riskLevel": "medium"
+          "riskLevel": "low"
         },
         {
           "id": "45.33.32.156:tcp:31337",
           "port": 31337,
           "protocol": "tcp",
           "serviceName": "tcpwrapped",
-          "riskLevel": "info"
+          "riskLevel": "low"
         }
       ]
     }
   ],
   "findings": [
     {
-      "id": "45.33.32.156:exposed-admin-22",
+      "id": "finding_scanme-public-host_001",
       "hostId": "45.33.32.156",
-      "host": "scanme.nmap.org (45.33.32.156)",
+      "host": "scanme.nmap.org",
       "severity": "medium",
-      "title": "SSH administrative access exposed to the internet",
-      "evidence": "ssh is reachable on 45.33.32.156:22 from public ranges.",
-      "remediation": "Restrict to a management subnet or VPN/bastion; do not expose admin services publicly."
+      "title": "SSH is reachable from the network",
+      "evidence": "Port 22/tcp is open and identified as OpenSSH 6.6.1p1 Ubuntu 2ubuntu2.13.",
+      "remediation": "Restrict SSH access to trusted sources and require key-based authentication."
+    },
+    {
+      "id": "finding_scanme-public-host_002",
+      "hostId": "45.33.32.156",
+      "host": "scanme.nmap.org",
+      "severity": "medium",
+      "title": "Public web service is reachable",
+      "evidence": "Port 80/tcp is open and identified as Apache httpd 2.4.7 with the title Go ahead and ScanMe!.",
+      "remediation": "Keep the web server patched and review exposed content and headers."
+    },
+    {
+      "id": "finding_scanme-public-host_003",
+      "hostId": "45.33.32.156",
+      "host": "scanme.nmap.org",
+      "severity": "low",
+      "title": "Nonstandard ports are open",
+      "evidence": "Ports 9929/tcp and 31337/tcp are open.",
+      "remediation": "Confirm each nonstandard service is expected and document its purpose."
     }
   ],
   "summary": {
-    "executive": "Scan covers 1 host(s) exposing 4 open service(s). 1 of 1 host(s) are reachable from the internet, and 1 higher-risk service(s) were observed. 1 finding(s) were identified; address the highest-severity items first.",
-    "riskScore": 26,
+    "executive": "Scan covers 1 host exposing 4 open service(s). 1 host(s) are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
+    "riskScore": 24,
     "riskLevel": "medium",
     "topRisks": [
-      "SSH administrative access exposed to the internet — scanme.nmap.org (45.33.32.156)"
+      "SSH is reachable from the network",
+      "Public web service is reachable",
+      "Nonstandard ports are open"
     ],
     "remediation": [
-      "Restrict to a management subnet or VPN/bastion; do not expose admin services publicly."
+      "Restrict SSH access to trusted sources and require key-based authentication.",
+      "Keep the web server patched and review exposed content and headers.",
+      "Confirm each nonstandard service is expected and document its purpose."
     ],
     "source": "rule-based"
   }

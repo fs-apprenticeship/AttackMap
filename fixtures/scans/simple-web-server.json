@@ -1,5 +1,5 @@
 {
-  "id": "feee2ebee62fdeab",
+  "id": "scan_simple-web-server",
   "filename": "simple-web-server.xml",
   "target": "helix.htb",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
@@ -9,8 +9,8 @@
       "id": "10.129.7.33",
       "ipAddress": "10.129.7.33",
       "hostname": "helix.htb",
-      "operatingSystem": "Linux (Ubuntu)",
-      "role": "Web Server",
+      "operatingSystem": "Linux",
+      "role": "web_server",
       "internetExposed": false,
       "services": [
         {
@@ -21,7 +21,7 @@
           "product": "OpenSSH",
           "version": "8.9p1 Ubuntu 3ubuntu0.15",
           "extrainfo": "Ubuntu Linux; protocol 2.0",
-          "riskLevel": "low"
+          "riskLevel": "medium"
         },
         {
           "id": "10.129.7.33:tcp:80",
@@ -36,17 +36,48 @@
       ]
     }
   ],
-  "findings": [],
+  "findings": [
+    {
+      "id": "finding_simple-web-server_001",
+      "hostId": "10.129.7.33",
+      "host": "helix.htb",
+      "severity": "medium",
+      "title": "SSH is exposed",
+      "evidence": "Port 22/tcp is open and identified as OpenSSH 8.9p1 Ubuntu 3ubuntu0.15.",
+      "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
+    },
+    {
+      "id": "finding_simple-web-server_002",
+      "hostId": "10.129.7.33",
+      "host": "helix.htb",
+      "severity": "medium",
+      "title": "Web service is reachable",
+      "evidence": "Port 80/tcp is open and identified as nginx 1.18.0 on 10.129.7.33.",
+      "remediation": "Confirm the web service is intended to be reachable and keep the web server patched."
+    },
+    {
+      "id": "finding_simple-web-server_003",
+      "hostId": "10.129.7.33",
+      "host": "helix.htb",
+      "severity": "low",
+      "title": "Limited attack surface observed",
+      "evidence": "Only SSH and HTTP were found open in this scan.",
+      "remediation": "Continue monitoring for unexpected service exposure and remove any services that are not required."
+    }
+  ],
   "summary": {
-    "executive": "Scan covers 1 host(s) exposing 2 open service(s). No hosts are directly internet-exposed, and no high-risk services were observed. No notable findings were generated from the scan scripts.",
-    "riskScore": 4,
-    "riskLevel": "info",
+    "executive": "Scan covers 1 host exposing 2 open service(s). No hosts are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
+    "riskScore": 14,
+    "riskLevel": "low",
     "topRisks": [
-      "No significant risks identified in this scan."
+      "SSH is exposed",
+      "Web service is reachable",
+      "Limited attack surface observed"
     ],
     "remediation": [
-      "Maintain least-exposure: close unused ports and restrict admin services to private networks.",
-      "Keep services patched to current stable versions."
+      "Limit SSH access to trusted sources and enforce key-based authentication.",
+      "Confirm the web service is intended to be reachable and keep the web server patched.",
+      "Continue monitoring for unexpected service exposure and remove any services that are not required."
     ],
     "source": "rule-based"
   }

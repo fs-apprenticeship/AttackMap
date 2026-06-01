@@ -1,5 +1,5 @@
 {
-  "id": "983a66861167c442",
+  "id": "scan_linux-host",
   "filename": "linux-host.xml",
   "target": "devarea.htb",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
@@ -9,8 +9,8 @@
       "id": "10.129.7.29",
       "ipAddress": "10.129.7.29",
       "hostname": "devarea.htb",
-      "operatingSystem": "Linux (Ubuntu)",
-      "role": "File Server",
+      "operatingSystem": "Linux",
+      "role": "application_server",
       "internetExposed": false,
       "services": [
         {
@@ -30,7 +30,7 @@
           "product": "OpenSSH",
           "version": "9.6p1 Ubuntu 3ubuntu13.15",
           "extrainfo": "Ubuntu Linux; protocol 2.0",
-          "riskLevel": "low"
+          "riskLevel": "medium"
         },
         {
           "id": "10.129.7.29:tcp:80",
@@ -55,7 +55,7 @@
           "port": 8500,
           "protocol": "tcp",
           "serviceName": "fmtp",
-          "riskLevel": "low"
+          "riskLevel": "medium"
         },
         {
           "id": "10.129.7.29:tcp:8888",
@@ -71,24 +71,46 @@
   ],
   "findings": [
     {
-      "id": "10.129.7.29:ftp-anon",
+      "id": "finding_linux-host_001",
       "hostId": "10.129.7.29",
-      "host": "devarea.htb (10.129.7.29)",
+      "host": "devarea.htb",
       "severity": "high",
-      "title": "Anonymous FTP login allowed",
-      "evidence": "Anonymous FTP login allowed (FTP code 230)&#xa;drwxr-xr-x    2 ftp      ftp          4096 Sep 22  2025 pub",
-      "remediation": "Disable anonymous FTP access, or replace FTP with SFTP/FTPS and require authentication."
+      "title": "Anonymous FTP login is allowed",
+      "evidence": "The ftp-anon script reports anonymous FTP login allowed on port 21/tcp.",
+      "remediation": "Disable anonymous FTP unless it is explicitly required, and restrict access to trusted networks."
+    },
+    {
+      "id": "finding_linux-host_002",
+      "hostId": "10.129.7.29",
+      "host": "devarea.htb",
+      "severity": "medium",
+      "title": "Multiple web services are reachable",
+      "evidence": "Ports 80/tcp, 8080/tcp, 8500/tcp, 8888/tcp are open.",
+      "remediation": "Review whether each web service must be reachable and place administrative services behind access controls."
+    },
+    {
+      "id": "finding_linux-host_003",
+      "hostId": "10.129.7.29",
+      "host": "devarea.htb",
+      "severity": "medium",
+      "title": "SSH is exposed",
+      "evidence": "Port 22/tcp is open and identified as OpenSSH 9.6p1 Ubuntu 3ubuntu13.15.",
+      "remediation": "Limit SSH access to trusted sources and enforce key-based authentication."
     }
   ],
   "summary": {
-    "executive": "Scan covers 1 host(s) exposing 6 open service(s). No hosts are directly internet-exposed, and 1 higher-risk service(s) were observed. 1 finding(s) were identified; address the highest-severity items first.",
-    "riskScore": 37,
+    "executive": "Scan covers 1 host exposing 6 open service(s). No hosts are directly internet-exposed. 1 high-risk service(s) were observed. 3 finding(s) were generated from the scan.",
+    "riskScore": 40,
     "riskLevel": "medium",
     "topRisks": [
-      "Anonymous FTP login allowed — devarea.htb (10.129.7.29)"
+      "Anonymous FTP login is allowed",
+      "Multiple web services are reachable",
+      "SSH is exposed"
     ],
     "remediation": [
-      "Disable anonymous FTP access, or replace FTP with SFTP/FTPS and require authentication."
+      "Disable anonymous FTP unless it is explicitly required, and restrict access to trusted networks.",
+      "Review whether each web service must be reachable and place administrative services behind access controls.",
+      "Limit SSH access to trusted sources and enforce key-based authentication."
     ],
     "source": "rule-based"
   }

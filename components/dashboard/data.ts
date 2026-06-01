@@ -1,11 +1,5 @@
 import { Brain, Network, Server, ShieldAlert } from "lucide-react";
 
-import domainControllerScan from "@/fixtures/scans/domain-controller.json";
-import internalPlatformScan from "@/fixtures/scans/internal-platform.json";
-import linuxHostScan from "@/fixtures/scans/linux-host.json";
-import scanmePublicHostScan from "@/fixtures/scans/scanme-public-host.json";
-import simpleWebServerScan from "@/fixtures/scans/simple-web-server.json";
-import webServerScan from "@/fixtures/scans/web-server.json";
 import type { Finding, Host, Scan, Severity } from "@/lib/types";
 
 import { severityOrder } from "./utils";
@@ -38,17 +32,6 @@ export type ScanStats = {
   riskyServices: number;
   findings: number;
 };
-
-export const scans = [
-  domainControllerScan,
-  linuxHostScan,
-  scanmePublicHostScan,
-  webServerScan,
-  internalPlatformScan,
-  simpleWebServerScan,
-] as Scan[];
-
-export const activeScan = scans[0];
 
 export function getScanStats(scan: Scan): ScanStats {
   const services = scan.hosts.flatMap((host) => host.services);
@@ -111,39 +94,6 @@ export function getScanRemediation(scan: Scan): DashboardRemediation[] {
   }));
 }
 
-export const activeScanRisks = getScanRisks(activeScan);
-export const activeScanRemediation = getScanRemediation(activeScan);
-
-export const allHosts: HostWithScan[] = scans.flatMap((scan) =>
-  scan.hosts.map((host) => ({ ...host, scanFilename: scan.filename })),
-);
-
-export const allServices = allHosts.flatMap((host) =>
-  host.services.map((service) => ({ ...service, host })),
-);
-
-export const allFindings = scans.flatMap((scan) => scan.findings);
-
-export const exposedAssets = allHosts.filter((host) => host.internetExposed).length;
-
-export const riskyServices = allServices.filter((service) =>
-  ["critical", "high"].includes(service.riskLevel),
-).length;
-
-export const highFindings = allFindings.filter((finding) =>
-  ["critical", "high"].includes(finding.severity),
-).length;
-
-export const serviceBreakdown: ServiceBreakdownItem[] = Object.entries(
-  allServices.reduce<Record<string, number>>((counts, service) => {
-    const key = service.serviceName || "unknown";
-    counts[key] = (counts[key] ?? 0) + 1;
-    return counts;
-  }, {}),
-)
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 7);
-
 export function getServiceBreakdown(scan: Scan): ServiceBreakdownItem[] {
   return Object.entries(
     getServicesForScan(scan).reduce<Record<string, number>>((counts, service) => {
@@ -156,25 +106,12 @@ export function getServiceBreakdown(scan: Scan): ServiceBreakdownItem[] {
     .slice(0, 7);
 }
 
-export const severityCounts: SeverityCount[] = severityOrder.map((severity) => ({
-  severity,
-  count: allFindings.filter((finding) => finding.severity === severity).length,
-}));
-
 export function getSeverityCounts(scan: Scan): SeverityCount[] {
   return severityOrder.map((severity) => ({
     severity,
     count: scan.findings.filter((finding) => finding.severity === severity).length,
   }));
 }
-
-export const riskScore = Math.min(
-  100,
-  highFindings * 18 +
-    allFindings.filter((finding) => finding.severity === "medium").length * 7 +
-    riskyServices * 8 +
-    exposedAssets * 10,
-);
 
 export function getRiskScore(scan: Scan) {
   const stats = getScanStats(scan);
@@ -194,37 +131,6 @@ export function getRiskScore(scan: Scan) {
       exposedAssets * 10,
   );
 }
-
-export const summaryCards = [
-  {
-    label: "Hosts",
-    value: allHosts.length,
-    detail: `${exposedAssets} internet exposed`,
-    icon: Server,
-    tone: "cyan",
-  },
-  {
-    label: "Open ports",
-    value: allServices.length,
-    detail: `${riskyServices} high-risk services`,
-    icon: Network,
-    tone: "amber",
-  },
-  {
-    label: "Findings",
-    value: allFindings.length,
-    detail: `${highFindings} need priority review`,
-    icon: ShieldAlert,
-    tone: "rose",
-  },
-  {
-    label: "AI risk score",
-    value: riskScore,
-    detail: "rule-backed preview",
-    icon: Brain,
-    tone: "emerald",
-  },
-] as const;
 
 export function getSummaryCards(scan: Scan) {
   const stats = getScanStats(scan);
@@ -257,8 +163,8 @@ export function getSummaryCards(scan: Scan) {
     },
     {
       label: "AI risk score",
-      value: getRiskScore(scan),
-      detail: "rule-backed preview",
+      value: scan.summary.riskScore,
+      detail: `${scan.summary.source === "ai" ? "AI" : "rule-based"} estimate`,
       icon: Brain,
       tone: "emerald",
     },

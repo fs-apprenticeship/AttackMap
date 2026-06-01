@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -14,11 +15,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { saveScan } from "@/lib/scans/store";
+import type { Scan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type UploadState = "idle" | "selected" | "parsing" | "success" | "error";
 
 const XML_FILE_TYPES = new Set(["text/xml", "application/xml"]);
+
+const IDLE_MESSAGE = "Drop an Nmap XML file here, or click to browse.";
 
 function isXmlFile(file: File) {
   return (
@@ -27,38 +32,23 @@ function isXmlFile(file: File) {
 }
 
 export function UploadCard() {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const progressTimerRef = useRef<number | null>(null);
   const [status, setStatus] = useState<UploadState>("idle");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [statusMessage, setStatusMessage] = useState(
-    "Parse a scan and add it to this workspace.",
-  );
-
-  useEffect(() => {
-    return () => {
-      if (progressTimerRef.current) {
-        window.clearInterval(progressTimerRef.current);
-      }
-    };
-  }, []);
+  const [statusMessage, setStatusMessage] = useState(IDLE_MESSAGE);
 
   function openFilePicker() {
     fileInputRef.current?.click();
   }
 
   function resetUpload() {
-    if (progressTimerRef.current) {
-      window.clearInterval(progressTimerRef.current);
-      progressTimerRef.current = null;
-    }
-
     setSelectedFile(null);
     setStatus("idle");
     setProgress(0);
-    setStatusMessage("Parse a scan and add it to this workspace.");
+    setStatusMessage(IDLE_MESSAGE);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -103,7 +93,7 @@ export function UploadCard() {
     }
   }
 
-  function handleAnalyzeScan() {
+  async function handleAnalyzeScan() {
     if (!selectedFile || status === "parsing") {
       return;
     }
@@ -114,29 +104,40 @@ export function UploadCard() {
       return;
     }
 
-    const checkpoints = [28, 54, 78, 100];
-    let checkpointIndex = 0;
-
     setStatus("parsing");
-    setProgress(8);
+    setProgress(35);
     setStatusMessage("Parsing scan file...");
 
-    progressTimerRef.current = window.setInterval(() => {
-      const nextProgress = checkpoints[checkpointIndex];
-      checkpointIndex += 1;
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-      setProgress(nextProgress);
+      const response = await fetch("/api/scan/parse", {
+        method: "POST",
+        body: formData,
+      });
 
-      if (nextProgress === 100) {
-        if (progressTimerRef.current) {
-          window.clearInterval(progressTimerRef.current);
-          progressTimerRef.current = null;
-        }
-
-        setStatus("success");
-        setStatusMessage("Scan parsed and ready for review.");
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        throw new Error(data.error ?? "Failed to parse scan.");
       }
-    }, 450);
+
+      const scan = (await response.json()) as Scan;
+      setProgress(100);
+      saveScan(scan);
+
+      setStatus("success");
+      setStatusMessage("Scan parsed. Opening dashboard...");
+      router.push(`/scans/${scan.id}`);
+    } catch (error) {
+      setStatus("error");
+      setProgress(0);
+      setStatusMessage(
+        error instanceof Error ? error.message : "Failed to parse scan.",
+      );
+    }
   }
 
   const hasFile = selectedFile !== null;
