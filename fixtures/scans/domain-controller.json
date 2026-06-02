@@ -4,6 +4,7 @@
   "target": "DC01.garfield.htb",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
   "parsedAt": "2026-05-29T00:00:00.000Z",
+  "scannedAt": "2026-05-28T00:05:58.000Z",
   "hosts": [
     {
       "id": "10.129.244.207",
@@ -152,16 +153,44 @@
     "executive": "Scan covers 1 host exposing 13 open service(s). No hosts are directly internet-exposed. 6 high-risk service(s) were observed. 3 finding(s) were generated from the scan.",
     "riskScore": 91,
     "riskLevel": "critical",
-    "topRisks": [
-      "Remote Desktop service is reachable",
-      "SMB and NetBIOS services are exposed",
-      "Active Directory services are broadly reachable"
-    ],
-    "remediation": [
-      "Restrict RDP access to trusted networks, require multi-factor authentication, and monitor authentication attempts.",
-      "Limit SMB access to required internal hosts, disable legacy NetBIOS where possible, and verify SMB signing and patch status.",
-      "Confirm domain controller services are only reachable from expected internal network segments."
-    ],
     "source": "rule-based"
+  },
+  "remediationPlan": {
+    "source": "rule-based",
+    "steps": [
+      {
+        "priority": "now",
+        "title": "Remote Desktop service is reachable",
+        "summary": "Restrict RDP access to trusted networks, require multi-factor authentication, and monitor authentication attempts.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Remote Desktop service is reachable"
+        ]
+      },
+      {
+        "priority": "now",
+        "title": "SMB and NetBIOS services are exposed",
+        "summary": "Limit SMB access to required internal hosts, disable legacy NetBIOS where possible, and verify SMB signing and patch status.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "SMB and NetBIOS services are exposed"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "Active Directory services are broadly reachable",
+        "summary": "Confirm domain controller services are only reachable from expected internal network segments.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Active Directory services are broadly reachable"
+        ]
+      }
+    ]
   }
 }

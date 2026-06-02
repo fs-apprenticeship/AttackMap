@@ -1,3 +1,4 @@
+import { ScanSchema } from "@/lib/parser/schema";
 import type { Scan } from "@/lib/types";
 
 // Browser-local persistence for parsed scans. Scans are analyzed on the server
@@ -50,10 +51,12 @@ export function getScansSnapshot(): Scan[] {
   cachedRaw = raw;
   try {
     const parsed = raw ? JSON.parse(raw) : [];
+    // Drop any scans that don't match the current schema (e.g. saved before a
+    // schema change) so stale data self-heals instead of breaking the UI.
     cachedScans = Array.isArray(parsed)
-      ? (parsed as Scan[]).sort((a, b) =>
-          b.uploadedAt.localeCompare(a.uploadedAt),
-        )
+      ? parsed
+          .filter((scan): scan is Scan => ScanSchema.safeParse(scan).success)
+          .sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt))
       : EMPTY;
   } catch {
     cachedScans = EMPTY;

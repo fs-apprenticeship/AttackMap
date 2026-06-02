@@ -1,19 +1,13 @@
-import { Brain, Network, Server, ShieldAlert } from "lucide-react";
+import { Gauge, Network, Server, ShieldAlert } from "lucide-react";
 
 import type { Finding, Host, Scan, Severity } from "@/lib/types";
 
 import { severityOrder } from "./utils";
 
-export type DashboardRisk = Pick<
+export type DashboardFinding = Pick<
   Finding,
-  "severity" | "title" | "evidence" | "remediation"
+  "id" | "severity" | "title" | "evidence"
 >;
-
-export type DashboardRemediation = {
-  priority: "now" | "next" | "later";
-  title: string;
-  description: string;
-};
 
 export type HostWithScan = Host & {
   scanFilename: string;
@@ -56,42 +50,11 @@ export function getServicesForScan(scan: Scan) {
   );
 }
 
-export function getScanRisks(scan: Scan): DashboardRisk[] {
-  if (scan.findings.length > 0) {
-    return scan.findings.map(({ severity, title, evidence, remediation }) => ({
-      severity,
-      title,
-      evidence,
-      remediation,
-    }));
-  }
-
-  return scan.summary.topRisks.map((title) => ({
-    severity: scan.summary.riskLevel,
-    title,
-    evidence: "Generated from parsed scan data.",
-    remediation:
-      scan.summary.remediation[0] ??
-      "Maintain least exposure and keep detected services patched.",
-  }));
-}
-
-export function getScanRemediation(scan: Scan): DashboardRemediation[] {
-  const remediation =
-    scan.findings.length > 0
-      ? scan.findings.map((finding) => ({
-          title: finding.title,
-          description: finding.remediation,
-        }))
-      : scan.summary.remediation.map((description, index) => ({
-          title: index === 0 ? "Maintain least exposure" : "Keep services patched",
-          description,
-        }));
-
-  return remediation.slice(0, 3).map((item, index) => ({
-    priority: index === 0 ? "now" : index === 1 ? "next" : "later",
-    ...item,
-  }));
+export function getScanFindings(scan: Scan): DashboardFinding[] {
+  // Findings are always rule-based — the factual layer. Sorted by severity.
+  return [...scan.findings]
+    .sort((a, b) => severityOrder.indexOf(a.severity) - severityOrder.indexOf(b.severity))
+    .map(({ id, severity, title, evidence }) => ({ id, severity, title, evidence }));
 }
 
 export function getServiceBreakdown(scan: Scan): ServiceBreakdownItem[] {
@@ -162,10 +125,10 @@ export function getSummaryCards(scan: Scan) {
       tone: "rose",
     },
     {
-      label: "AI risk score",
+      label: "Risk score",
       value: scan.summary.riskScore,
-      detail: `${scan.summary.source === "ai" ? "AI" : "rule-based"} estimate`,
-      icon: Brain,
+      detail: "rule-based estimate",
+      icon: Gauge,
       tone: "emerald",
     },
   ] as const;
