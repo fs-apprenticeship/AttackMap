@@ -11,5 +11,7 @@ export type {
   Host,
   Finding,
   AISummary,
+  RemediationStep,
+  RemediationPlan,
   Scan,
 } from "@/lib/parser/schema";

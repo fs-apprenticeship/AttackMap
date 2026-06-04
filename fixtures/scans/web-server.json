@@ -4,6 +4,7 @@
   "target": "10.129.7.31",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
   "parsedAt": "2026-05-29T00:00:00.000Z",
+  "scannedAt": "2026-05-28T17:54:06.000Z",
   "hosts": [
     {
       "id": "10.129.7.31",
@@ -72,16 +73,44 @@
     "executive": "Scan covers 1 host exposing 3 open service(s). No hosts are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
     "riskScore": 32,
     "riskLevel": "medium",
-    "topRisks": [
-      "Administrative web interface is reachable",
-      "Potentially risky HTTP method enabled",
-      "SSH is exposed"
-    ],
-    "remediation": [
-      "Restrict the administrative interface to trusted networks or a VPN and require strong authentication.",
-      "Disable TRACE unless explicitly required by the application.",
-      "Limit SSH access to trusted sources and enforce key-based authentication."
-    ],
     "source": "rule-based"
+  },
+  "remediationPlan": {
+    "source": "rule-based",
+    "steps": [
+      {
+        "priority": "now",
+        "title": "Administrative web interface is reachable",
+        "summary": "Restrict the administrative interface to trusted networks or a VPN and require strong authentication.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Administrative web interface is reachable"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "Potentially risky HTTP method enabled",
+        "summary": "Disable TRACE unless explicitly required by the application.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Potentially risky HTTP method enabled"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "SSH is exposed",
+        "summary": "Limit SSH access to trusted sources and enforce key-based authentication.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "SSH is exposed"
+        ]
+      }
+    ]
   }
 }

@@ -29,6 +29,7 @@ function stable(scan: Scan) {
   return {
     filename: scan.filename,
     target: scan.target,
+    scannedAt: scan.scannedAt,
     hosts: scan.hosts,
     findings: scan.findings.map((f) => ({
       hostId: f.hostId,
@@ -39,6 +40,7 @@ function stable(scan: Scan) {
       remediation: f.remediation,
     })),
     summary: scan.summary,
+    remediationPlan: scan.remediationPlan,
   };
 }
 

@@ -4,6 +4,7 @@
   "target": "devarea.htb",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
   "parsedAt": "2026-05-29T00:00:00.000Z",
+  "scannedAt": "2026-05-28T17:46:28.000Z",
   "hosts": [
     {
       "id": "10.129.7.29",
@@ -102,16 +103,44 @@
     "executive": "Scan covers 1 host exposing 6 open service(s). No hosts are directly internet-exposed. 1 high-risk service(s) were observed. 3 finding(s) were generated from the scan.",
     "riskScore": 40,
     "riskLevel": "medium",
-    "topRisks": [
-      "Anonymous FTP login is allowed",
-      "Multiple web services are reachable",
-      "SSH is exposed"
-    ],
-    "remediation": [
-      "Disable anonymous FTP unless it is explicitly required, and restrict access to trusted networks.",
-      "Review whether each web service must be reachable and place administrative services behind access controls.",
-      "Limit SSH access to trusted sources and enforce key-based authentication."
-    ],
     "source": "rule-based"
+  },
+  "remediationPlan": {
+    "source": "rule-based",
+    "steps": [
+      {
+        "priority": "now",
+        "title": "Anonymous FTP login is allowed",
+        "summary": "Disable anonymous FTP unless it is explicitly required, and restrict access to trusted networks.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Anonymous FTP login is allowed"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "Multiple web services are reachable",
+        "summary": "Review whether each web service must be reachable and place administrative services behind access controls.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Multiple web services are reachable"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "SSH is exposed",
+        "summary": "Limit SSH access to trusted sources and enforce key-based authentication.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "SSH is exposed"
+        ]
+      }
+    ]
   }
 }

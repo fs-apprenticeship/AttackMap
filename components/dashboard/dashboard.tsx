@@ -1,20 +1,21 @@
 import { useMemo } from "react";
 
 import type { Scan } from "@/lib/types";
+import { useGenerateSummary } from "@/lib/ai/use-generate-summary";
+import { useGenerateRemediation } from "@/lib/ai/use-generate-remediation";
 
-import { AiSummaryPanel } from "@/components/dashboard/ai-summary-panel";
 import { AttackSurfaceGraph } from "@/components/dashboard/attack-surface-graph";
 import {
   getHostsForScan,
-  getScanRemediation,
-  getScanRisks,
+  getScanFindings,
   getServiceBreakdown,
   getSeverityCounts,
   getSummaryCards,
 } from "@/components/dashboard/data";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { FindingsPanel } from "@/components/dashboard/findings-panel";
 import { HostInventoryTable } from "@/components/dashboard/host-inventory-table";
-import { RemediationGrid } from "@/components/dashboard/remediation-grid";
+import { RemediationPlanPanel } from "@/components/dashboard/remediation-plan";
 import { RiskDistribution } from "@/components/dashboard/risk-distribution";
 import { ServiceBreakdown } from "@/components/dashboard/service-breakdown";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
@@ -27,8 +28,7 @@ export function Dashboard({ scan }: DashboardProps) {
   const data = useMemo(
     () => ({
       hosts: getHostsForScan(scan),
-      remediation: getScanRemediation(scan),
-      risks: getScanRisks(scan),
+      findings: getScanFindings(scan),
       serviceBreakdown: getServiceBreakdown(scan),
       severityCounts: getSeverityCounts(scan),
       summaryCards: getSummaryCards(scan),
@@ -36,11 +36,18 @@ export function Dashboard({ scan }: DashboardProps) {
     [scan],
   );
 
+  const summary = useGenerateSummary(scan);
+  const remediation = useGenerateRemediation(scan);
   const activeHost = scan.hosts[0];
 
   return (
     <div className="min-w-0 flex-1 space-y-6">
-      <DashboardHeader activeScan={scan} />
+      <DashboardHeader
+        activeScan={scan}
+        generating={summary.generating}
+        error={summary.error}
+        onGenerate={summary.generate}
+      />
       <SummaryCards cards={data.summaryCards} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
@@ -51,16 +58,19 @@ export function Dashboard({ scan }: DashboardProps) {
             No live hosts found in this scan.
           </div>
         )}
-        <AiSummaryPanel risks={data.risks} />
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <ServiceBreakdown services={data.serviceBreakdown} />
         <RiskDistribution counts={data.severityCounts} />
       </div>
 
+      <FindingsPanel findings={data.findings} />
+      <RemediationPlanPanel
+        plan={scan.remediationPlan}
+        generating={remediation.generating}
+        error={remediation.error}
+        onGenerate={remediation.generate}
+      />
+
+      <ServiceBreakdown services={data.serviceBreakdown} />
       <HostInventoryTable hosts={data.hosts} />
-      <RemediationGrid remediation={data.remediation} />
     </div>
   );
 }

@@ -4,6 +4,7 @@
   "target": "10.129.244.220",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
   "parsedAt": "2026-05-29T00:00:00.000Z",
+  "scannedAt": "2026-05-28T19:02:12.000Z",
   "hosts": [
     {
       "id": "10.129.244.220",
@@ -66,16 +67,44 @@
     "executive": "Scan covers 1 host exposing 2 open service(s). No hosts are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
     "riskScore": 21,
     "riskLevel": "medium",
-    "topRisks": [
-      "Internal platform login is reachable",
-      "Proxy-like behavior detected",
-      "SSH is exposed"
-    ],
-    "remediation": [
-      "Confirm the platform is only reachable from trusted networks and protected by strong authentication.",
-      "Verify the service is not operating as an unintended open proxy and restrict proxy behavior where possible.",
-      "Limit SSH access to trusted sources and enforce key-based authentication."
-    ],
     "source": "rule-based"
+  },
+  "remediationPlan": {
+    "source": "rule-based",
+    "steps": [
+      {
+        "priority": "next",
+        "title": "Internal platform login is reachable",
+        "summary": "Confirm the platform is only reachable from trusted networks and protected by strong authentication.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Internal platform login is reachable"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "Proxy-like behavior detected",
+        "summary": "Verify the service is not operating as an unintended open proxy and restrict proxy behavior where possible.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Proxy-like behavior detected"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "SSH is exposed",
+        "summary": "Limit SSH access to trusted sources and enforce key-based authentication.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "SSH is exposed"
+        ]
+      }
+    ]
   }
 }

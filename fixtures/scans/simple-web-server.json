@@ -4,6 +4,7 @@
   "target": "helix.htb",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
   "parsedAt": "2026-05-29T00:00:00.000Z",
+  "scannedAt": "2026-05-28T18:12:25.000Z",
   "hosts": [
     {
       "id": "10.129.7.33",
@@ -69,16 +70,44 @@
     "executive": "Scan covers 1 host exposing 2 open service(s). No hosts are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
     "riskScore": 14,
     "riskLevel": "low",
-    "topRisks": [
-      "SSH is exposed",
-      "Web service is reachable",
-      "Limited attack surface observed"
-    ],
-    "remediation": [
-      "Limit SSH access to trusted sources and enforce key-based authentication.",
-      "Confirm the web service is intended to be reachable and keep the web server patched.",
-      "Continue monitoring for unexpected service exposure and remove any services that are not required."
-    ],
     "source": "rule-based"
+  },
+  "remediationPlan": {
+    "source": "rule-based",
+    "steps": [
+      {
+        "priority": "next",
+        "title": "SSH is exposed",
+        "summary": "Limit SSH access to trusted sources and enforce key-based authentication.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "SSH is exposed"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "Web service is reachable",
+        "summary": "Confirm the web service is intended to be reachable and keep the web server patched.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Web service is reachable"
+        ]
+      },
+      {
+        "priority": "later",
+        "title": "Limited attack surface observed",
+        "summary": "Continue monitoring for unexpected service exposure and remove any services that are not required.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Limited attack surface observed"
+        ]
+      }
+    ]
   }
 }

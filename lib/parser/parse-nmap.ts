@@ -7,6 +7,8 @@ import {
   type Service,
   type Finding,
   type AISummary,
+  type RemediationPlan,
+  type RemediationStep,
   type RiskLevel,
 } from "./schema";
 
@@ -476,12 +478,6 @@ function buildSummary(hosts: Host[], findings: Finding[]): AISummary {
   );
   const riskLevel = riskLevelFromScore(riskScore);
 
-  const sorted = [...findings].sort(
-    (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
-  );
-  const topRisks = sorted.slice(0, 5).map((f) => f.title);
-  const remediation = Array.from(new Set(sorted.map((f) => f.remediation))).slice(0, 5);
-
   const hostWord = hosts.length === 1 ? "host" : "hosts";
   const parts = [
     `Scan covers ${hosts.length} ${hostWord} exposing ${allServices.length} open service(s).`,
@@ -500,17 +496,60 @@ function buildSummary(hosts: Host[], findings: Finding[]): AISummary {
     executive: parts.join(" "),
     riskScore,
     riskLevel,
-    topRisks: topRisks.length
-      ? topRisks
-      : ["No significant risks identified in this scan."],
-    remediation: remediation.length
-      ? remediation
-      : [
-          "Maintain least-exposure: close unused ports and restrict admin services to private networks.",
-          "Keep all detected services patched and monitor for unexpected exposure.",
-        ],
     source: "rule-based",
   };
+}
+
+function priorityForSeverity(severity: RiskLevel): RemediationStep["priority"] {
+  if (severity === "critical" || severity === "high") return "now";
+  if (severity === "medium") return "next";
+  return "later";
+}
+
+// Rule-based remediation plan: one step per finding's canned remediation
+// (grouped when several findings share the same advice), ordered by severity.
+// This is the default/fallback; the AI plan replaces it with context-aware steps.
+function buildRemediationPlan(findings: Finding[]): RemediationPlan {
+  const sorted = [...findings].sort(
+    (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
+  );
+
+  const grouped = new Map<
+    string,
+    { severity: RiskLevel; titles: string[] }
+  >();
+  for (const f of sorted) {
+    const existing = grouped.get(f.remediation);
+    if (existing) existing.titles.push(f.title);
+    else grouped.set(f.remediation, { severity: f.severity, titles: [f.title] });
+  }
+
+  const steps: RemediationStep[] = Array.from(grouped.entries()).map(
+    ([summary, { severity, titles }]) => ({
+      priority: priorityForSeverity(severity),
+      title: titles[0],
+      summary,
+      steps: [],
+      commands: [],
+      verification: "",
+      addresses: titles,
+    })
+  );
+
+  if (steps.length === 0) {
+    steps.push({
+      priority: "later",
+      title: "Maintain least exposure",
+      summary:
+        "Close unused ports, restrict admin services to private networks, and keep all detected services patched.",
+      steps: [],
+      commands: [],
+      verification: "",
+      addresses: [],
+    });
+  }
+
+  return { source: "rule-based", steps };
 }
 
 // ─── Main parser ──────────────────────────────────────────────────────────────
@@ -523,6 +562,13 @@ export function parseNmapScan(xml: string, filename: string): Scan {
 
   const scanId = `scan_${randomUUID()}`;
   const now = new Date().toISOString();
+
+  // When nmap actually ran the scan (epoch seconds in <nmaprun start>).
+  const startEpoch = Number(nmaprun["@_start"]);
+  const scannedAt =
+    Number.isFinite(startEpoch) && startEpoch > 0
+      ? new Date(startEpoch * 1000).toISOString()
+      : undefined;
 
   const hosts: Host[] = upRawHosts.map((rawHost: AnyNode) => {
     const rawPorts: AnyNode[] = rawHost.ports?.port ?? [];
@@ -564,6 +610,7 @@ export function parseNmapScan(xml: string, filename: string): Scan {
 
   const findings = buildFindings(scanId, hosts, upRawHosts);
   const summary = buildSummary(hosts, findings);
+  const remediationPlan = buildRemediationPlan(findings);
 
   const firstHost = hosts[0];
   const target = firstHost
@@ -576,8 +623,10 @@ export function parseNmapScan(xml: string, filename: string): Scan {
     target,
     uploadedAt: now,
     parsedAt: now,
+    scannedAt,
     hosts,
     findings,
     summary,
+    remediationPlan,
   });
 }

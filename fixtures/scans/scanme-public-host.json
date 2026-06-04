@@ -4,6 +4,7 @@
   "target": "scanme.nmap.org",
   "uploadedAt": "2026-05-29T00:00:00.000Z",
   "parsedAt": "2026-05-29T00:00:00.000Z",
+  "scannedAt": "2026-05-28T19:45:21.000Z",
   "hosts": [
     {
       "id": "45.33.32.156",
@@ -84,16 +85,44 @@
     "executive": "Scan covers 1 host exposing 4 open service(s). 1 host(s) are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
     "riskScore": 24,
     "riskLevel": "medium",
-    "topRisks": [
-      "SSH is reachable from the network",
-      "Public web service is reachable",
-      "Nonstandard ports are open"
-    ],
-    "remediation": [
-      "Restrict SSH access to trusted sources and require key-based authentication.",
-      "Keep the web server patched and review exposed content and headers.",
-      "Confirm each nonstandard service is expected and document its purpose."
-    ],
     "source": "rule-based"
+  },
+  "remediationPlan": {
+    "source": "rule-based",
+    "steps": [
+      {
+        "priority": "next",
+        "title": "SSH is reachable from the network",
+        "summary": "Restrict SSH access to trusted sources and require key-based authentication.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "SSH is reachable from the network"
+        ]
+      },
+      {
+        "priority": "next",
+        "title": "Public web service is reachable",
+        "summary": "Keep the web server patched and review exposed content and headers.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Public web service is reachable"
+        ]
+      },
+      {
+        "priority": "later",
+        "title": "Nonstandard ports are open",
+        "summary": "Confirm each nonstandard service is expected and document its purpose.",
+        "steps": [],
+        "commands": [],
+        "verification": "",
+        "addresses": [
+          "Nonstandard ports are open"
+        ]
+      }
+    ]
   }
 }
