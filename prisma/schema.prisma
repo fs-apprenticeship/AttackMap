@@ -27,7 +27,7 @@ datasource db {
 // normalized schema would require artificial PKs. jsonb avoids that entirely.
 
 model Scan {
-  id        String    @id              // scan_<cuid>, assigned by the parser
+  id        String    @id              // scan_<uuid>, assigned by the parser
   target    String
   filename  String
   scannedAt DateTime?
