@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,7 @@ export function DeleteScanDialog({ scan }: DeleteScanDialogProps) {
   function handleDelete() {
     deleteScan(scan.id);
     setOpen(false);
+    toast.success("Scan deleted");
   }
 
   return (

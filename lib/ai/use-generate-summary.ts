@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 import type { AISummary, Scan } from "@/lib/parser/schema";
 import { saveScan } from "@/lib/scans/store";
@@ -26,8 +27,11 @@ export function useGenerateSummary(scan: Scan) {
         throw new Error(data?.error ?? "Failed to generate AI summary");
       }
       saveScan({ ...scan, summary: data.summary as AISummary });
+      toast.success("AI summary generated");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+      toast.error(message);
     } finally {
       setGenerating(false);
     }
