@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ShieldCheck } from 'lucide-react'
 import './globals.css'
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -67,6 +68,7 @@ export default function RootLayout({
           */}
         </header>
         {children}
+        <Toaster position="bottom-right" />
         {/* </ClerkProvider> */}
       </body>
     </html>
