@@ -590,9 +590,9 @@ export function parseNmapScan(xml: string, filename: string): Scan {
         port,
         protocol,
         serviceName: svcName,
-        product: p.service?.["@_product"] ? String(p.service["@_product"]) : undefined,
-        version: p.service?.["@_version"] ? String(p.service["@_version"]) : undefined,
-        extrainfo: p.service?.["@_extrainfo"] ? String(p.service["@_extrainfo"]) : undefined,
+        ...(p.service?.["@_product"] && { product: String(p.service["@_product"]) }),
+        ...(p.service?.["@_version"] && { version: String(p.service["@_version"]) }),
+        ...(p.service?.["@_extrainfo"] && { extrainfo: String(p.service["@_extrainfo"]) }),
         riskLevel: serviceRisk(port, svcName),
       };
     });
@@ -600,7 +600,7 @@ export function parseNmapScan(xml: string, filename: string): Scan {
     return {
       id: ip,
       ipAddress: ip,
-      hostname: hostname ? String(hostname) : undefined,
+      ...(hostname && { hostname: String(hostname) }),
       operatingSystem: extractOS(rawHost, services) ?? "Unknown",
       role: inferRole(services),
       internetExposed: !isPrivateIP(ip),
