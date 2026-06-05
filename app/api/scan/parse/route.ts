@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { parseNmapScan } from '@/lib/parser/parse-nmap';
+import { saveScan } from '@/lib/scans/store';
 
-// Parses an uploaded Nmap XML file and returns the normalized scan. Persistence
-// is handled client-side (localStorage), so this route is stateless.
+// Parses an uploaded Nmap XML file, persists it to the database, and returns the
+// normalized scan. Persisting server-side (rather than trusting the client to
+// write) keeps the DB the source of truth and is where Clerk userId scoping will
+// attach later.
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -21,6 +25,10 @@ export async function POST(request: NextRequest) {
 
     const xml = await file.text();
     const scan = parseNmapScan(xml, file.name);
+
+    await saveScan(scan);
+    revalidatePath('/');
+    revalidatePath('/scans');
 
     return NextResponse.json(scan, { status: 201 });
   } catch (error) {
