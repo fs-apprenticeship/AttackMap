@@ -1,15 +1,15 @@
-"use client";
-
 import Link from "next/link";
 import { FileUp, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScanCard } from "@/components/scans/scan-card";
-import { useScans } from "@/lib/scans/use-scans";
+import { listScans } from "@/lib/scans/store";
 
-export default function ScansPage() {
-  const { scans, loading } = useScans();
+export const dynamic = "force-dynamic";
+
+export default async function ScansPage() {
+  const scans = await listScans();
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
@@ -17,7 +17,7 @@ export default function ScansPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Recent scans</h1>
-            <p className="mt-1 text-sm text-zinc-600">Cached in this browser.</p>
+            <p className="mt-1 text-sm text-zinc-600">All saved scans.</p>
           </div>
           <Button asChild className="rounded-md">
             <Link href="/">
@@ -28,9 +28,7 @@ export default function ScansPage() {
         </div>
 
         <div className="mt-6 space-y-3">
-          {loading ? (
-            <p className="text-sm text-zinc-500">Loading…</p>
-          ) : scans.length === 0 ? (
+          {scans.length === 0 ? (
             <Card className="rounded-md border-dashed bg-white shadow-sm">
               <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
                 <div className="flex size-10 items-center justify-center rounded-md bg-zinc-950 text-white">

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { deleteScan } from "@/lib/scans/store";
+import { deleteScanAction } from "@/lib/scans/actions";
 import type { Scan } from "@/lib/types";
 
 type DeleteScanDialogProps = {
@@ -23,12 +24,23 @@ type DeleteScanDialogProps = {
 };
 
 export function DeleteScanDialog({ scan }: DeleteScanDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
 
   function handleDelete() {
-    deleteScan(scan.id);
-    setOpen(false);
-    toast.success("Scan deleted");
+    startTransition(async () => {
+      try {
+        await deleteScanAction(scan.id);
+        setOpen(false);
+        router.refresh();
+        toast.success("Scan deleted");
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to delete scan";
+        toast.error(message);
+      }
+    });
   }
 
   return (
@@ -47,16 +59,21 @@ export function DeleteScanDialog({ scan }: DeleteScanDialogProps) {
         <DialogHeader>
           <DialogTitle>Delete scan?</DialogTitle>
           <DialogDescription>
-            “{scan.filename}” will be removed from this browser. This can’t be
-            undone.
+            “{scan.filename}” will be permanently deleted. This can’t be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" disabled={pending}>
+              Cancel
+            </Button>
           </DialogClose>
-          <Button variant="destructive" onClick={handleDelete}>
-            Delete
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={pending}
+          >
+            {pending ? "Deleting…" : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

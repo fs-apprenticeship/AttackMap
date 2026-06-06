@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { saveScan } from "@/lib/scans/store";
 import type { Scan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -127,7 +126,6 @@ export function UploadCard() {
 
       const scan = (await response.json()) as Scan;
       setProgress(100);
-      saveScan(scan);
 
       setStatus("success");
       setStatusMessage("Scan parsed. Opening dashboard...");

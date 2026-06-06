@@ -1,88 +1,53 @@
+import { db } from "@/lib/db";
 import { ScanSchema } from "@/lib/parser/schema";
-import type { Scan } from "@/lib/types";
+import type { Scan } from "@/lib/parser/schema";
 
-// Browser-local persistence for parsed scans. Scans are analyzed on the server
-// and cached here in the browser — nothing is stored remotely. Exposed as an
-// external store so components can read it with `useSyncExternalStore`.
 
-const STORAGE_KEY = "attackmap:scans:v1";
+// subscribeScans / getScansSnapshot / getServerScansSnapshot are removed —
+// those existed to feed useSyncExternalStore, which requires synchronous
+// snapshots. Async DB calls are incompatible with that pattern; hooks that
+// consumed those exports should be migrated to useEffect + useState.
 
-const EMPTY: Scan[] = [];
-const listeners = new Set<() => void>();
+/** All scans ordered newest first. Rows that fail schema validation are dropped. */
+export async function listScans(): Promise<Scan[]> {
+  const rows = await db.scan.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
-// Snapshot cache: `getSnapshot` must return a stable reference between renders,
-// so we only recompute when the raw localStorage string actually changes.
-let cachedRaw: string | null = null;
-let cachedScans: Scan[] = EMPTY;
-
-function readRaw(): string {
-  if (typeof window === "undefined") return "";
-  return window.localStorage.getItem(STORAGE_KEY) ?? "";
+  return rows.flatMap((row) => {
+    const result = ScanSchema.safeParse(row.data);
+    return result.success ? [result.data] : [];
+  });
 }
 
-function emit(): void {
-  for (const listener of listeners) listener();
+/** Single scan by id. Returns undefined if not found or invalid. */
+export async function getScan(id: string): Promise<Scan | undefined> {
+  const row = await db.scan.findUnique({ where: { id } });
+  if (!row) return undefined;
+
+  const result = ScanSchema.safeParse(row.data);
+  return result.success ? result.data : undefined;
 }
 
-function write(scans: Scan[]): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(scans));
-  emit();
-}
-
-/** Subscribe to scan changes (cross-tab via `storage`, same-tab via writes). */
-export function subscribeScans(callback: () => void): () => void {
-  listeners.add(callback);
-  if (typeof window !== "undefined") {
-    window.addEventListener("storage", callback);
-  }
-  return () => {
-    listeners.delete(callback);
-    if (typeof window !== "undefined") {
-      window.removeEventListener("storage", callback);
-    }
+/** Upsert by id — inserts on first save, overwrites on subsequent saves
+ *  (including after AI fields are merged in). */
+export async function saveScan(scan: Scan): Promise<void> {
+  const row = {
+    target: scan.target,
+    filename: scan.filename,
+    scannedAt: scan.scannedAt ? new Date(scan.scannedAt) : null,
+    parsedAt: new Date(scan.parsedAt),
+    data: scan,
   };
+
+  await db.scan.upsert({
+    where: { id: scan.id },
+    update: row,
+    create: { id: scan.id, ...row },
+  });
 }
 
-/** Cached snapshot of all scans, most recently uploaded first. */
-export function getScansSnapshot(): Scan[] {
-  const raw = readRaw();
-  if (raw === cachedRaw) return cachedScans;
-  cachedRaw = raw;
-  try {
-    const parsed = raw ? JSON.parse(raw) : [];
-    // Drop any scans that don't match the current schema (e.g. saved before a
-    // schema change) so stale data self-heals instead of breaking the UI.
-    cachedScans = Array.isArray(parsed)
-      ? parsed
-          .filter((scan): scan is Scan => ScanSchema.safeParse(scan).success)
-          .sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt))
-      : EMPTY;
-  } catch {
-    cachedScans = EMPTY;
-  }
-  return cachedScans;
-}
-
-export function getServerScansSnapshot(): Scan[] {
-  return EMPTY;
-}
-
-export function listScans(): Scan[] {
-  return getScansSnapshot();
-}
-
-export function getScan(id: string): Scan | undefined {
-  return getScansSnapshot().find((scan) => scan.id === id);
-}
-
-/** Saves a scan, replacing any existing entry with the same id. */
-export function saveScan(scan: Scan): void {
-  const next = getScansSnapshot().filter((existing) => existing.id !== scan.id);
-  next.push(scan);
-  write(next);
-}
-
-export function deleteScan(id: string): void {
-  write(getScansSnapshot().filter((scan) => scan.id !== id));
+/** Delete a scan. Silent no-op if the id does not exist. */
+export async function deleteScan(id: string): Promise<void> {
+  await db.scan.deleteMany({ where: { id } });
 }
