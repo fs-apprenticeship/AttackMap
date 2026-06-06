@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import type { AISummary, Scan } from "@/lib/parser/schema";
 import { saveScanAction } from "@/lib/scans/actions";
@@ -30,8 +31,11 @@ export function useGenerateSummary(scan: Scan) {
       }
       await saveScanAction({ ...scan, summary: data.summary as AISummary });
       router.refresh();
+      toast.success("AI summary generated");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+      toast.error(message);
     } finally {
       setGenerating(false);
     }

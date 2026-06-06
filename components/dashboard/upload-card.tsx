@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -128,13 +129,15 @@ export function UploadCard() {
 
       setStatus("success");
       setStatusMessage("Scan parsed. Opening dashboard...");
+      toast.success("Scan parsed");
       router.push(`/scans/${scan.id}`);
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to parse scan.";
       setStatus("error");
       setProgress(0);
-      setStatusMessage(
-        error instanceof Error ? error.message : "Failed to parse scan.",
-      );
+      setStatusMessage(message);
+      toast.error(message);
     }
   }
 

@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,13 +24,22 @@ type DeleteScanDialogProps = {
 };
 
 export function DeleteScanDialog({ scan }: DeleteScanDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function handleDelete() {
     startTransition(async () => {
-      await deleteScanAction(scan.id);
-      setOpen(false);
+      try {
+        await deleteScanAction(scan.id);
+        setOpen(false);
+        router.refresh();
+        toast.success("Scan deleted");
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to delete scan";
+        toast.error(message);
+      }
     });
   }
 

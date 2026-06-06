@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import type { RemediationPlan, Scan } from "@/lib/parser/schema";
 import { saveScanAction } from "@/lib/scans/actions";
@@ -32,8 +33,11 @@ export function useGenerateRemediation(scan: Scan) {
         remediationPlan: data.remediationPlan as RemediationPlan,
       });
       router.refresh();
+      toast.success("AI remediation plan generated");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+      toast.error(message);
     } finally {
       setGenerating(false);
     }
