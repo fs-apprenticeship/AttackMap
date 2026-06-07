@@ -3,7 +3,7 @@ import { FileUp, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ScanCard } from "@/components/scans/scan-card";
+import { ScansList } from "@/components/scans/scans-list";
 import { listScans } from "@/lib/scans/store";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function ScansPage() {
           </Button>
         </div>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-6">
           {scans.length === 0 ? (
             <Card className="rounded-md border-dashed bg-white shadow-sm">
               <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
@@ -44,7 +44,7 @@ export default async function ScansPage() {
               </CardContent>
             </Card>
           ) : (
-            scans.map((scan) => <ScanCard key={scan.id} scan={scan} />)
+            <ScansList scans={scans} />
           )}
         </div>
       </div>
