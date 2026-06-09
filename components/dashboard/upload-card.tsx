@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { ChangeEvent, DragEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -25,6 +25,16 @@ const XML_FILE_TYPES = new Set(["text/xml", "application/xml"]);
 
 const IDLE_MESSAGE = "Drop an Nmap XML file here, or click to browse.";
 
+// Cosmetic parse steps + a minimum on-screen time, so parsing reads as a
+// deliberate moment rather than an imperceptible flash.
+const PARSE_STEPS = [
+  "Reading scan file…",
+  "Parsing hosts & services…",
+  "Generating findings…",
+  "Scoring risk…",
+];
+const MIN_PARSE_MS = 1800;
+
 function isXmlFile(file: File) {
   return (
     file.name.toLowerCase().endsWith(".xml") || XML_FILE_TYPES.has(file.type)
@@ -33,19 +43,38 @@ function isXmlFile(file: File) {
 
 export function UploadCard() {
   const router = useRouter();
+  const [isNavigating, startNavigation] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const parseTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [status, setStatus] = useState<UploadState>("idle");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [parsedScan, setParsedScan] = useState<Scan | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState(IDLE_MESSAGE);
+
+  // Clear the animation interval if the user navigates away mid-parse.
+  useEffect(() => {
+    return () => {
+      if (parseTimerRef.current) clearInterval(parseTimerRef.current);
+    };
+  }, []);
+
+  function stopParseAnimation() {
+    if (parseTimerRef.current) {
+      clearInterval(parseTimerRef.current);
+      parseTimerRef.current = null;
+    }
+  }
 
   function openFilePicker() {
     fileInputRef.current?.click();
   }
 
   function resetUpload() {
+    stopParseAnimation();
     setSelectedFile(null);
+    setParsedScan(null);
     setStatus("idle");
     setProgress(0);
     setStatusMessage(IDLE_MESSAGE);
@@ -62,6 +91,7 @@ export function UploadCard() {
 
     if (!isXmlFile(file)) {
       setSelectedFile(file);
+      setParsedScan(null);
       setStatus("error");
       setProgress(0);
       setStatusMessage("Upload a valid Nmap XML file.");
@@ -69,6 +99,7 @@ export function UploadCard() {
     }
 
     setSelectedFile(file);
+    setParsedScan(null);
     setStatus("selected");
     setProgress(0);
     setStatusMessage("Ready to parse this scan.");
@@ -105,9 +136,19 @@ export function UploadCard() {
     }
 
     setStatus("parsing");
-    setProgress(35);
-    setStatusMessage("Parsing scan file...");
+    setProgress(8);
+    setStatusMessage(PARSE_STEPS[0]);
 
+    // Cycle the step messages and ease the progress bar forward while we wait.
+    let step = 0;
+    stopParseAnimation();
+    parseTimerRef.current = setInterval(() => {
+      step = Math.min(step + 1, PARSE_STEPS.length - 1);
+      setStatusMessage(PARSE_STEPS[step]);
+      setProgress((p) => Math.min(90, p + 22));
+    }, MIN_PARSE_MS / PARSE_STEPS.length);
+
+    const startedAt = Date.now();
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
@@ -125,13 +166,23 @@ export function UploadCard() {
       }
 
       const scan = (await response.json()) as Scan;
-      setProgress(100);
 
+      // Let the animation breathe even when the request returns quickly.
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < MIN_PARSE_MS) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_PARSE_MS - elapsed),
+        );
+      }
+
+      stopParseAnimation();
+      setProgress(100);
+      setParsedScan(scan);
       setStatus("success");
-      setStatusMessage("Scan parsed. Opening dashboard...");
+      setStatusMessage("Scan parsed. Ready to review.");
       toast.success("Scan parsed");
-      router.push(`/scans/${scan.id}`);
     } catch (error) {
+      stopParseAnimation();
       const message =
         error instanceof Error ? error.message : "Failed to parse scan.";
       setStatus("error");
@@ -143,6 +194,17 @@ export function UploadCard() {
 
   const hasFile = selectedFile !== null;
   const canAnalyze = hasFile && status === "selected";
+  const isSuccess = status === "success" && parsedScan !== null;
+  const stats = parsedScan
+    ? {
+        hosts: parsedScan.hosts.length,
+        services: parsedScan.hosts.reduce(
+          (total, host) => total + host.services.length,
+          0,
+        ),
+        findings: parsedScan.findings.length,
+      }
+    : null;
   const statusIcon = {
     idle: <FileUp className="size-5" />,
     selected: <FileText className="size-5" />,
@@ -183,7 +245,8 @@ export function UploadCard() {
 
         <div
           className={cn(
-            "flex size-10 items-center justify-center rounded-md bg-zinc-950 text-white",
+            "flex size-10 items-center justify-center rounded-md bg-zinc-950 text-white transition-colors",
+            status === "parsing" && "bg-zinc-900",
             status === "error" && "bg-red-600",
             status === "success" && "bg-emerald-600",
           )}
@@ -192,12 +255,14 @@ export function UploadCard() {
         </div>
         <div className="mt-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold">Upload Nmap XML</h2>
+            <h2 className="text-sm font-semibold">
+              {isSuccess ? "Scan ready" : "Upload Nmap XML"}
+            </h2>
             <p className="mt-1 text-sm leading-6 text-zinc-600">
               {statusMessage}
             </p>
           </div>
-          {hasFile ? (
+          {hasFile && !isSuccess ? (
             <Button
               aria-label="Clear selected file"
               className="size-8 shrink-0 rounded-md"
@@ -220,45 +285,92 @@ export function UploadCard() {
                 {selectedFile.name}
               </p>
             </div>
-            <p className="mt-1 text-xs text-zinc-500">
-              {(selectedFile.size / 1024).toFixed(1)} KB
-            </p>
+            {isSuccess && stats ? (
+              <p className="mt-1 text-xs font-medium text-emerald-700">
+                {stats.hosts} {stats.hosts === 1 ? "host" : "hosts"} ·{" "}
+                {stats.services} {stats.services === 1 ? "service" : "services"}{" "}
+                · {stats.findings}{" "}
+                {stats.findings === 1 ? "finding" : "findings"}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-zinc-500">
+                {(selectedFile.size / 1024).toFixed(1)} KB
+              </p>
+            )}
           </div>
         ) : null}
 
         {status === "parsing" ? (
           <div className="mt-4 space-y-2">
-            <Progress value={progress} />
+            <Progress value={progress} className="transition-all" />
             <p className="text-xs text-zinc-500">{progress}% complete</p>
           </div>
         ) : null}
 
         <div className="mt-4 grid gap-2">
-          <Button
-            className="w-full rounded-md"
-            disabled={status === "parsing"}
-            size="lg"
-            type="button"
-            variant={hasFile ? "outline" : "default"}
-            onClick={openFilePicker}
-          >
-            {hasFile ? "Replace file" : "Select file"}
-          </Button>
-          {hasFile ? (
-            <Button
-              className="w-full rounded-md"
-              disabled={!canAnalyze}
-              size="lg"
-              type="button"
-              onClick={handleAnalyzeScan}
-            >
-              {status === "parsing"
-                ? "Parsing..."
-                : status === "success"
-                  ? "Parsed"
-                  : "Analyze scan"}
-            </Button>
-          ) : null}
+          {isSuccess ? (
+            <>
+              <Button
+                className="w-full rounded-md"
+                size="lg"
+                type="button"
+                disabled={isNavigating}
+                onClick={() => {
+                  if (!parsedScan) return;
+                  // Navigate and reset inside the same transition: React keeps
+                  // the success card on screen until the scan page is ready,
+                  // then commits both — so the form is cleared off-screen
+                  // without a visible blank-out before the redirect.
+                  startNavigation(() => {
+                    router.push(`/scans/${parsedScan.id}`);
+                    resetUpload();
+                  });
+                }}
+              >
+                {isNavigating ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Opening…
+                  </>
+                ) : (
+                  "View scan"
+                )}
+              </Button>
+              <Button
+                className="w-full rounded-md"
+                size="lg"
+                type="button"
+                variant="outline"
+                onClick={resetUpload}
+              >
+                Upload another
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                className="w-full rounded-md"
+                disabled={status === "parsing"}
+                size="lg"
+                type="button"
+                variant={hasFile ? "outline" : "default"}
+                onClick={openFilePicker}
+              >
+                {hasFile ? "Replace file" : "Select file"}
+              </Button>
+              {hasFile ? (
+                <Button
+                  className="w-full rounded-md"
+                  disabled={!canAnalyze}
+                  size="lg"
+                  type="button"
+                  onClick={handleAnalyzeScan}
+                >
+                  {status === "parsing" ? "Parsing..." : "Analyze scan"}
+                </Button>
+              ) : null}
+            </>
+          )}
         </div>
       </CardContent>
     </Card>
