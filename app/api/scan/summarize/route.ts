@@ -1,41 +1,76 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
+import { auth } from "@clerk/nextjs/server";
+import { ScanSchema } from "@/lib/parser/schema";
+import { AiNotConfiguredError, summarizeScan } from "@/lib/ai/summarize";
+import { db } from "@/lib/db";
 
-import { ScanSchema } from '@/lib/parser/schema';
-import { AiNotConfiguredError, summarizeScan } from '@/lib/ai/summarize';
+const TOP_RISKS_LIMIT = 5;
+const SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"] as const;
 
-// Generates an AI summary for a parsed scan. Stateless: the client sends the
-// scan, we return the AI `summary` for it to merge and persist. The rule-based
-// summary stays as the fallback, so failures never overwrite good data.
 export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId)
+    return NextResponse.json({ error: "Sign in to use AI analysis." }, { status: 401 });
+
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const parsed = ScanSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid scan payload' },
-      { status: 400 },
-    );
-  }
+  if (!parsed.success)
+    return NextResponse.json({ error: "Invalid scan payload" }, { status: 400 });
+
+  // Verify ownership before doing any AI work.
+  const scanRecord = await db.scan.findFirst({
+    where: { id: parsed.data.id, userId },
+  });
+  if (!scanRecord)
+    return NextResponse.json({ error: "Scan not found." }, { status: 404 });
+
+  // Always regenerate on request: the user explicitly asked for a fresh AI
+  // summary, so we call the model and overwrite any existing one (upsert below).
 
   try {
     const summary = await summarizeScan(parsed.data);
-    return NextResponse.json({ summary }, { status: 200 });
+
+    const topRisks = [...parsed.data.findings]
+      .sort(
+        (a, b) =>
+          SEVERITY_ORDER.indexOf(a.severity as typeof SEVERITY_ORDER[number]) -
+          SEVERITY_ORDER.indexOf(b.severity as typeof SEVERITY_ORDER[number]),
+      )
+      .slice(0, TOP_RISKS_LIMIT)
+      .map((f) => f.title);
+
+    // Upsert (not create): a rule-based baseline row already exists from
+    // upload, so we overwrite the summary fields. `remediation` is left
+    // untouched here — it's owned by the remediate flow.
+    const summaryFields = {
+      executive: summary.executive,
+      riskScore: summary.riskScore,
+      riskLevel: summary.riskLevel,
+      topRisks,
+      source: (summary.source === "rule-based" ? "rule_based" : "ai") as
+        | "ai"
+        | "rule_based",
+    };
+    await db.aiSummary.upsert({
+      where: { scanId: parsed.data.id },
+      update: summaryFields,
+      create: { scanId: parsed.data.id, ...summaryFields },
+    });
+
+    revalidateTag(`scans:${userId}`, "max");
+
+    return NextResponse.json({ summary: { ...summary, topRisks } }, { status: 200 });
   } catch (error) {
-    if (error instanceof AiNotConfiguredError) {
-      return NextResponse.json(
-        { error: 'AI is not configured on the server.' },
-        { status: 503 },
-      );
-    }
-    console.error('Error generating AI summary:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate AI summary' },
-      { status: 500 },
-    );
+    if (error instanceof AiNotConfiguredError)
+      return NextResponse.json({ error: "AI is not configured on the server." }, { status: 503 });
+    console.error("Error generating AI summary:", error);
+    return NextResponse.json({ error: "Failed to generate AI summary" }, { status: 500 });
   }
 }

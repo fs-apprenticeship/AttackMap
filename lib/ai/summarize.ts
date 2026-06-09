@@ -9,13 +9,16 @@ import { AISummarySchema, type AISummary, type Scan } from "@/lib/parser/schema"
 
 const DEFAULT_MODEL = "gpt-4o-mini";
 
-// What we ask the model to produce — narrative only. The risk score and level
-// stay rule-based (deterministic, reproducible, comparable across scans); the
-// model only writes the prose around them.
-const AiSummaryOutputSchema = AISummarySchema.omit({
-  source: true,
-  riskLevel: true,
-  riskScore: true,
+// What we ask the model to produce — narrative only. The risk score/level stay
+// rule-based (deterministic, comparable) and topRisks is computed by the route,
+// so the model only writes the `executive` prose.
+//
+// This MUST be a closed object with every field required: OpenAI strict
+// structured-output mode rejects optional fields and `default` keywords, which
+// is why deriving it from AISummarySchema (topRisks has a default,
+// remediationPlan is optional) failed with "Failed to generate AI summary".
+const AiSummaryOutputSchema = z.object({
+  executive: z.string(),
 });
 
 /** Thrown when OPENAI_API_KEY is missing, so the route can return 503. */

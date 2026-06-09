@@ -1,11 +1,9 @@
-// Database: Neon (serverless Postgres)
+// Transitional normalized schema.
+// userId is nullable — becomes required when the User model and Clerk webhook land.
 //
 // Connection strings (.env):
 //   DATABASE_URL  — pooled URL  (application queries)
 //   DIRECT_URL    — direct URL  (prisma db push / migrations)
-//
-// Promote to migrations (prisma migrate dev) when the first real column
-// change lands (e.g. userId). Until then, prisma db push is sufficient.
 
 generator client {
   provider = "prisma-client"
@@ -13,28 +11,144 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
+}
+
+enum RiskLevel {
+  critical
+  high
+  medium
+  low
+  info
+}
+
+enum Protocol {
+  tcp
+  udp
+}
+
+enum AiSource {
+  ai
+  rule_based
+}
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+// id mirrors the Clerk user ID. Clerk owns auth; we mirror the record here
+// for FK relationships. Created via JIT upsert in lib/auth/sync.ts.
+
+model User {
+  id        String   @id
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  scans Scan[]
+
+  @@map("users")
 }
 
 // ---------------------------------------------------------------------------
 // Scans
 // ---------------------------------------------------------------------------
-// The full ScanSchema-validated object lives in `data` (jsonb). Promoted
-// columns exist only for ordering and future filtering — do not duplicate
-// the shape here.
-//
-// host.id and service.id are scan-local, not globally unique, so a
-// normalized schema would require artificial PKs. jsonb avoids that entirely.
 
 model Scan {
-  id        String    @id              // scan_<uuid>, assigned by the parser
-  target    String
-  filename  String
-  scannedAt DateTime?
-  parsedAt  DateTime
-  data      Json                       // ScanSchema-validated scan object
-  createdAt DateTime  @default(now())
+  id         String    @id
+  userId     String?   @map("user_id")
+  filename   String
+  target     String
+  scannedAt  DateTime? @map("scanned_at")
+  uploadedAt DateTime  @default(now()) @map("uploaded_at")
+  parsedAt   DateTime  @map("parsed_at")
 
-  @@index([createdAt])
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  hosts     Host[]
+  findings  Finding[]
+  aiSummary AiSummary?
+
+  @@index([userId])
   @@map("scans")
+}
+
+// ---------------------------------------------------------------------------
+// Hosts
+// ---------------------------------------------------------------------------
+
+model Host {
+  id              String  @id
+  scanId          String  @map("scan_id")
+  ipAddress       String  @map("ip_address")
+  hostname        String?
+  operatingSystem String  @map("operating_system")
+  role            String
+  internetExposed Boolean @default(false) @map("internet_exposed")
+
+  scan     Scan      @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  services Service[]
+  findings Finding[]
+
+  @@index([scanId])
+  @@map("hosts")
+}
+
+// ---------------------------------------------------------------------------
+// Services
+// ---------------------------------------------------------------------------
+
+model Service {
+  id          String    @id
+  hostId      String    @map("host_id")
+  port        Int
+  protocol    Protocol
+  serviceName String    @map("service_name")
+  product     String?
+  version     String?
+  extrainfo   String?
+  riskLevel   RiskLevel @map("risk_level")
+
+  host Host @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@index([hostId])
+  @@map("services")
+}
+
+// ---------------------------------------------------------------------------
+// Findings
+// ---------------------------------------------------------------------------
+
+model Finding {
+  id          String    @id
+  scanId      String    @map("scan_id")
+  hostId      String?   @map("host_id")
+  severity    RiskLevel
+  title       String
+  evidence    String    @db.Text
+  remediation String    @db.Text
+
+  scan Scan  @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  host Host? @relation(fields: [hostId], references: [id], onDelete: SetNull)
+
+  @@index([scanId])
+  @@index([severity])
+  @@map("findings")
+}
+
+// ---------------------------------------------------------------------------
+// AI Summaries
+// ---------------------------------------------------------------------------
+
+model AiSummary {
+  id          String    @id @default(cuid())
+  scanId      String    @unique @map("scan_id")
+  executive   String    @db.Text
+  riskScore   Int       @map("risk_score")
+  riskLevel   RiskLevel @map("risk_level")
+  topRisks    Json      @map("top_risks")
+  remediation Json?
+  source      AiSource
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  scan Scan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+
+  @@map("ai_summaries")
 }

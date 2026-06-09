@@ -461,7 +461,7 @@ function riskLevelFromScore(score: number): RiskLevel {
   return "info";
 }
 
-function buildSummary(hosts: Host[], findings: Finding[]): AISummary {
+export function buildSummary(hosts: Host[], findings: Finding[]): AISummary {
   const allServices = hosts.flatMap((h) => h.services);
   const riskyServices = allServices.filter(
     (s) => s.riskLevel === "high" || s.riskLevel === "critical"
@@ -496,6 +496,7 @@ function buildSummary(hosts: Host[], findings: Finding[]): AISummary {
     executive: parts.join(" "),
     riskScore,
     riskLevel,
+    topRisks: [],
     source: "rule-based",
   };
 }
@@ -509,7 +510,7 @@ function priorityForSeverity(severity: RiskLevel): RemediationStep["priority"] {
 // Rule-based remediation plan: one step per finding's canned remediation
 // (grouped when several findings share the same advice), ordered by severity.
 // This is the default/fallback; the AI plan replaces it with context-aware steps.
-function buildRemediationPlan(findings: Finding[]): RemediationPlan {
+export function buildRemediationPlan(findings: Finding[]): RemediationPlan {
   const sorted = [...findings].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
   );
@@ -590,9 +591,9 @@ export function parseNmapScan(xml: string, filename: string): Scan {
         port,
         protocol,
         serviceName: svcName,
-        product: p.service?.["@_product"] ? String(p.service["@_product"]) : undefined,
-        version: p.service?.["@_version"] ? String(p.service["@_version"]) : undefined,
-        extrainfo: p.service?.["@_extrainfo"] ? String(p.service["@_extrainfo"]) : undefined,
+        ...(p.service?.["@_product"] && { product: String(p.service["@_product"]) }),
+        ...(p.service?.["@_version"] && { version: String(p.service["@_version"]) }),
+        ...(p.service?.["@_extrainfo"] && { extrainfo: String(p.service["@_extrainfo"]) }),
         riskLevel: serviceRisk(port, svcName),
       };
     });
@@ -600,7 +601,7 @@ export function parseNmapScan(xml: string, filename: string): Scan {
     return {
       id: ip,
       ipAddress: ip,
-      hostname: hostname ? String(hostname) : undefined,
+      ...(hostname && { hostname: String(hostname) }),
       operatingSystem: extractOS(rawHost, services) ?? "Unknown",
       role: inferRole(services),
       internetExposed: !isPrivateIP(ip),
