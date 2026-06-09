@@ -17,7 +17,7 @@ export default function ScansPage() {
             <p className="mt-1 text-sm text-zinc-600">All saved scans.</p>
           </div>
           <Button asChild className="rounded-md">
-            <Link href="/">
+            <Link href="/upload">
               <Plus className="size-4" />
               New scan
             </Link>
@@ -35,6 +35,7 @@ export default function ScansPage() {
 }
 
 async function ScansContent() {
+  
   const scans = await listScansCached();
 
   if (scans.length === 0) {

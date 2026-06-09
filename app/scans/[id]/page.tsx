@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { getScanCached } from "@/lib/scans/queries";
 
-async function ScanDetail({ id }: { id: string }) {
+async function ScanDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const scan = await getScanCached(id);
 
   if (!scan) {
@@ -29,13 +30,11 @@ async function ScanDetail({ id }: { id: string }) {
   return <Dashboard scan={scan} />;
 }
 
-export default async function ScanDetailPage({
+export default function ScanDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">
@@ -55,7 +54,7 @@ export default async function ScanDetailPage({
         </div>
 
         <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
-          <ScanDetail id={id} />
+          <ScanDetail params={params} />
         </Suspense>
       </div>
     </main>
