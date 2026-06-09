@@ -85,7 +85,8 @@
     "executive": "Scan covers 1 host exposing 4 open service(s). 1 host(s) are directly internet-exposed. No high-risk services were observed. 3 finding(s) were generated from the scan.",
     "riskScore": 24,
     "riskLevel": "medium",
-    "source": "rule-based"
+    "source": "rule-based",
+    "topRisks": []
   },
   "remediationPlan": {
     "source": "rule-based",
