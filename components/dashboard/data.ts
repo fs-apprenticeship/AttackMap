@@ -1,6 +1,7 @@
-import { Gauge, Network, Server, ShieldAlert } from "lucide-react";
+import { Globe, Network, Server, ShieldAlert } from "lucide-react";
 
-import type { Finding, Host, Scan, Severity } from "@/lib/types";
+import type { Finding, Host, RiskLevel, Scan, Severity } from "@/lib/types";
+import { isWebService } from "@/lib/parser/web-service";
 
 import { severityOrder } from "./utils";
 
@@ -24,6 +25,7 @@ export type ScanStats = {
   totalHosts: number;
   openPorts: number;
   riskyServices: number;
+  webServices: number;
   findings: number;
 };
 
@@ -36,6 +38,7 @@ export function getScanStats(scan: Scan): ScanStats {
     riskyServices: services.filter((service) =>
       ["critical", "high"].includes(service.riskLevel),
     ).length,
+    webServices: services.filter(isWebService).length,
     findings: scan.findings.length,
   };
 }
@@ -95,40 +98,60 @@ export function getRiskScore(scan: Scan) {
   );
 }
 
+export type RiskAssessment = {
+  score: number;
+  level: RiskLevel;
+};
+
+// Strictly rule-based risk: the deterministic score plus the severity band it
+// falls into. Independent of the AI summary so the gauge stays comparable
+// across scans. Thresholds mirror `riskLevelFromScore` in the parser.
+export function getRiskAssessment(scan: Scan): RiskAssessment {
+  const score = getRiskScore(scan);
+  const level: RiskLevel =
+    score >= 70
+      ? "critical"
+      : score >= 45
+        ? "high"
+        : score >= 20
+          ? "medium"
+          : score > 0
+            ? "low"
+            : "info";
+  return { score, level };
+}
+
+// Key metrics shown beneath the executive summary. The control panel (risk +
+// exposures) lives in the right column; these are the at-a-glance counts.
 export function getSummaryCards(scan: Scan) {
   const stats = getScanStats(scan);
-  const exposedAssets = scan.hosts.filter((host) => host.internetExposed).length;
-  const highFindings = scan.findings.filter((finding) =>
+  const criticalFindings = scan.findings.filter((finding) =>
     ["critical", "high"].includes(finding.severity),
   ).length;
 
   return [
     {
-      label: "Hosts",
-      value: stats.totalHosts,
-      detail: `${exposedAssets} internet exposed`,
-      icon: Server,
-      tone: "cyan",
-    },
-    {
       label: "Open ports",
       value: stats.openPorts,
-      detail: `${stats.riskyServices} high-risk services`,
       icon: Network,
       tone: "amber",
     },
     {
-      label: "Findings",
-      value: stats.findings,
-      detail: `${highFindings} need priority review`,
+      label: "Web services",
+      value: stats.webServices,
+      icon: Globe,
+      tone: "cyan",
+    },
+    {
+      label: "Critical findings",
+      value: criticalFindings,
       icon: ShieldAlert,
       tone: "rose",
     },
     {
-      label: "Risk score",
-      value: scan.summary.riskScore,
-      detail: "rule-based estimate",
-      icon: Gauge,
+      label: "Hosts",
+      value: stats.totalHosts,
+      icon: Server,
       tone: "emerald",
     },
   ] as const;

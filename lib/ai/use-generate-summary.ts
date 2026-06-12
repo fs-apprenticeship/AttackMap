@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -13,11 +13,12 @@ import { saveScanAction } from "@/lib/scans/actions";
 // upgraded summary.
 export function useGenerateSummary(scan: Scan) {
   const router = useRouter();
-  const [generating, setGenerating] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const generate = useCallback(async () => {
-    setGenerating(true);
+    setIsFetching(true);
     setError(null);
     try {
       const res = await fetch("/api/scan/summarize", {
@@ -30,16 +31,23 @@ export function useGenerateSummary(scan: Scan) {
         throw new Error(data?.error ?? "Failed to generate AI summary");
       }
       await saveScanAction({ ...scan, summary: data.summary as AISummary });
-      router.refresh();
+      // Refresh inside a transition so `isPending` stays true until the server
+      // re-render with the new AI summary actually lands. Combined with
+      // `isFetching` below, the UI holds the "generating" state continuously and
+      // never flashes the old rule-based state in the gap before the new data
+      // arrives.
+      startTransition(() => {
+        router.refresh();
+      });
       toast.success("AI summary generated");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);
       toast.error(message);
     } finally {
-      setGenerating(false);
+      setIsFetching(false);
     }
   }, [scan, router]);
 
-  return { generate, generating, error };
+  return { generate, generating: isFetching || isPending, error };
 }

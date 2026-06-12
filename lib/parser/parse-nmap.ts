@@ -11,6 +11,7 @@ import {
   type RemediationStep,
   type RiskLevel,
 } from "./schema";
+import { WEB_PORTS } from "./web-service";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -42,8 +43,6 @@ function serviceRisk(port: number, serviceName: string): RiskLevel {
 }
 
 // ─── Role inference ─────────────────────────────────────────────────────────
-
-const WEB_PORTS = new Set([80, 443, 8080, 8443, 8500, 8888, 8000]);
 
 function inferRole(services: Service[]): string {
   const ports = new Set(services.map((s) => s.port));

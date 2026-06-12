@@ -1,47 +1,161 @@
-import { Fragment, type ReactNode } from "react";
+"use client";
+
+import { useState, type ReactNode } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Check, Copy } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { remarkCodeifyCommands } from "./remark-codeify-commands";
 
-// Minimal markdown renderer for AI remediation detail. Handles the subset the
-// model emits — fenced code blocks, inline `code`, **bold**, and "- " bullets —
-// by building React nodes (never raw HTML), so AI output can't inject markup.
+const remarkPlugins = [remarkGfm, remarkCodeifyCommands];
 
-function renderInline(text: string, keyPrefix: string): ReactNode[] {
-  const nodes: ReactNode[] = [];
-  const pattern = /(`[^`]+`|\*\*[^*]+\*\*)/g;
-  let last = 0;
-  let match: RegExpExecArray | null;
-  let i = 0;
+// Robust markdown rendering for AI-authored content (executive summary,
+// remediation detail). Built on react-markdown + remark-gfm, which renders to
+// React nodes — never raw HTML — so model output can't inject markup. Each
+// element is mapped to the dashboard's zinc/emerald design tokens.
 
-  while ((match = pattern.exec(text)) !== null) {
-    if (match.index > last) nodes.push(text.slice(last, match.index));
-    const token = match[0];
-    if (token.startsWith("`")) {
-      nodes.push(
-        <code
-          key={`${keyPrefix}-c${i}`}
-          className="rounded bg-zinc-200 px-1 py-0.5 font-mono text-[0.8125rem] text-zinc-800"
-        >
-          {token.slice(1, -1)}
-        </code>,
-      );
-    } else {
-      nodes.push(
-        <strong key={`${keyPrefix}-b${i}`} className="font-semibold text-zinc-800">
-          {token.slice(2, -2)}
-        </strong>,
-      );
+/** Copy-to-clipboard button for fenced code blocks. */
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard can reject (permissions / insecure context); fail silently.
     }
-    last = match.index + token.length;
-    i += 1;
   }
-  if (last < text.length) nodes.push(text.slice(last));
-  return nodes;
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label={copied ? "Copied" : "Copy to clipboard"}
+      className="absolute right-2 top-2 inline-flex items-center justify-center rounded p-1.5 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
+    >
+      {copied ? (
+        <Check className="size-4 text-emerald-400" />
+      ) : (
+        <Copy className="size-4" />
+      )}
+    </button>
+  );
 }
 
-/** Inline-only rendering (inline `code` + **bold**), for list items etc. */
+/** A dark code block with an always-visible copy button. Used both by the
+ * markdown `pre` mapping and directly for the remediation `commands` arrays. */
+export function CodeBlock({ value }: { value: string }) {
+  return (
+    <div className="relative">
+      <pre className="overflow-x-auto rounded-md bg-zinc-900 py-3 pl-3 pr-11 text-xs text-zinc-100">
+        <code className="font-mono">{value}</code>
+      </pre>
+      <CopyButton value={value} />
+    </div>
+  );
+}
+
+/** Pull the raw text out of a code block's React children for copying. */
+function childrenToText(children: ReactNode): string {
+  if (typeof children === "string") return children;
+  if (Array.isArray(children)) return children.map(childrenToText).join("");
+  if (children && typeof children === "object" && "props" in children) {
+    return childrenToText(
+      (children as { props: { children?: ReactNode } }).props.children,
+    );
+  }
+  return "";
+}
+
+const components: Components = {
+  p: ({ children }) => <p>{children}</p>,
+  a: ({ children, href }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+      className="font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800"
+    >
+      {children}
+    </a>
+  ),
+  strong: ({ children }) => (
+    <strong className="font-semibold text-zinc-800">{children}</strong>
+  ),
+  em: ({ children }) => <em className="italic">{children}</em>,
+  h1: ({ children }) => (
+    <h3 className="text-sm font-semibold text-zinc-800">{children}</h3>
+  ),
+  h2: ({ children }) => (
+    <h3 className="text-sm font-semibold text-zinc-800">{children}</h3>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-sm font-semibold text-zinc-800">{children}</h3>
+  ),
+  ul: ({ children }) => (
+    <ul className="list-disc space-y-1 pl-5 marker:text-zinc-400">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="list-decimal space-y-1 pl-5 marker:text-zinc-400">
+      {children}
+    </ol>
+  ),
+  li: ({ children }) => <li className="pl-1">{children}</li>,
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-2 border-zinc-200 pl-3 text-zinc-500 italic">
+      {children}
+    </blockquote>
+  ),
+  hr: () => <hr className="border-zinc-200" />,
+  table: ({ children }) => (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse text-left text-xs">
+        {children}
+      </table>
+    </div>
+  ),
+  th: ({ children }) => (
+    <th className="border-b border-zinc-200 px-2 py-1 font-semibold text-zinc-700">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="border-b border-zinc-100 px-2 py-1 align-top">{children}</td>
+  ),
+  // Inline code only. Fenced blocks are routed through `pre` below, which
+  // extracts the text and renders its own dark block — so distinguishing block
+  // vs inline here (unreliable for fences with no language) is unnecessary.
+  code: ({ children }) => (
+    <code className="rounded bg-zinc-200 px-1 py-0.5 font-mono text-[0.8125rem] text-zinc-800">
+      {children}
+    </code>
+  ),
+  // Any fenced code block — with or without a language hint — becomes a dark
+  // copy-able CodeBlock, identical to the remediation `commands` blocks.
+  pre: ({ children }) => (
+    <CodeBlock value={childrenToText(children).replace(/\n$/, "")} />
+  ),
+};
+
+/** Inline-only components: unwrap the top-level paragraph so the rendered
+ * markdown can sit inside an existing `<li>` / inline context. */
+const inlineComponents: Components = {
+  ...components,
+  p: ({ children }) => <>{children}</>,
+};
+
+/** Inline-only rendering (no block wrappers), for list items etc. */
 export function MarkdownInline({ content }: { content: string }) {
-  return <>{renderInline(content, "i")}</>;
+  return (
+    <ReactMarkdown remarkPlugins={remarkPlugins} components={inlineComponents}>
+      {content}
+    </ReactMarkdown>
+  );
 }
 
 type MarkdownProps = {
@@ -50,47 +164,16 @@ type MarkdownProps = {
 };
 
 export function Markdown({ content, className }: MarkdownProps) {
-  // Split on fenced code blocks: even segments are prose, odd are code.
-  const segments = content.split(/```/);
-
   return (
-    <div className={cn("space-y-2 text-sm leading-6 text-zinc-600", className)}>
-      {segments.map((segment, index) => {
-        if (index % 2 === 1) {
-          const body = segment.replace(/^[a-z]+\n/, "").replace(/^\n|\n$/g, "");
-          return (
-            <pre
-              key={index}
-              className="overflow-x-auto rounded-md bg-zinc-900 p-3 text-xs text-zinc-100"
-            >
-              <code className="font-mono">{body}</code>
-            </pre>
-          );
-        }
-
-        const text = segment.replace(/^\n+|\n+$/g, "");
-        if (!text) return null;
-
-        return (
-          <Fragment key={index}>
-            {text.split("\n").map((line, li) => {
-              if (/^\s*[-*]\s+/.test(line)) {
-                return (
-                  <div key={li} className="flex gap-2">
-                    <span aria-hidden>•</span>
-                    <span>
-                      {renderInline(line.replace(/^\s*[-*]\s+/, ""), `${index}-${li}`)}
-                    </span>
-                  </div>
-                );
-              }
-              return line.trim() ? (
-                <p key={li}>{renderInline(line, `${index}-${li}`)}</p>
-              ) : null;
-            })}
-          </Fragment>
-        );
-      })}
+    <div
+      className={cn(
+        "space-y-2 text-sm leading-6 text-zinc-600 [&_p]:m-0",
+        className,
+      )}
+    >
+      <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }
