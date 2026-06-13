@@ -44,7 +44,7 @@ export default function LandingPage() {
             </div>
             <h3 className="mt-4 text-sm font-semibold text-zinc-950">AI analysis</h3>
             <p className="mt-1 text-sm leading-6 text-zinc-500">
-              Get an AI-generated executive summary of your scan with a risk score and prioritised findings.
+              Get an AI-generated executive summary of your scan with a risk score and prioritized findings.
             </p>
           </div>
 

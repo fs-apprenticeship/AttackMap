@@ -9,6 +9,7 @@ import { useGenerateRemediation } from "@/lib/ai/use-generate-remediation";
 import { AttackSurfaceGraph } from "@/components/dashboard/attack-surface-graph";
 import {
   getHostsForScan,
+  getRiskAssessment,
   getScanFindings,
   getServiceBreakdown,
   getSeverityCounts,
@@ -20,7 +21,6 @@ import { HostInventoryTable } from "@/components/dashboard/host-inventory-table"
 import { RemediationPlanPanel } from "@/components/dashboard/remediation-plan";
 import { RiskDistribution } from "@/components/dashboard/risk-distribution";
 import { ServiceBreakdown } from "@/components/dashboard/service-breakdown";
-import { SummaryCards } from "@/components/dashboard/summary-cards";
 
 type DashboardProps = {
   scan: Scan;
@@ -34,6 +34,7 @@ export function Dashboard({ scan }: DashboardProps) {
       serviceBreakdown: getServiceBreakdown(scan),
       severityCounts: getSeverityCounts(scan),
       summaryCards: getSummaryCards(scan),
+      risk: getRiskAssessment(scan),
     }),
     [scan],
   );
@@ -46,11 +47,13 @@ export function Dashboard({ scan }: DashboardProps) {
     <div className="min-w-0 flex-1 space-y-6">
       <DashboardHeader
         activeScan={scan}
+        risk={data.risk}
+        findings={data.findings}
+        stats={data.summaryCards}
         generating={summary.generating}
         error={summary.error}
         onGenerate={summary.generate}
       />
-      <SummaryCards cards={data.summaryCards} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
         {activeHost ? (
@@ -66,6 +69,7 @@ export function Dashboard({ scan }: DashboardProps) {
       <FindingsPanel findings={data.findings} />
       <RemediationPlanPanel
         plan={scan.remediationPlan}
+        scan={scan}
         generating={remediation.generating}
         error={remediation.error}
         onGenerate={remediation.generate}

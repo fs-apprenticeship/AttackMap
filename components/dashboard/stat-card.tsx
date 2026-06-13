@@ -1,12 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 type StatCardProps = {
   label: string;
   value: number;
-  detail: string;
   icon: LucideIcon;
   tone: "cyan" | "amber" | "rose" | "emerald";
 };
@@ -18,27 +16,16 @@ const toneClass: Record<StatCardProps["tone"], string> = {
   emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
 };
 
-export function StatCard({
-  label,
-  value,
-  detail,
-  icon: Icon,
-  tone,
-}: StatCardProps) {
+// A borderless, centered stat cell. Sits in the metrics row beneath the
+// executive summary, divided from its neighbours by the parent grid's dividers.
+export function StatCard({ label, value, icon: Icon, tone }: StatCardProps) {
   return (
-    <Card className="rounded-md border bg-white py-0 shadow-sm">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-medium text-zinc-500">{label}</p>
-            <p className="mt-2 text-3xl font-semibold text-zinc-950">{value}</p>
-          </div>
-          <div className={cn("rounded-md border p-2", toneClass[tone])}>
-            <Icon className="size-5" />
-          </div>
-        </div>
-        <p className="mt-4 text-sm text-zinc-600">{detail}</p>
-      </CardContent>
-    </Card>
+    <div className="flex h-full flex-col items-center justify-center gap-2 p-5 text-center">
+      <div className={cn("rounded-full border p-2.5", toneClass[tone])}>
+        <Icon className="size-5" />
+      </div>
+      <p className="text-3xl font-semibold text-zinc-950">{value}</p>
+      <p className="text-sm font-medium text-zinc-500">{label}</p>
+    </div>
   );
 }
