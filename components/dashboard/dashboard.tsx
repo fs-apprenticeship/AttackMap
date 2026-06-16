@@ -41,7 +41,6 @@ export function Dashboard({ scan }: DashboardProps) {
 
   const summary = useGenerateSummary(scan);
   const remediation = useGenerateRemediation(scan);
-  const activeHost = scan.hosts[0];
 
   return (
     <div className="min-w-0 flex-1 space-y-6">
@@ -56,13 +55,7 @@ export function Dashboard({ scan }: DashboardProps) {
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
-        {activeHost ? (
-          <AttackSurfaceGraph host={activeHost} />
-        ) : (
-          <div className="flex min-h-[430px] items-center justify-center rounded-md border bg-white text-sm text-zinc-500 shadow-sm">
-            No live hosts found in this scan.
-          </div>
-        )}
+        <AttackSurfaceGraph hosts={scan.hosts} />
         <RiskDistribution counts={data.severityCounts} />
       </div>
 
