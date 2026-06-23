@@ -16,6 +16,7 @@ export const ServiceSchema = z.object({
   product: z.string().optional(),
   version: z.string().optional(),
   extrainfo: z.string().optional(),
+  cpe: z.array(z.string()).default([]),
   riskLevel: RiskLevelSchema,
 });
 

@@ -60,6 +60,7 @@ function toScan(row: ScanRow): Scan {
       product: s.product ?? undefined,
       version: s.version ?? undefined,
       extrainfo: s.extrainfo ?? undefined,
+      cpe: s.cpe,
       riskLevel: s.riskLevel,
     })),
   }));
@@ -164,6 +165,7 @@ export async function saveScan(scan: Scan, userId?: string): Promise<void> {
       product: s.product ?? null,
       version: s.version ?? null,
       extrainfo: s.extrainfo ?? null,
+      cpe: s.cpe,
       riskLevel: s.riskLevel,
     })),
   );
