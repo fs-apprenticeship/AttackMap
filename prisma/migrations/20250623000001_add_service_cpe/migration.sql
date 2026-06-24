@@ -1,0 +1,2 @@
+ALTER TABLE "services"
+    ADD COLUMN "cpe" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

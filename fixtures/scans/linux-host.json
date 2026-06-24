@@ -21,7 +21,10 @@
           "serviceName": "ftp",
           "product": "vsftpd",
           "version": "3.0.5",
-          "riskLevel": "high"
+          "riskLevel": "high",
+          "cpe": [
+            "cpe:/a:vsftpd:vsftpd:3.0.5"
+          ]
         },
         {
           "id": "10.129.7.29:tcp:22",
@@ -31,7 +34,11 @@
           "product": "OpenSSH",
           "version": "9.6p1 Ubuntu 3ubuntu13.15",
           "extrainfo": "Ubuntu Linux; protocol 2.0",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:openbsd:openssh:9.6p1",
+            "cpe:/o:linux:linux_kernel"
+          ]
         },
         {
           "id": "10.129.7.29:tcp:80",
@@ -40,7 +47,10 @@
           "serviceName": "http",
           "product": "Apache httpd",
           "version": "2.4.58",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:apache:http_server:2.4.58"
+          ]
         },
         {
           "id": "10.129.7.29:tcp:8080",
@@ -49,14 +59,18 @@
           "serviceName": "http",
           "product": "Jetty",
           "version": "9.4.27.v20200227",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:mortbay:jetty:9.4.27.v20200227"
+          ]
         },
         {
           "id": "10.129.7.29:tcp:8500",
           "port": 8500,
           "protocol": "tcp",
           "serviceName": "fmtp",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": []
         },
         {
           "id": "10.129.7.29:tcp:8888",
@@ -65,7 +79,10 @@
           "serviceName": "http",
           "product": "Golang net/http server",
           "extrainfo": "Go-IPFS json-rpc or InfluxDB API",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:protocol_labs:go-ipfs"
+          ]
         }
       ]
     }

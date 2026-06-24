@@ -22,7 +22,11 @@
           "product": "OpenSSH",
           "version": "8.9p1 Ubuntu 3ubuntu0.15",
           "extrainfo": "Ubuntu Linux; protocol 2.0",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:openbsd:openssh:8.9p1",
+            "cpe:/o:linux:linux_kernel"
+          ]
         },
         {
           "id": "10.129.7.33:tcp:80",
@@ -32,7 +36,11 @@
           "product": "nginx",
           "version": "1.18.0",
           "extrainfo": "Ubuntu",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:igor_sysoev:nginx:1.18.0",
+            "cpe:/o:linux:linux_kernel"
+          ]
         }
       ]
     }

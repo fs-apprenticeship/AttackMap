@@ -21,21 +21,27 @@
           "product": "OpenSSH",
           "version": "9.2p1 Debian 2+deb12u7",
           "extrainfo": "protocol 2.0",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:openbsd:openssh:9.2p1",
+            "cpe:/o:linux:linux_kernel"
+          ]
         },
         {
           "id": "10.129.7.31:tcp:80",
           "port": 80,
           "protocol": "tcp",
           "serviceName": "http",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": []
         },
         {
           "id": "10.129.7.31:tcp:443",
           "port": 443,
           "protocol": "tcp",
           "serviceName": "https",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": []
         }
       ]
     }

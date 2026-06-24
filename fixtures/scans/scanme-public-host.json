@@ -22,7 +22,11 @@
           "product": "OpenSSH",
           "version": "6.6.1p1 Ubuntu 2ubuntu2.13",
           "extrainfo": "Ubuntu Linux; protocol 2.0",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:openbsd:openssh:6.6.1p1",
+            "cpe:/o:linux:linux_kernel"
+          ]
         },
         {
           "id": "45.33.32.156:tcp:80",
@@ -32,7 +36,10 @@
           "product": "Apache httpd",
           "version": "2.4.7",
           "extrainfo": "(Ubuntu)",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:apache:http_server:2.4.7"
+          ]
         },
         {
           "id": "45.33.32.156:tcp:9929",
@@ -40,14 +47,16 @@
           "protocol": "tcp",
           "serviceName": "nping-echo",
           "product": "Nping echo",
-          "riskLevel": "low"
+          "riskLevel": "low",
+          "cpe": []
         },
         {
           "id": "45.33.32.156:tcp:31337",
           "port": 31337,
           "protocol": "tcp",
           "serviceName": "tcpwrapped",
-          "riskLevel": "low"
+          "riskLevel": "low",
+          "cpe": []
         }
       ]
     }

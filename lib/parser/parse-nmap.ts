@@ -585,6 +585,12 @@ export function parseNmapScan(xml: string, filename: string): Scan {
       const port = Number(p["@_portid"]);
       const protocol = String(p["@_protocol"] ?? "tcp");
       const svcName: string = String(p.service?.["@_name"] ?? "unknown");
+      // CPE nodes (forced to an array by the parser config) carry the platform
+      // identifiers nmap inferred for this service, e.g. cpe:/a:openbsd:openssh:9.6p1.
+      // They are the precise key for CVE lookups downstream.
+      const cpe: string[] = (p.service?.cpe ?? [])
+        .map((c: unknown) => String(c))
+        .filter((c: string) => c.length > 0);
       return {
         id: `${ip}:${protocol}:${port}`,
         port,
@@ -593,6 +599,7 @@ export function parseNmapScan(xml: string, filename: string): Scan {
         ...(p.service?.["@_product"] && { product: String(p.service["@_product"]) }),
         ...(p.service?.["@_version"] && { version: String(p.service["@_version"]) }),
         ...(p.service?.["@_extrainfo"] && { extrainfo: String(p.service["@_extrainfo"]) }),
+        cpe,
         riskLevel: serviceRisk(port, svcName),
       };
     });
