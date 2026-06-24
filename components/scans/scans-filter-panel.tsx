@@ -1,0 +1,310 @@
+import {
+  ArrowDownUp,
+  CalendarDays,
+  ChevronDown,
+  Search,
+  ShieldAlert,
+  Sparkles,
+  X,
+} from "lucide-react";
+
+import { severityOrder } from "@/components/dashboard/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { Severity } from "@/lib/types";
+
+import {
+  aiStatusLabels,
+  dateRangeLabels,
+  defaultAiStatusFilters,
+  riskFilterLabels,
+  sortLabels,
+  type AiStatusFilter,
+  type DateRangeFilter,
+  type SortOption,
+} from "./scans-list-data";
+
+type ScansFilterPanelProps = {
+  query: string;
+  sort: SortOption;
+  riskFilters: Severity[];
+  aiStatusFilters: AiStatusFilter[];
+  dateRange: DateRangeFilter;
+  filteredCount: number;
+  totalCount: number;
+  hasActiveFilters: boolean;
+  onQueryChange: (query: string) => void;
+  onSortChange: (sort: SortOption) => void;
+  onDateRangeChange: (range: DateRangeFilter) => void;
+  onRiskFilterChange: (severity: Severity, checked: boolean) => void;
+  onAiStatusFilterChange: (status: AiStatusFilter, checked: boolean) => void;
+  onResetFilters: () => void;
+};
+
+const filterTriggerClass =
+  "h-10 w-full justify-between rounded-md border-zinc-200 bg-zinc-50 px-3 text-zinc-700 shadow-none hover:bg-white";
+const selectTriggerClass =
+  "h-10 min-h-10 w-full rounded-md border-zinc-200 bg-zinc-50 text-sm font-medium text-zinc-700 shadow-none hover:bg-white data-[size=default]:h-10 *:data-[slot=select-value]:gap-2";
+const activeBadgeClass =
+  "h-6 rounded-md border-zinc-200 bg-white px-2 text-zinc-600";
+
+export function ScansFilterPanel({
+  query,
+  sort,
+  riskFilters,
+  aiStatusFilters,
+  dateRange,
+  filteredCount,
+  totalCount,
+  hasActiveFilters,
+  onQueryChange,
+  onSortChange,
+  onDateRangeChange,
+  onRiskFilterChange,
+  onAiStatusFilterChange,
+  onResetFilters,
+}: ScansFilterPanelProps) {
+  const allRisksSelected = riskFilters.length === severityOrder.length;
+  const allAiStatusesSelected =
+    aiStatusFilters.length === defaultAiStatusFilters.length;
+  const riskFilterLabel = allRisksSelected
+    ? "Risk level"
+    : riskFilters.length === 0
+      ? "No risks"
+      : riskFilters.length === 1
+        ? riskFilterLabels[riskFilters[0]]
+        : `${riskFilters.length} risks`;
+  const aiStatusLabel = allAiStatusesSelected
+    ? "AI status"
+    : aiStatusFilters.length === 0
+      ? "No AI status"
+      : aiStatusFilters.length === 1
+        ? aiStatusLabels[aiStatusFilters[0]]
+        : `${aiStatusFilters.length} statuses`;
+
+  return (
+    <Card className="rounded-md border border-zinc-200 bg-white py-0 shadow-sm">
+      <CardContent className="space-y-3 p-3 sm:p-4">
+        <div className="space-y-2">
+          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_180px]">
+            <label className="relative block">
+              <span className="sr-only">Search scans</span>
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />
+              <Input
+                value={query}
+                placeholder="Search filename, target, host, service, or port"
+                className="h-10 rounded-md border-zinc-200 bg-zinc-50 pl-9 shadow-none transition-colors hover:bg-white focus-visible:bg-white"
+                onChange={(event) => onQueryChange(event.target.value)}
+              />
+            </label>
+
+            <Select
+              value={sort}
+              onValueChange={(value) => onSortChange(value as SortOption)}
+            >
+              <SelectTrigger
+                aria-label="Sort scans"
+                className={selectTriggerClass}
+              >
+                <ArrowDownUp className="size-4 text-zinc-500" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(sortLabels) as SortOption[]).map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {sortLabels[value]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-label="Filter by risk"
+                  className={filterTriggerClass}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <ShieldAlert className="size-4 shrink-0 text-zinc-500" />
+                    <span className="truncate">{riskFilterLabel}</span>
+                  </span>
+                  <ChevronDown className="size-4 shrink-0 text-zinc-500" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) rounded-md">
+                {severityOrder.map((severity) => {
+                  const checked = riskFilters.includes(severity);
+
+                  return (
+                    <DropdownMenuItem
+                      key={severity}
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        onRiskFilterChange(severity, !checked);
+                      }}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        tabIndex={-1}
+                        aria-hidden="true"
+                        className="pointer-events-none"
+                      />
+                      {riskFilterLabels[severity]}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-label="Filter by AI status"
+                  className={filterTriggerClass}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Sparkles className="size-4 shrink-0 text-zinc-500" />
+                    <span className="truncate">{aiStatusLabel}</span>
+                  </span>
+                  <ChevronDown className="size-4 shrink-0 text-zinc-500" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) rounded-md">
+                {defaultAiStatusFilters.map((status) => {
+                  const checked = aiStatusFilters.includes(status);
+
+                  return (
+                    <DropdownMenuItem
+                      key={status}
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        onAiStatusFilterChange(status, !checked);
+                      }}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        tabIndex={-1}
+                        aria-hidden="true"
+                        className="pointer-events-none"
+                      />
+                      {aiStatusLabels[status]}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Select
+              value={dateRange}
+              onValueChange={(value) =>
+                onDateRangeChange(value as DateRangeFilter)
+              }
+            >
+              <SelectTrigger
+                aria-label="Filter by parsed date"
+                className={selectTriggerClass}
+              >
+                <CalendarDays className="size-4 text-zinc-500" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(dateRangeLabels) as DateRangeFilter[]).map(
+                  (value) => (
+                    <SelectItem key={value} value={value}>
+                      {dateRangeLabels[value]}
+                    </SelectItem>
+                  ),
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 border-t border-zinc-100 pt-3 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium text-zinc-700">
+              Showing {filteredCount} of {totalCount} scans
+            </span>
+            {!allRisksSelected && riskFilters.length === 0 ? (
+              <Badge variant="outline" className={activeBadgeClass}>
+                No risks
+              </Badge>
+            ) : null}
+            {!allRisksSelected
+              ? riskFilters.map((severity) => (
+                  <Badge
+                    key={severity}
+                    variant="outline"
+                    className={activeBadgeClass}
+                  >
+                    {riskFilterLabels[severity]}
+                  </Badge>
+                ))
+              : null}
+            {!allAiStatusesSelected && aiStatusFilters.length === 0 ? (
+              <Badge variant="outline" className={activeBadgeClass}>
+                No AI status
+              </Badge>
+            ) : null}
+            {!allAiStatusesSelected
+              ? aiStatusFilters.map((status) => (
+                  <Badge
+                    key={status}
+                    variant="outline"
+                    className={activeBadgeClass}
+                  >
+                    {aiStatusLabels[status]}
+                  </Badge>
+                ))
+              : null}
+            {dateRange !== "all" ? (
+              <Badge variant="outline" className={activeBadgeClass}>
+                {dateRangeLabels[dateRange]}
+              </Badge>
+            ) : null}
+            {sort !== "parsed-desc" ? (
+              <Badge variant="outline" className={activeBadgeClass}>
+                {sortLabels[sort]}
+              </Badge>
+            ) : null}
+          </div>
+
+          {hasActiveFilters ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 self-start rounded-md px-2 text-zinc-600 hover:text-zinc-950 sm:self-auto"
+              onClick={onResetFilters}
+            >
+              <X className="size-4" />
+              Clear filters
+            </Button>
+          ) : null}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
