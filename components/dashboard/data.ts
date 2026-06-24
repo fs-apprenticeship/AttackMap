@@ -79,6 +79,15 @@ export function getSeverityCounts(scan: Scan): SeverityCount[] {
   }));
 }
 
+export function getServiceRiskCounts(scan: Scan): SeverityCount[] {
+  const services = scan.hosts.flatMap((host) => host.services);
+
+  return severityOrder.map((severity) => ({
+    severity,
+    count: services.filter((service) => service.riskLevel === severity).length,
+  }));
+}
+
 export function getRiskScore(scan: Scan) {
   const stats = getScanStats(scan);
   const exposedAssets = scan.hosts.filter((host) => host.internetExposed).length;
