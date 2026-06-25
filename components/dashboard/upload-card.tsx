@@ -16,12 +16,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+  MAX_SCAN_UPLOAD_BYTES,
+  XML_FILE_TYPES,
+  formatUploadLimit,
+} from "@/lib/parser/upload-validation-config";
 import type { Scan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type UploadState = "idle" | "selected" | "parsing" | "success" | "error";
-
-const XML_FILE_TYPES = new Set(["text/xml", "application/xml"]);
 
 const IDLE_MESSAGE = "Drop an Nmap XML file here, or click to browse.";
 
@@ -39,6 +42,15 @@ function isXmlFile(file: File) {
   return (
     file.name.toLowerCase().endsWith(".xml") || XML_FILE_TYPES.has(file.type)
   );
+}
+
+function getClientFileValidationMessage(file: File): string | null {
+  if (!isXmlFile(file)) return "Upload a valid Nmap XML file.";
+  if (file.size === 0) return "Scan file is empty.";
+  if (file.size > MAX_SCAN_UPLOAD_BYTES) {
+    return `Scan file is too large. Upload an XML file under ${formatUploadLimit()}.`;
+  }
+  return null;
 }
 
 export function UploadCard() {
@@ -89,12 +101,13 @@ export function UploadCard() {
       return;
     }
 
-    if (!isXmlFile(file)) {
+    const validationMessage = getClientFileValidationMessage(file);
+    if (validationMessage) {
       setSelectedFile(file);
       setParsedScan(null);
       setStatus("error");
       setProgress(0);
-      setStatusMessage("Upload a valid Nmap XML file.");
+      setStatusMessage(validationMessage);
       return;
     }
 
@@ -129,9 +142,10 @@ export function UploadCard() {
       return;
     }
 
-    if (!isXmlFile(selectedFile)) {
+    const validationMessage = getClientFileValidationMessage(selectedFile);
+    if (validationMessage) {
       setStatus("error");
-      setStatusMessage("Upload a valid Nmap XML file.");
+      setStatusMessage(validationMessage);
       return;
     }
 
