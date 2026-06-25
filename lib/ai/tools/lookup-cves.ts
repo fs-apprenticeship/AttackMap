@@ -1,0 +1,246 @@
+// Looks up CVEs for a service against the NVD 2.0 API.
+//
+// nmap emits CPE 2.2 URIs (cpe:/a:openbsd:openssh:9.6p1) while NVD speaks CPE
+// 2.3 (cpe:2.3:a:openbsd:openssh:9.6p1:*:...), so we convert before querying.
+//
+// We try a precise `virtualMatchString` (CPE) match first, but nmap's and NVD's
+// CPE dictionaries disagree on vendor names for many products — e.g. nmap says
+// `vsftpd:vsftpd` while NVD files the backdoor under `vsftpd_project:vsftpd`, so
+// the exact match silently returns nothing. When the CPE match is empty we fall
+// back to a vendor-agnostic `keywordSearch` on product + version (derived from
+// the CPE when one was supplied). Results are normalized to a small,
+// model-friendly shape and cached in-memory to respect NVD's rate limits.
+
+const NVD_API = "https://services.nvd.nist.gov/rest/json/cves/2.0";
+const DEFAULT_MAX_RESULTS = 10;
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+export type CveSeverity =
+  | "critical"
+  | "high"
+  | "medium"
+  | "low"
+  | "none"
+  | "unknown";
+
+export interface Cve {
+  id: string;
+  cvss: number | null;
+  severity: CveSeverity;
+  summary: string;
+  url: string;
+}
+
+export interface LookupCvesParams {
+  /** A CPE in 2.2 (cpe:/...) or 2.3 (cpe:2.3:...) form. Preferred — most precise. */
+  cpe?: string;
+  /** Fallback keyword search when no CPE is available. */
+  product?: string;
+  version?: string;
+  /** Cap on returned CVEs (default 10), sorted by CVSS descending. */
+  maxResults?: number;
+}
+
+/** Thrown when the NVD request fails (rate limit, upstream error, etc.). */
+export class CveLookupError extends Error {
+  constructor(
+    message: string,
+    readonly status?: number,
+  ) {
+    super(message);
+    this.name = "CveLookupError";
+  }
+}
+
+// ── NVD response shape (only the fields we read) ────────────────────────────
+
+interface NvdCvssMetric {
+  cvssData?: { baseScore?: number; baseSeverity?: string };
+  baseSeverity?: string; // CVSS v2 puts severity here, not under cvssData
+}
+
+interface NvdVulnerability {
+  cve?: {
+    id?: string;
+    descriptions?: { lang: string; value: string }[];
+    metrics?: {
+      cvssMetricV31?: NvdCvssMetric[];
+      cvssMetricV30?: NvdCvssMetric[];
+      cvssMetricV2?: NvdCvssMetric[];
+    };
+  };
+}
+
+interface NvdResponse {
+  vulnerabilities?: NvdVulnerability[];
+}
+
+// ── CPE handling ──────────────────────────────────────────────────────────
+
+/**
+ * Convert an nmap CPE 2.2 URI to the CPE 2.3 string NVD's virtualMatchString
+ * expects. Already-2.3 strings pass through; unrecognized formats are returned
+ * unchanged so NVD can reject them rather than us guessing.
+ */
+export function toVirtualMatchString(cpe: string): string {
+  if (cpe.startsWith("cpe:2.3:")) return cpe;
+  if (cpe.startsWith("cpe:/")) return `cpe:2.3:${cpe.slice("cpe:/".length)}`;
+  return cpe;
+}
+
+/**
+ * Pull the product and version out of a CPE (2.2 or 2.3) for the keyword
+ * fallback. Wildcards/placeholders (`*`, `-`, empty) are treated as absent.
+ */
+export function parseCpe(cpe: string): { product?: string; version?: string } {
+  const body = cpe.startsWith("cpe:2.3:")
+    ? cpe.slice("cpe:2.3:".length)
+    : cpe.startsWith("cpe:/")
+      ? cpe.slice("cpe:/".length)
+      : "";
+  if (!body) return {};
+  // [part, vendor, product, version, ...]
+  const parts = body.split(":");
+  const clean = (v: string | undefined) =>
+    v && v !== "*" && v !== "-" ? v : undefined;
+  return { product: clean(parts[2]), version: clean(parts[3]) };
+}
+
+// ── Normalization ─────────────────────────────────────────────────────────
+
+function severityFromScore(score: number | null): CveSeverity {
+  if (score === null) return "unknown";
+  if (score >= 9) return "critical";
+  if (score >= 7) return "high";
+  if (score >= 4) return "medium";
+  if (score > 0) return "low";
+  return "none";
+}
+
+function normalizeCve(entry: NvdVulnerability): Cve | null {
+  const cve = entry.cve;
+  if (!cve?.id) return null;
+
+  const summary =
+    cve.descriptions?.find((d) => d.lang === "en")?.value ??
+    cve.descriptions?.[0]?.value ??
+    "";
+
+  const m = cve.metrics ?? {};
+  const metric =
+    m.cvssMetricV31?.[0] ?? m.cvssMetricV30?.[0] ?? m.cvssMetricV2?.[0];
+  const cvss = metric?.cvssData?.baseScore ?? null;
+  const severityRaw = (
+    metric?.cvssData?.baseSeverity ?? metric?.baseSeverity
+  )?.toLowerCase();
+  const severity: CveSeverity =
+    severityRaw === "critical" ||
+    severityRaw === "high" ||
+    severityRaw === "medium" ||
+    severityRaw === "low"
+      ? severityRaw
+      : severityFromScore(cvss);
+
+  return {
+    id: cve.id,
+    cvss,
+    severity,
+    summary,
+    url: `https://nvd.nist.gov/vuln/detail/${cve.id}`,
+  };
+}
+
+// ── NVD request ─────────────────────────────────────────────────────────────
+
+const cache = new Map<string, { at: number; data: Cve[] }>();
+
+/** Run a single NVD query and return normalized, CVSS-sorted, capped results. */
+async function queryNvd(
+  param: "virtualMatchString" | "keywordSearch",
+  value: string,
+  maxResults: number,
+): Promise<Cve[]> {
+  const search = new URLSearchParams({ [param]: value });
+  search.set("resultsPerPage", String(Math.max(1, Math.min(maxResults, 50))));
+  const url = `${NVD_API}?${search.toString()}`;
+
+  const cached = cache.get(url);
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
+
+  // An API key raises NVD's rate limit from 5 to 50 requests per 30s.
+  const apiKey = process.env.NVD_API_KEY;
+  const headers: Record<string, string> = {};
+  if (apiKey) headers.apiKey = apiKey;
+
+  let res: Response;
+  try {
+    res = await fetch(url, { headers });
+  } catch (cause) {
+    throw new CveLookupError(`NVD request failed: ${String(cause)}`);
+  }
+
+  if (!res.ok) {
+    const hint =
+      res.status === 403 || res.status === 429
+        ? " (rate limited — set NVD_API_KEY to raise the limit)"
+        : "";
+    throw new CveLookupError(`NVD returned ${res.status}${hint}`, res.status);
+  }
+
+  const body = (await res.json()) as NvdResponse;
+  const cves = (body.vulnerabilities ?? [])
+    .map(normalizeCve)
+    .filter((c): c is Cve => c !== null)
+    .sort((a, b) => (b.cvss ?? -1) - (a.cvss ?? -1))
+    .slice(0, maxResults);
+
+  cache.set(url, { at: Date.now(), data: cves });
+  return cves;
+}
+
+// ── Public API ──────────────────────────────────────────────────────────────
+
+/**
+ * Look up CVEs affecting a service. Pass a `cpe` when available (most precise),
+ * otherwise `product` (+ optional `version`). Returns up to `maxResults` CVEs
+ * sorted by CVSS descending. Throws `CveLookupError` on a failed NVD request.
+ */
+export async function lookupCves(params: LookupCvesParams): Promise<Cve[]> {
+  const { cpe, maxResults = DEFAULT_MAX_RESULTS } = params;
+
+  if (cpe) {
+    const byCpe = await queryNvd(
+      "virtualMatchString",
+      toVirtualMatchString(cpe),
+      maxResults,
+    );
+    if (byCpe.length > 0) return byCpe;
+
+    // CPE match came up empty — likely an nmap/NVD vendor-name mismatch. Retry
+    // with a vendor-agnostic keyword search derived from the CPE.
+    const { product, version } = parseCpe(cpe);
+    if (product) {
+      return queryNvd(
+        "keywordSearch",
+        [product, version].filter(Boolean).join(" "),
+        maxResults,
+      );
+    }
+    return byCpe;
+  }
+
+  if (params.product) {
+    return queryNvd(
+      "keywordSearch",
+      [params.product, params.version].filter(Boolean).join(" "),
+      maxResults,
+    );
+  }
+
+  throw new CveLookupError("Provide a cpe or a product to look up CVEs.");
+}
+
+/** Clears the in-memory CVE cache. Exposed for tests. */
+export function clearCveCache(): void {
+  cache.clear();
+}
