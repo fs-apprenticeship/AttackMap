@@ -4,6 +4,7 @@ import {
   ScanDetailFrame,
   ScanNotFound,
 } from "@/components/scans/scan-detail-frame";
+import { ScanDetailSkeleton } from "@/components/scans/scan-detail-skeletons";
 
 import { getScanFromParams } from "./scan-detail-data";
 import { ScanDetailProvider } from "./scan-detail-context";
@@ -42,9 +43,7 @@ export default function ScanDetailLayout({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <Suspense
-      fallback={<p className="p-6 text-sm text-zinc-500">Loading...</p>}
-    >
+    <Suspense fallback={<ScanDetailSkeleton />}>
       <ScanDetailLayoutContent params={params}>
         {children}
       </ScanDetailLayoutContent>
