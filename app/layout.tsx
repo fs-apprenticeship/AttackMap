@@ -6,6 +6,8 @@ import { ShieldCheck } from 'lucide-react'
 import './globals.css'
 import { cn } from "@/lib/utils"
 import { HeaderAuth } from "@/components/header-auth"
+import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -32,31 +34,45 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider afterSignOutUrl="/">
-      <html lang="en" className={cn("font-sans", inter.variable)}>
+      <html
+        lang="en"
+        className={cn("font-sans", inter.variable)}
+        suppressHydrationWarning
+      >
         <body
-          className={`${geistSans.variable} ${geistMono.variable} bg-zinc-100 antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}
           data-gramm="false"
           data-gramm_editor="false"
           data-enable-grammarly="false"
         >
-          <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-white/95 px-4 backdrop-blur lg:px-6">
-            <Link href="/" className="flex items-center gap-3 rounded-md transition-opacity hover:opacity-80">
-              <div className="flex size-9 items-center justify-center rounded-md bg-zinc-950 text-white">
-                <ShieldCheck className="size-5" />
+          <ThemeProvider>
+            <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+              <div className="flex h-16 items-center justify-between px-4 lg:px-6">
+                <Link
+                  href="/"
+                  className="group flex items-center gap-3 rounded-md outline-none transition-opacity hover:opacity-85 focus-visible:ring-3 focus-visible:ring-ring/30"
+                >
+                  <div className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-[1.03]">
+                    <ShieldCheck className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold leading-5 text-foreground">
+                      AttackMap
+                    </p>
+                    <p className="hidden text-xs text-muted-foreground sm:block">
+                      Network scan intelligence
+                    </p>
+                  </div>
+                </Link>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <HeaderAuth />
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold leading-5 text-zinc-950">AttackMap</p>
-                <p className="hidden text-xs text-zinc-500 sm:block">
-                  Network scan intelligence
-                </p>
-              </div>
-            </Link>
-            <div className="flex items-center gap-3">
-              <HeaderAuth />
-            </div>
-          </header>
-          {children}
-          <Toaster position="bottom-right" />
+            </header>
+            {children}
+            <Toaster position="bottom-right" />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

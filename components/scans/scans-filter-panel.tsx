@@ -58,11 +58,11 @@ type ScansFilterPanelProps = {
 };
 
 const filterTriggerClass =
-  "h-10 w-full justify-between rounded-md border-zinc-200 bg-zinc-50 px-3 text-zinc-700 shadow-none hover:bg-white";
+  "h-10 w-full justify-between rounded-md border-border bg-background px-3 text-foreground shadow-sm hover:bg-muted/40";
 const selectTriggerClass =
-  "h-10 min-h-10 w-full rounded-md border-zinc-200 bg-zinc-50 text-sm font-medium text-zinc-700 shadow-none hover:bg-white data-[size=default]:h-10 *:data-[slot=select-value]:gap-2";
+  "h-10 min-h-10 w-full rounded-md border-border bg-background text-sm font-medium text-foreground shadow-sm hover:bg-muted/40 data-[size=default]:h-10 *:data-[slot=select-value]:gap-2";
 const activeBadgeClass =
-  "h-6 rounded-md border-zinc-200 bg-white px-2 text-zinc-600";
+  "h-6 rounded-md border-border bg-background px-2 text-muted-foreground";
 
 export function ScansFilterPanel({
   query,
@@ -99,17 +99,17 @@ export function ScansFilterPanel({
         : `${aiStatusFilters.length} statuses`;
 
   return (
-    <Card className="rounded-md border border-zinc-200 bg-white py-0 shadow-sm">
+    <Card className="py-0">
       <CardContent className="space-y-3 p-3 sm:p-4">
         <div className="space-y-2">
           <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_180px]">
             <label className="relative block">
               <span className="sr-only">Search scans</span>
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
                 placeholder="Search filename, target, host, service, or port"
-                className="h-10 rounded-md border-zinc-200 bg-zinc-50 pl-9 shadow-none transition-colors hover:bg-white focus-visible:bg-white"
+                className="h-10 rounded-md pl-9"
                 onChange={(event) => onQueryChange(event.target.value)}
               />
             </label>
@@ -122,7 +122,7 @@ export function ScansFilterPanel({
                 aria-label="Sort scans"
                 className={selectTriggerClass}
               >
-                <ArrowDownUp className="size-4 text-zinc-500" />
+                <ArrowDownUp className="size-4 text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -145,10 +145,10 @@ export function ScansFilterPanel({
                   className={filterTriggerClass}
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <ShieldAlert className="size-4 shrink-0 text-zinc-500" />
+                    <ShieldAlert className="size-4 shrink-0 text-muted-foreground" />
                     <span className="truncate">{riskFilterLabel}</span>
                   </span>
-                  <ChevronDown className="size-4 shrink-0 text-zinc-500" />
+                  <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) rounded-md">
@@ -185,10 +185,10 @@ export function ScansFilterPanel({
                   className={filterTriggerClass}
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <Sparkles className="size-4 shrink-0 text-zinc-500" />
+                    <Sparkles className="size-4 shrink-0 text-muted-foreground" />
                     <span className="truncate">{aiStatusLabel}</span>
                   </span>
-                  <ChevronDown className="size-4 shrink-0 text-zinc-500" />
+                  <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) rounded-md">
@@ -226,7 +226,7 @@ export function ScansFilterPanel({
                 aria-label="Filter by parsed date"
                 className={selectTriggerClass}
               >
-                <CalendarDays className="size-4 text-zinc-500" />
+                <CalendarDays className="size-4 text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -242,9 +242,9 @@ export function ScansFilterPanel({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-zinc-100 pt-3 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 border-t pt-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium text-zinc-700">
+            <span className="font-medium text-foreground">
               Showing {filteredCount} of {totalCount} scans
             </span>
             {!allRisksSelected && riskFilters.length === 0 ? (
@@ -296,7 +296,7 @@ export function ScansFilterPanel({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 self-start rounded-md px-2 text-zinc-600 hover:text-zinc-950 sm:self-auto"
+              className="h-8 self-start rounded-md px-2 text-muted-foreground hover:text-foreground sm:self-auto"
               onClick={onResetFilters}
             >
               <X className="size-4" />

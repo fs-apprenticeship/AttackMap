@@ -30,7 +30,7 @@ export function ScanDetailNav({ sections }: ScanDetailNavProps) {
             asChild
             size="sm"
             variant={active ? "default" : "ghost"}
-            className={cn("rounded-md", !active && "text-zinc-600")}
+            className={cn("rounded-md", !active && "text-muted-foreground")}
           >
             <Link href={section.href} aria-current={active ? "page" : undefined}>
               {section.label}

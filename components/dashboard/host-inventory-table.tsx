@@ -28,7 +28,7 @@ type HostInventoryTableProps = {
 
 export function HostInventoryTable({ hosts }: HostInventoryTableProps) {
   return (
-    <Card className="rounded-md border bg-white py-0 shadow-sm">
+    <Card className="py-0">
       <CardHeader className="border-b p-4 sm:grid-cols-[1fr_auto]">
         <div>
           <CardTitle>Host inventory</CardTitle>
@@ -39,7 +39,7 @@ export function HostInventoryTable({ hosts }: HostInventoryTableProps) {
         <CardAction>
           <Button
             variant="outline"
-            className="rounded-md bg-white text-zinc-700"
+            className="rounded-md bg-background text-foreground"
             size="lg"
           >
             Export CSV
@@ -48,7 +48,7 @@ export function HostInventoryTable({ hosts }: HostInventoryTableProps) {
       </CardHeader>
       <CardContent className="p-0">
         <Table className="min-w-[920px]">
-          <TableHeader className="bg-zinc-50 text-xs uppercase text-zinc-500">
+          <TableHeader className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <TableRow>
               <TableHead className="px-4 py-3 font-semibold">Host</TableHead>
               <TableHead className="px-4 py-3 font-semibold">OS</TableHead>
@@ -69,17 +69,17 @@ export function HostInventoryTable({ hosts }: HostInventoryTableProps) {
                 ) ?? "info";
 
               return (
-                <TableRow key={host.id} className="hover:bg-zinc-50">
+                <TableRow key={host.id} className="hover:bg-muted/40">
                   <TableCell className="px-4 py-3">
-                    <div className="font-medium text-zinc-950">
+                    <div className="font-medium text-foreground">
                       {host.hostname ?? host.ipAddress}
                     </div>
-                    <div className="text-zinc-500">{host.ipAddress}</div>
+                    <div className="text-muted-foreground">{host.ipAddress}</div>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-zinc-700">
+                  <TableCell className="px-4 py-3 text-muted-foreground">
                     {host.operatingSystem ?? "Unknown"}
                   </TableCell>
-                  <TableCell className="px-4 py-3 capitalize text-zinc-700">
+                  <TableCell className="px-4 py-3 capitalize text-muted-foreground">
                     {formatRole(host.role)}
                   </TableCell>
                   <TableCell className="px-4 py-3">
@@ -89,19 +89,19 @@ export function HostInventoryTable({ hosts }: HostInventoryTableProps) {
                         internet
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-zinc-600">
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
                         <ShieldCheck className="size-4" />
                         internal
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-zinc-700">
+                  <TableCell className="px-4 py-3 text-muted-foreground">
                     {host.services.length}
                   </TableCell>
                   <TableCell className="px-4 py-3">
                     <SeverityBadge severity={hostSeverity} />
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-zinc-500">
+                  <TableCell className="px-4 py-3 text-muted-foreground">
                     {host.scanFilename}
                   </TableCell>
                 </TableRow>

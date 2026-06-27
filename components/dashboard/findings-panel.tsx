@@ -17,10 +17,10 @@ type FindingsPanelProps = {
 
 export function FindingsPanel({ findings }: FindingsPanelProps) {
   return (
-    <Card className="rounded-md border bg-white py-0 shadow-sm">
+    <Card className="py-0">
       <CardHeader className="border-b p-4">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="size-5 text-zinc-700" />
+          <ShieldAlert className="size-5 text-muted-foreground" />
           <CardTitle>Findings</CardTitle>
         </div>
         <CardDescription className="mt-1">
@@ -29,12 +29,14 @@ export function FindingsPanel({ findings }: FindingsPanelProps) {
       </CardHeader>
       <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
         {findings.length === 0 ? (
-          <p className="text-sm text-zinc-500">No findings for this scan.</p>
+          <p className="text-sm text-muted-foreground">
+            No findings for this scan.
+          </p>
         ) : (
           findings.map((finding) => (
             <Card
               key={finding.id}
-              className="rounded-md border bg-zinc-50 py-0"
+              className="bg-muted/40 py-0"
             >
               <CardContent className="p-3">
                 <div className="flex items-start justify-between gap-3">
@@ -42,7 +44,7 @@ export function FindingsPanel({ findings }: FindingsPanelProps) {
                   <SeverityBadge severity={finding.severity} />
                 </div>
                 {finding.evidence ? (
-                  <p className="mt-2 text-sm leading-6 text-zinc-600">
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {finding.evidence}
                   </p>
                 ) : null}

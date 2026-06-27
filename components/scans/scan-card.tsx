@@ -16,25 +16,28 @@ export function ScanCard({ scan }: ScanCardProps) {
   const stats = getScanStats(scan);
 
   return (
-    <Card className="rounded-md border bg-white py-0 shadow-sm transition-colors hover:border-zinc-400">
+    <Card className="py-0 transition-colors hover:border-ring/50">
       <CardContent className="flex items-center gap-2 p-4">
-        <Link href={`/scans/${scan.id}`} className="flex min-w-0 flex-1 items-center gap-4">
+        <Link
+          href={`/scans/${scan.id}`}
+          className="flex min-w-0 flex-1 items-center gap-4 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="truncate text-sm font-semibold text-zinc-950">
+              <p className="truncate text-sm font-semibold text-foreground">
                 {scan.filename}
               </p>
               <SeverityBadge severity={scan.summary.riskLevel} />
             </div>
-            <p className="mt-1 truncate text-xs text-zinc-500">
+            <p className="mt-1 truncate text-xs text-muted-foreground">
               {scan.target} · parsed {formatDate(scan.parsedAt)}
             </p>
-            <p className="mt-2 text-xs text-zinc-600">
+            <p className="mt-2 text-xs text-muted-foreground">
               {stats.totalHosts} host{stats.totalHosts === 1 ? "" : "s"} ·{" "}
               {stats.openPorts} ports · {stats.findings} findings
             </p>
           </div>
-          <ArrowUpRight className="size-4 shrink-0 text-zinc-400" />
+          <ArrowUpRight className="size-4 shrink-0 text-muted-foreground" />
         </Link>
         <DeleteScanDialog scan={scan} />
       </CardContent>
