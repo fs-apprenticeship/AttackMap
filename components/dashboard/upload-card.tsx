@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { uploadScanAction } from "@/lib/scans/actions";
 import type { Scan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -153,19 +154,7 @@ export function UploadCard() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch("/api/scan/parse", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        throw new Error(data.error ?? "Failed to parse scan.");
-      }
-
-      const scan = (await response.json()) as Scan;
+      const scan = await uploadScanAction(formData);
 
       // Let the animation breathe even when the request returns quickly.
       const elapsed = Date.now() - startedAt;
@@ -216,10 +205,11 @@ export function UploadCard() {
   return (
     <Card
       className={cn(
-        "rounded-md border-dashed border-zinc-300 bg-white py-0 shadow-sm transition-colors",
-        isDragging && "border-zinc-950 bg-zinc-50",
-        status === "error" && "border-red-300 bg-red-50",
-        status === "success" && "border-emerald-300 bg-emerald-50",
+        "border-dashed py-0 transition-colors",
+        isDragging && "border-ring bg-muted/40",
+        status === "error" && "border-red-300 bg-red-50 dark:bg-red-950/20",
+        status === "success" &&
+          "border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20",
       )}
     >
       <CardContent
@@ -245,8 +235,8 @@ export function UploadCard() {
 
         <div
           className={cn(
-            "flex size-10 items-center justify-center rounded-md bg-zinc-950 text-white transition-colors",
-            status === "parsing" && "bg-zinc-900",
+            "flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground transition-colors",
+            status === "parsing" && "bg-primary/90",
             status === "error" && "bg-red-600",
             status === "success" && "bg-emerald-600",
           )}
@@ -258,7 +248,7 @@ export function UploadCard() {
             <h2 className="text-sm font-semibold">
               {isSuccess ? "Scan ready" : "Upload Nmap XML"}
             </h2>
-            <p className="mt-1 text-sm leading-6 text-zinc-600">
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {statusMessage}
             </p>
           </div>
@@ -278,10 +268,10 @@ export function UploadCard() {
         </div>
 
         {hasFile ? (
-          <div className="mt-4 rounded-md border border-zinc-200 bg-white p-3">
+          <div className="mt-4 rounded-md border bg-background p-3">
             <div className="flex items-center gap-2">
-              <FileText className="size-4 shrink-0 text-zinc-500" />
-              <p className="truncate text-sm font-medium text-zinc-900">
+              <FileText className="size-4 shrink-0 text-muted-foreground" />
+              <p className="truncate text-sm font-medium text-foreground">
                 {selectedFile.name}
               </p>
             </div>
@@ -293,7 +283,7 @@ export function UploadCard() {
                 {stats.findings === 1 ? "finding" : "findings"}
               </p>
             ) : (
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {(selectedFile.size / 1024).toFixed(1)} KB
               </p>
             )}
@@ -303,7 +293,7 @@ export function UploadCard() {
         {status === "parsing" ? (
           <div className="mt-4 space-y-2">
             <Progress value={progress} className="transition-all" />
-            <p className="text-xs text-zinc-500">{progress}% complete</p>
+            <p className="text-xs text-muted-foreground">{progress}% complete</p>
           </div>
         ) : null}
 

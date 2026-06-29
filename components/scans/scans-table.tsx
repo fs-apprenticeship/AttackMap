@@ -33,10 +33,10 @@ export function ScansTable({
   onToggleExpanded,
 }: ScansTableProps) {
   return (
-    <Card className="overflow-hidden rounded-md border bg-white py-0 shadow-sm">
+    <Card className="overflow-hidden py-0">
       <Table>
         <TableHeader>
-          <TableRow className="bg-zinc-50 hover:bg-zinc-50">
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
             <TableHead className="px-4">Filename</TableHead>
             <TableHead>Target</TableHead>
             <TableHead>Risk</TableHead>
@@ -58,13 +58,13 @@ export function ScansTable({
                   <TableCell className="max-w-[260px] px-4">
                     <Link
                       href={`/scans/${scan.id}`}
-                      className="block truncate text-sm font-semibold text-zinc-950 hover:underline"
+                      className="block truncate text-sm font-semibold text-foreground hover:underline"
                     >
                       {scan.filename}
                     </Link>
                   </TableCell>
                   <TableCell className="max-w-[320px] whitespace-normal">
-                    <span className="block truncate text-sm text-zinc-600">
+                    <span className="block truncate text-sm text-muted-foreground">
                       {scan.target}
                     </span>
                   </TableCell>
@@ -80,30 +80,30 @@ export function ScansTable({
                             <Badge
                               key={severity}
                               variant="outline"
-                              className="h-6 rounded-md border-zinc-200 bg-zinc-50 px-2 text-zinc-700"
+                              className="h-6 rounded-md border-border bg-background px-2 text-muted-foreground"
                             >
                               {severity[0].toUpperCase()}
                               {count}
                             </Badge>
                           ))
                       ) : (
-                        <span className="text-sm text-zinc-500">0</span>
+                        <span className="text-sm text-muted-foreground">0</span>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-3 text-sm text-zinc-600">
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
-                        <Server className="size-3.5 text-zinc-400" />
+                        <Server className="size-3.5" />
                         {stats.totalHosts}
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <Network className="size-3.5 text-zinc-400" />
+                        <Network className="size-3.5" />
                         {stats.openPorts}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-zinc-600">
+                  <TableCell className="text-sm text-muted-foreground">
                     {formatDate(scan.parsedAt)}
                   </TableCell>
                   <TableCell>
@@ -112,7 +112,7 @@ export function ScansTable({
                         type="button"
                         size="sm"
                         variant="ghost"
-                        className="rounded-md text-zinc-600"
+                        className="rounded-md text-muted-foreground"
                         aria-expanded={isExpanded}
                         onClick={() => onToggleExpanded(scan.id)}
                       >
@@ -122,7 +122,7 @@ export function ScansTable({
                         asChild
                         size="icon-sm"
                         variant="ghost"
-                        className="rounded-md text-zinc-600"
+                        className="rounded-md text-muted-foreground"
                         aria-label={`Open ${scan.target} dashboard`}
                       >
                         <Link href={`/scans/${scan.id}`}>
@@ -134,7 +134,7 @@ export function ScansTable({
                   </TableCell>
                 </TableRow>
                 {isExpanded ? (
-                  <TableRow className="bg-zinc-50/70">
+                  <TableRow className="bg-muted/30">
                     <TableCell
                       colSpan={7}
                       className="px-4 py-4 whitespace-normal"
@@ -164,7 +164,7 @@ function ScanPreview({
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.6fr)]">
       <div>
-        <p className="text-xs font-semibold uppercase text-zinc-500">
+        <p className="text-xs font-semibold uppercase text-muted-foreground">
           Top findings
         </p>
         {topFindings.length > 0 ? (
@@ -172,42 +172,42 @@ function ScanPreview({
             {topFindings.map((finding) => (
               <div
                 key={finding.id}
-                className="rounded-md border border-zinc-200 bg-white p-3"
+                className="rounded-md border bg-card p-3"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <SeverityBadge severity={finding.severity} />
-                  <p className="text-sm font-medium text-zinc-900">
+                  <p className="text-sm font-medium text-foreground">
                     {finding.title}
                   </p>
                 </div>
-                <p className="mt-1 line-clamp-2 text-xs text-zinc-500">
+                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                   {finding.evidence}
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="mt-2 text-sm text-zinc-500">
+          <p className="mt-2 text-sm text-muted-foreground">
             No findings were detected for this scan.
           </p>
         )}
       </div>
-      <div className="rounded-md border border-zinc-200 bg-white p-3">
-        <p className="text-xs font-semibold uppercase text-zinc-500">
+      <div className="rounded-md border bg-card p-3">
+        <p className="text-xs font-semibold uppercase text-muted-foreground">
           Quick links
         </p>
         <div className="mt-3 grid gap-2">
-          <Button asChild variant="outline" className="rounded-md bg-white">
+          <Button asChild variant="outline" className="rounded-md bg-background">
             <Link href={`/scans/${scan.id}`}>Open dashboard</Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-md bg-white">
+          <Button asChild variant="outline" className="rounded-md bg-background">
             <Link href={`/scans/${scan.id}/findings`}>Review findings</Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-md bg-white">
+          <Button asChild variant="outline" className="rounded-md bg-background">
             <Link href={`/scans/${scan.id}/hosts`}>View hosts</Link>
           </Button>
         </div>
-        <p className="mt-3 text-xs text-zinc-500">
+        <p className="mt-3 text-xs text-muted-foreground">
           {stats.webServices} web services, {stats.riskyServices} risky
           services, {stats.totalHosts} hosts in this scan.
         </p>

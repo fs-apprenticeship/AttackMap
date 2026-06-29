@@ -86,17 +86,17 @@ export function Dashboard({ scan }: DashboardProps) {
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition-colors hover:border-zinc-400"
+            className="rounded-md border bg-card p-4 text-card-foreground shadow-sm transition-colors hover:border-ring/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <div className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-md bg-zinc-100 text-zinc-700">
+              <span className="flex size-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <item.icon className="size-4" />
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-zinc-950">
+                <p className="truncate text-sm font-semibold text-foreground">
                   {item.label}
                 </p>
-                <p className="text-xs text-zinc-500">{item.value}</p>
+                <p className="text-xs text-muted-foreground">{item.value}</p>
               </div>
             </div>
           </Link>

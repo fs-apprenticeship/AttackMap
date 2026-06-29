@@ -3,31 +3,30 @@
 import { useAuth, SignInButton, SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+
 export function HomeCTA() {
   const { isSignedIn } = useAuth();
 
   if (isSignedIn) {
     return (
-      <Link
-        href="/scans"
-        className="inline-flex h-10 items-center rounded-md bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800"
-      >
-        View scans
-      </Link>
+      <Button asChild size="lg">
+        <Link href="/scans">View scans</Link>
+      </Button>
     );
   }
 
   return (
     <>
       <SignUpButton forceRedirectUrl="/scans">
-        <button className="h-10 rounded-md bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800">
+        <Button size="lg">
           Get started
-        </button>
+        </Button>
       </SignUpButton>
       <SignInButton forceRedirectUrl="/scans">
-        <button className="h-10 rounded-md border border-zinc-300 bg-white px-5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50">
+        <Button size="lg" variant="outline" className="bg-background">
           Sign in
-        </button>
+        </Button>
       </SignInButton>
     </>
   );

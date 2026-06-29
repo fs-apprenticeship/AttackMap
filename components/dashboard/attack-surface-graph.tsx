@@ -123,14 +123,14 @@ export function AttackSurfaceGraph({ hosts }: AttackSurfaceGraphProps) {
 
   if (!activeHost) {
     return (
-      <div className="flex min-h-[430px] items-center justify-center rounded-md border bg-white text-sm text-zinc-500 shadow-sm">
+      <div className="flex min-h-[430px] items-center justify-center rounded-md border bg-card text-sm text-muted-foreground shadow-sm">
         No live hosts found in this scan.
       </div>
     );
   }
 
   return (
-    <Card className="rounded-md border bg-white py-0 shadow-sm">
+    <Card className="py-0">
       <CardHeader className="flex flex-col gap-3 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <CardTitle>Attack surface graph</CardTitle>
@@ -139,7 +139,7 @@ export function AttackSurfaceGraph({ hosts }: AttackSurfaceGraphProps) {
           </CardDescription>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2 text-xs font-medium text-zinc-500">
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <span className="size-2 rounded-full bg-red-500" />
               high
@@ -162,7 +162,7 @@ export function AttackSurfaceGraph({ hosts }: AttackSurfaceGraphProps) {
           >
             <SelectTrigger
               aria-label="Select host"
-              className="h-9 min-h-9 w-full rounded-md border-zinc-200 bg-zinc-50 text-sm font-medium shadow-none sm:w-[260px] data-[size=default]:h-9"
+              className="h-9 min-h-9 w-full rounded-md bg-background text-sm font-medium sm:w-[260px] data-[size=default]:h-9"
             >
               <SelectValue />
             </SelectTrigger>
@@ -178,9 +178,9 @@ export function AttackSurfaceGraph({ hosts }: AttackSurfaceGraphProps) {
       </CardHeader>
 
       <CardContent className="grid min-h-[540px] gap-0 p-0 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="relative h-[540px] min-w-0 bg-[linear-gradient(to_right,#e4e4e7_1px,transparent_1px),linear-gradient(to_bottom,#e4e4e7_1px,transparent_1px)] bg-[size:28px_28px]">
+        <div className="relative h-[540px] min-w-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px]">
           {activeHost.services.length === 0 ? (
-            <div className="absolute left-4 top-4 z-10 rounded-md border bg-white px-3 py-2 text-xs text-zinc-500 shadow-sm">
+            <div className="absolute left-4 top-4 z-10 rounded-md border bg-card px-3 py-2 text-xs text-muted-foreground shadow-sm">
               This host has no exposed services in the scan.
             </div>
           ) : null}
@@ -200,7 +200,7 @@ export function AttackSurfaceGraph({ hosts }: AttackSurfaceGraphProps) {
             <Background color="#d4d4d8" gap={28} />
             <Controls
               position="bottom-left"
-              className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm"
+              className="overflow-hidden rounded-md border bg-card shadow-sm"
             />
           </ReactFlow>
         </div>
@@ -338,10 +338,12 @@ function ServiceNode({ data, selected }: NodeProps<ServiceGraphNode>) {
 function GraphDetailPanel({ selection }: { selection: SelectedNode | null }) {
   if (!selection) {
     return (
-      <aside className="flex min-h-[240px] flex-col justify-center border-t bg-zinc-50 p-4 text-center xl:border-l xl:border-t-0">
-        <MousePointer2 className="mx-auto size-5 text-zinc-400" />
-        <p className="mt-2 text-sm font-medium text-zinc-700">Select a node</p>
-        <p className="mt-1 text-sm leading-6 text-zinc-500">
+      <aside className="flex min-h-[240px] flex-col justify-center border-t bg-muted/40 p-4 text-center xl:border-l xl:border-t-0">
+        <MousePointer2 className="mx-auto size-5 text-muted-foreground" />
+        <p className="mt-2 text-sm font-medium text-foreground">
+          Select a node
+        </p>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
           Click a host or service to inspect its scan details.
         </p>
       </aside>
@@ -352,16 +354,16 @@ function GraphDetailPanel({ selection }: { selection: SelectedNode | null }) {
     const { host, riskLevel } = selection;
 
     return (
-      <aside className="border-t bg-zinc-50 p-4 xl:border-l xl:border-t-0">
+      <aside className="border-t bg-muted/40 p-4 xl:border-l xl:border-t-0">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase text-zinc-500">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">
               Host
             </p>
-            <h3 className="mt-1 truncate text-base font-semibold text-zinc-950">
+            <h3 className="mt-1 truncate text-base font-semibold text-foreground">
               {host.hostname ?? host.ipAddress}
             </h3>
-            <p className="text-sm text-zinc-500">{host.ipAddress}</p>
+            <p className="text-sm text-muted-foreground">{host.ipAddress}</p>
           </div>
           <SeverityBadge severity={riskLevel} />
         </div>
@@ -380,7 +382,7 @@ function GraphDetailPanel({ selection }: { selection: SelectedNode | null }) {
                   internet
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-zinc-700">
+                <span className="inline-flex items-center gap-1 text-muted-foreground">
                   <ShieldCheck className="size-4" />
                   internal
                 </span>
@@ -393,7 +395,7 @@ function GraphDetailPanel({ selection }: { selection: SelectedNode | null }) {
         <Separator className="my-4" />
 
         <div>
-          <p className="text-xs font-semibold uppercase text-zinc-500">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">
             Severity mix
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -405,10 +407,10 @@ function GraphDetailPanel({ selection }: { selection: SelectedNode | null }) {
               return (
                 <div
                   key={severity}
-                  className="rounded-md border bg-white p-2 text-sm"
+                  className="rounded-md border bg-background p-2 text-sm"
                 >
                   <SeverityBadge severity={severity} />
-                  <p className="mt-2 text-lg font-semibold text-zinc-950">
+                  <p className="mt-2 text-lg font-semibold text-foreground">
                     {count}
                   </p>
                 </div>
@@ -424,16 +426,16 @@ function GraphDetailPanel({ selection }: { selection: SelectedNode | null }) {
   const product = [service.product, service.version].filter(Boolean).join(" ");
 
   return (
-    <aside className="border-t bg-zinc-50 p-4 xl:border-l xl:border-t-0">
+    <aside className="border-t bg-muted/40 p-4 xl:border-l xl:border-t-0">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase text-zinc-500">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">
             Service
           </p>
-          <h3 className="mt-1 text-base font-semibold text-zinc-950">
+          <h3 className="mt-1 text-base font-semibold text-foreground">
             {service.port}/{service.protocol}
           </h3>
-          <p className="truncate text-sm text-zinc-500">
+          <p className="truncate text-sm text-muted-foreground">
             {host.hostname ?? host.ipAddress}
           </p>
         </div>
@@ -457,12 +459,12 @@ function GraphDetailPanel({ selection }: { selection: SelectedNode | null }) {
 
       <Separator className="my-4" />
 
-      <div className="rounded-md border bg-white p-3">
-        <div className="flex items-center gap-2 text-sm font-medium text-zinc-950">
-          <Activity className="size-4 text-zinc-500" />
+      <div className="rounded-md border bg-background p-3">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <Activity className="size-4 text-muted-foreground" />
           Exposure path
         </div>
-        <p className="mt-2 text-sm leading-6 text-zinc-600">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {host.ipAddress} exposes {service.serviceName} on port {service.port}.
           Prioritize this service when its severity is high and the host is
           internet-facing.
@@ -475,10 +477,10 @@ function GraphDetailPanel({ selection }: { selection: SelectedNode | null }) {
 function DetailRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="grid gap-1">
-      <span className="text-xs font-semibold uppercase text-zinc-500">
+      <span className="text-xs font-semibold uppercase text-muted-foreground">
         {label}
       </span>
-      <span className="min-w-0 break-words text-zinc-800">{value}</span>
+      <span className="min-w-0 break-words text-foreground">{value}</span>
     </div>
   );
 }
