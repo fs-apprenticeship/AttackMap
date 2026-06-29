@@ -1,14 +1,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRightLeft, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { getScanCached } from "@/lib/scans/queries";
 
-async function ScanDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+async function ScanDetail({ id }: { id: string }) {
   const scan = await getScanCached(id);
 
   if (!scan) {
@@ -30,11 +29,13 @@ async function ScanDetail({ params }: { params: Promise<{ id: string }> }) {
   return <Dashboard scan={scan} />;
 }
 
-export default function ScanDetailPage({
+export default async function ScanDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">
@@ -45,16 +46,24 @@ export default function ScanDetailPage({
               All scans
             </Link>
           </Button>
-          <Button asChild className="rounded-md">
-            <Link href="/upload">
-              <Plus className="size-4" />
-              New scan
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" className="rounded-md bg-white">
+              <Link href={`/compare?base=${encodeURIComponent(id)}`}>
+                <ArrowRightLeft className="size-4" />
+                Compare
+              </Link>
+            </Button>
+            <Button asChild className="rounded-md">
+              <Link href="/upload">
+                <Plus className="size-4" />
+                New scan
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
-          <ScanDetail params={params} />
+          <ScanDetail id={id} />
         </Suspense>
       </div>
     </main>

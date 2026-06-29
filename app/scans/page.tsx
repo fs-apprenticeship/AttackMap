@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { FileUp, Plus } from "lucide-react";
+import { ArrowRightLeft, FileUp, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,12 +16,20 @@ export default function ScansPage() {
             <h1 className="text-2xl font-semibold tracking-tight">Recent scans</h1>
             <p className="mt-1 text-sm text-zinc-600">All saved scans.</p>
           </div>
-          <Button asChild className="rounded-md">
-            <Link href="/upload">
-              <Plus className="size-4" />
-              New scan
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" className="rounded-md bg-white">
+              <Link href="/compare">
+                <ArrowRightLeft className="size-4" />
+                Compare
+              </Link>
+            </Button>
+            <Button asChild className="rounded-md">
+              <Link href="/upload">
+                <Plus className="size-4" />
+                New scan
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="mt-6">

@@ -12,12 +12,12 @@ import {
   type RiskLevel,
 } from "./schema";
 import { WEB_PORTS } from "./web-service";
+import { NMAP_XML_ARRAY_TAGS } from "./upload-validation-config";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@_",
-  isArray: (name) =>
-    ["host", "port", "hostname", "cpe", "script", "elem", "table", "osmatch"].includes(name),
+  isArray: (name) => NMAP_XML_ARRAY_TAGS.includes(name),
   parseAttributeValue: false,
   trimValues: true,
 });
@@ -556,6 +556,10 @@ export function buildRemediationPlan(findings: Finding[]): RemediationPlan {
 
 export function parseNmapScan(xml: string, filename: string): Scan {
   const raw = parser.parse(xml);
+  return parseNmapScanFromParsed(raw, filename);
+}
+
+export function parseNmapScanFromParsed(raw: AnyNode, filename: string): Scan {
   const nmaprun = raw.nmaprun ?? {};
   const allRawHosts: AnyNode[] = nmaprun.host ?? [];
   const upRawHosts = allRawHosts.filter((h: AnyNode) => h.status?.["@_state"] === "up");
