@@ -158,21 +158,75 @@ export function validateXmlSafety(xml: string): UploadValidationResult {
     return issue("unsafe_xml", "Scan XML contains unsupported control characters.");
   }
 
-  if (/<!DOCTYPE/i.test(xml) || /<!ENTITY/i.test(xml)) {
+  // Real `nmap -oX` output always emits a bare `<!DOCTYPE nmaprun>` with no
+  // internal subset and no external reference, so it carries no XXE risk and
+  // should be allowed. What XXE/entity-bomb attacks actually need is either an
+  // internal subset (`[...]`) or an external `SYSTEM`/`PUBLIC` reference —
+  // reject only those. `<!ENTITY` is rejected unconditionally below as a
+  // second layer, since that's the construct an entity-expansion attack
+  // ultimately depends on.
+  if (hasUnsafeDoctype(xml)) {
     return issue(
       "unsafe_xml",
-      "Scan XML cannot include DTD or entity declarations.",
+      "Scan XML cannot include an internal or external DTD subset.",
     );
   }
 
-  if (/<\?xml-stylesheet/i.test(xml)) {
+  if (/<!ENTITY/i.test(xml)) {
     return issue(
       "unsafe_xml",
-      "Scan XML cannot include stylesheet processing instructions.",
+      "Scan XML cannot include entity declarations.",
+    );
+  }
+
+  // Real `nmap -oX` output always emits a stylesheet PI pointing at its own
+  // local `nmap.xsl` via a `file:` URI; our parser never resolves processing
+  // instructions, so that's inert. A PI pointing at a network scheme has no
+  // legitimate reason to appear in scan output and is the only variant that
+  // could ever cause an SSRF/fetch if some future code processed it.
+  if (hasUnsafeStylesheet(xml)) {
+    return issue(
+      "unsafe_xml",
+      "Scan XML stylesheet processing instructions must not reference a network location.",
     );
   }
 
   return { ok: true };
+}
+
+function hasUnsafeDoctype(xml: string): boolean {
+  const DOCTYPE_START = /<!DOCTYPE\b/gi;
+  let match: RegExpExecArray | null;
+  while ((match = DOCTYPE_START.exec(xml))) {
+    let i = match.index + match[0].length;
+    let bracketDepth = 0;
+    while (i < xml.length) {
+      const ch = xml[i];
+      if (ch === "[") bracketDepth++;
+      else if (ch === "]") bracketDepth = Math.max(0, bracketDepth - 1);
+      else if (ch === ">" && bracketDepth === 0) break;
+      i++;
+    }
+    const declaration = xml.slice(match.index, i + 1);
+    if (
+      declaration.includes("[") ||
+      /\bSYSTEM\b/i.test(declaration) ||
+      /\bPUBLIC\b/i.test(declaration)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function hasUnsafeStylesheet(xml: string): boolean {
+  const matches = xml.match(/<\?xml-stylesheet\b[^?]*\?>/gi);
+  if (!matches) return false;
+
+  return matches.some((pi) => {
+    const href = pi.match(/href\s*=\s*["']([^"']*)["']/i)?.[1] ?? "";
+    return /^[a-z][a-z0-9+.-]*:/i.test(href) && !/^file:/i.test(href);
+  });
 }
 
 function validateNmapIdentity(
