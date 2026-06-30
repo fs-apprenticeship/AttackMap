@@ -20,7 +20,11 @@
           "protocol": "tcp",
           "serviceName": "domain",
           "product": "Simple DNS Plus",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:jh_software:simple_dns_plus",
+            "cpe:/o:microsoft:windows"
+          ]
         },
         {
           "id": "10.129.244.207:tcp:88",
@@ -29,7 +33,11 @@
           "serviceName": "kerberos-sec",
           "product": "Microsoft Windows Kerberos",
           "extrainfo": "server time: 2026-05-28 08:06:12Z",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/a:microsoft:kerberos",
+            "cpe:/o:microsoft:windows"
+          ]
         },
         {
           "id": "10.129.244.207:tcp:135",
@@ -37,7 +45,10 @@
           "protocol": "tcp",
           "serviceName": "msrpc",
           "product": "Microsoft Windows RPC",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/o:microsoft:windows"
+          ]
         },
         {
           "id": "10.129.244.207:tcp:139",
@@ -45,7 +56,10 @@
           "protocol": "tcp",
           "serviceName": "netbios-ssn",
           "product": "Microsoft Windows netbios-ssn",
-          "riskLevel": "high"
+          "riskLevel": "high",
+          "cpe": [
+            "cpe:/o:microsoft:windows"
+          ]
         },
         {
           "id": "10.129.244.207:tcp:389",
@@ -54,21 +68,26 @@
           "serviceName": "ldap",
           "product": "Microsoft Windows Active Directory LDAP",
           "extrainfo": "Domain: garfield.htb0., Site: Default-First-Site-Name",
-          "riskLevel": "high"
+          "riskLevel": "high",
+          "cpe": [
+            "cpe:/o:microsoft:windows"
+          ]
         },
         {
           "id": "10.129.244.207:tcp:445",
           "port": 445,
           "protocol": "tcp",
           "serviceName": "microsoft-ds",
-          "riskLevel": "high"
+          "riskLevel": "high",
+          "cpe": []
         },
         {
           "id": "10.129.244.207:tcp:464",
           "port": 464,
           "protocol": "tcp",
           "serviceName": "kpasswd5",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": []
         },
         {
           "id": "10.129.244.207:tcp:593",
@@ -77,21 +96,26 @@
           "serviceName": "ncacn_http",
           "product": "Microsoft Windows RPC over HTTP",
           "version": "1.0",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": [
+            "cpe:/o:microsoft:windows"
+          ]
         },
         {
           "id": "10.129.244.207:tcp:636",
           "port": 636,
           "protocol": "tcp",
           "serviceName": "tcpwrapped",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": []
         },
         {
           "id": "10.129.244.207:tcp:2179",
           "port": 2179,
           "protocol": "tcp",
           "serviceName": "vmrdp",
-          "riskLevel": "high"
+          "riskLevel": "high",
+          "cpe": []
         },
         {
           "id": "10.129.244.207:tcp:3268",
@@ -100,14 +124,18 @@
           "serviceName": "ldap",
           "product": "Microsoft Windows Active Directory LDAP",
           "extrainfo": "Domain: garfield.htb0., Site: Default-First-Site-Name",
-          "riskLevel": "high"
+          "riskLevel": "high",
+          "cpe": [
+            "cpe:/o:microsoft:windows"
+          ]
         },
         {
           "id": "10.129.244.207:tcp:3269",
           "port": 3269,
           "protocol": "tcp",
           "serviceName": "tcpwrapped",
-          "riskLevel": "medium"
+          "riskLevel": "medium",
+          "cpe": []
         },
         {
           "id": "10.129.244.207:tcp:3389",
@@ -115,7 +143,10 @@
           "protocol": "tcp",
           "serviceName": "ms-wbt-server",
           "product": "Microsoft Terminal Services",
-          "riskLevel": "high"
+          "riskLevel": "high",
+          "cpe": [
+            "cpe:/o:microsoft:windows"
+          ]
         }
       ]
     }

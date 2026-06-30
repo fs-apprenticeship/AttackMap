@@ -104,6 +104,7 @@ model Service {
   product     String?
   version     String?
   extrainfo   String?
+  cpe         String[]
   riskLevel   RiskLevel @map("risk_level")
 
   host Host @relation(fields: [hostId], references: [id], onDelete: Cascade)

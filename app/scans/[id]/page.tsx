@@ -2,10 +2,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRightLeft, Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Dashboard } from "@/components/dashboard/dashboard";
-import { getScanCached } from "@/lib/scans/queries";
+import { useScanDetail } from "./scan-detail-context";
 
 async function ScanDetail({ id }: { id: string }) {
   const scan = await getScanCached(id);
@@ -29,43 +27,8 @@ async function ScanDetail({ id }: { id: string }) {
   return <Dashboard scan={scan} />;
 }
 
-export default async function ScanDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export default function ScanDetailPage() {
+  const scan = useScanDetail();
 
-  return (
-    <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
-      <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">
-        <div className="mb-5 flex items-center justify-between">
-          <Button asChild variant="outline" className="rounded-md bg-white">
-            <Link href="/scans">
-              <ArrowLeft className="size-4" />
-              All scans
-            </Link>
-          </Button>
-          <div className="flex items-center gap-2">
-            <Button asChild variant="outline" className="rounded-md bg-white">
-              <Link href={`/compare?base=${encodeURIComponent(id)}`}>
-                <ArrowRightLeft className="size-4" />
-                Compare
-              </Link>
-            </Button>
-            <Button asChild className="rounded-md">
-              <Link href="/upload">
-                <Plus className="size-4" />
-                New scan
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
-          <ScanDetail id={id} />
-        </Suspense>
-      </div>
-    </main>
-  );
+  return <Dashboard scan={scan} />;
 }
