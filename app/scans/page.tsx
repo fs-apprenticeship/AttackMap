@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { FileUp, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { FirstScanEmptyState } from "@/components/app-state-common";
 import { ScansList } from "@/components/scans/scans-list";
+import { ScansContentSkeleton } from "@/components/scans/scans-skeletons";
 import { listScansCached } from "@/lib/scans/queries";
 
 export default function ScansPage() {
@@ -27,7 +28,7 @@ export default function ScansPage() {
         </div>
 
         <div className="mt-6">
-          <Suspense fallback={<ScansListSkeleton />}>
+          <Suspense fallback={<ScansContentSkeleton />}>
             <ScansContent />
           </Suspense>
         </div>
@@ -40,34 +41,8 @@ async function ScansContent() {
   const scans = await listScansCached();
 
   if (scans.length === 0) {
-    return (
-      <Card className="rounded-md border-dashed bg-white shadow-sm">
-        <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
-          <div className="flex size-10 items-center justify-center rounded-md bg-zinc-950 text-white">
-            <FileUp className="size-5" />
-          </div>
-          <p className="text-sm font-medium">No scans yet</p>
-          <p className="max-w-sm text-sm text-zinc-500">
-            Upload an Nmap XML scan to see it here.
-          </p>
-          <Button asChild className="mt-1 rounded-md">
-            <Link href="/upload">Upload a scan</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    );
+    return <FirstScanEmptyState />;
   }
 
   return <ScansList scans={scans} />;
-}
-
-function ScansListSkeleton() {
-  return (
-    <div className="space-y-3 animate-pulse">
-      <div className="h-[168px] rounded-md bg-white" />
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="h-24 rounded-md bg-white" />
-      ))}
-    </div>
-  );
 }

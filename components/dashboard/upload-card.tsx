@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { uploadScanAction } from "@/lib/scans/actions";
 import type { Scan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -153,19 +154,7 @@ export function UploadCard() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch("/api/scan/parse", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        throw new Error(data.error ?? "Failed to parse scan.");
-      }
-
-      const scan = (await response.json()) as Scan;
+      const scan = await uploadScanAction(formData);
 
       // Let the animation breathe even when the request returns quickly.
       const elapsed = Date.now() - startedAt;
