@@ -4,6 +4,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Scan } from "@/lib/types";
+import { ScanChat } from "./scan-chat";
 import { ScanDetailNav } from "./scan-detail-nav";
 
 export type ScanSection =
@@ -91,6 +92,8 @@ export function ScanDetailFrame({
             </Link>
           </Button>
         </div>
+
+        <ScanChat scan={scan} />
 
         <div className="mb-5 overflow-hidden rounded-md border bg-card text-card-foreground shadow-sm">
           <div className="border-b px-4 py-3">
