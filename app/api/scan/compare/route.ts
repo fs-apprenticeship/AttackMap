@@ -6,8 +6,8 @@ import { compareScans } from "@/lib/scans/compare";
 import { getScan } from "@/lib/scans/store";
 
 const CompareRequestSchema = z.object({
-  baseScanId: z.string(),
-  comparisonScanId: z.string(),
+  baseScanId: z.string().min(1),
+  comparisonScanId: z.string().min(1),
 });
 
 export async function POST(request: NextRequest) {

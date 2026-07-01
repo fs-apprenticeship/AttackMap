@@ -147,6 +147,16 @@ export function parseValidatedNmapXmlText(
     return issue("empty_scan", "Nmap XML contains no host results.");
   }
 
+  const hasUpHost = hosts.some(
+    (h) => isRecord(h) && isRecord(h.status) && h.status["@_state"] === "up",
+  );
+  if (!hasUpHost) {
+    return issue(
+      "empty_scan",
+      "Nmap XML contains no live hosts. Rescan or upload a scan with at least one host that is up.",
+    );
+  }
+
   const sizeValidation = validateNmapStructureSize(hosts);
   if (!sizeValidation.ok) return sizeValidation;
 

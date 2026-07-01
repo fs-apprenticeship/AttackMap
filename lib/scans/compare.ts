@@ -59,16 +59,14 @@ export function serviceKey(host: Host, service: Service): string {
   return `${hostKey(host)}:${service.protocol.toLowerCase()}:${service.port}`;
 }
 
+// Identity is (host, severity, title) only. Every finding title emitted by
+// the parser is a fixed string per finding category (see parse-nmap.ts), so
+// title already acts as a stable "finding type" - evidence is left out of the
+// key because it carries dynamic, run-specific detail (ports, banners) that
+// would otherwise make an unchanged finding look like new+resolved churn.
 export function findingFingerprint(finding: Finding): string {
-  return [
-    finding.hostId ?? finding.host ?? "",
-    finding.severity,
-    finding.title,
-    finding.evidence,
-  ]
-    .join("|")
-    .trim()
-    .toLowerCase();
+  const host = (finding.hostId ?? finding.host ?? "").trim().toLowerCase();
+  return [host, finding.severity, finding.title].join("|").trim().toLowerCase();
 }
 
 function comparisonWarnings(

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, FileUp } from "lucide-react";
 
@@ -5,13 +6,13 @@ import { ScanComparisonView } from "@/components/scans/scan-comparison-view";
 import { Button } from "@/components/ui/button";
 import { listScansCached } from "@/lib/scans/queries";
 
-export default async function ComparePage({
+type CompareSearchParams = Promise<{ base?: string; comparison?: string }>;
+
+export default function ComparePage({
   searchParams,
 }: {
-  searchParams: Promise<{ base?: string; comparison?: string }>;
+  searchParams: CompareSearchParams;
 }) {
-  const [scans, params] = await Promise.all([listScansCached(), searchParams]);
-
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
       <div className="mx-auto w-full max-w-6xl px-4 py-8 lg:px-6">
@@ -39,12 +40,35 @@ export default async function ComparePage({
           </Button>
         </div>
 
-        <ScanComparisonView
-          scans={scans}
-          initialBaseScanId={params.base}
-          initialComparisonScanId={params.comparison}
-        />
+        <Suspense fallback={<CompareSkeleton />}>
+          <CompareContent searchParams={searchParams} />
+        </Suspense>
       </div>
     </main>
+  );
+}
+
+async function CompareContent({
+  searchParams,
+}: {
+  searchParams: CompareSearchParams;
+}) {
+  const [scans, params] = await Promise.all([listScansCached(), searchParams]);
+
+  return (
+    <ScanComparisonView
+      scans={scans}
+      initialBaseScanId={params.base}
+      initialComparisonScanId={params.comparison}
+    />
+  );
+}
+
+function CompareSkeleton() {
+  return (
+    <div className="animate-pulse space-y-3">
+      <div className="h-24 rounded-md bg-white" />
+      <div className="h-64 rounded-md bg-white" />
+    </div>
   );
 }

@@ -4,10 +4,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { parseNmapScanFromParsed } from "@/lib/parser/parse-nmap";
-import {
-  parseValidatedNmapXmlText,
-  type UploadValidationIssue,
-} from "@/lib/parser/upload-validation";
+import { parseValidatedNmapXmlText } from "@/lib/parser/upload-validation";
 import { saveScan } from "@/lib/scans/store";
 
 export const ScanImportJobStatusSchema = z.enum([
@@ -155,7 +152,7 @@ function updateJob(
 
 function failJob(
   entry: QueuedImport,
-  issue: Pick<UploadValidationIssue, "code" | "message">,
+  issue: { code: string; message: string },
 ) {
   entry.xml = "";
   updateJob(entry, {
