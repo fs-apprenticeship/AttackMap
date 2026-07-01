@@ -77,41 +77,41 @@ const components: Components = {
       href={href}
       target="_blank"
       rel="noreferrer noopener"
-      className="font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800"
+      className="font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200"
     >
       {children}
     </a>
   ),
   strong: ({ children }) => (
-    <strong className="font-semibold text-zinc-800">{children}</strong>
+    <strong className="font-semibold text-foreground">{children}</strong>
   ),
   em: ({ children }) => <em className="italic">{children}</em>,
   h1: ({ children }) => (
-    <h3 className="text-sm font-semibold text-zinc-800">{children}</h3>
+    <h3 className="text-sm font-semibold text-foreground">{children}</h3>
   ),
   h2: ({ children }) => (
-    <h3 className="text-sm font-semibold text-zinc-800">{children}</h3>
+    <h3 className="text-sm font-semibold text-foreground">{children}</h3>
   ),
   h3: ({ children }) => (
-    <h3 className="text-sm font-semibold text-zinc-800">{children}</h3>
+    <h3 className="text-sm font-semibold text-foreground">{children}</h3>
   ),
   ul: ({ children }) => (
-    <ul className="list-disc space-y-1 pl-5 marker:text-zinc-400">
+    <ul className="list-disc space-y-1 pl-5 marker:text-muted-foreground">
       {children}
     </ul>
   ),
   ol: ({ children }) => (
-    <ol className="list-decimal space-y-1 pl-5 marker:text-zinc-400">
+    <ol className="list-decimal space-y-1 pl-5 marker:text-muted-foreground">
       {children}
     </ol>
   ),
   li: ({ children }) => <li className="pl-1">{children}</li>,
   blockquote: ({ children }) => (
-    <blockquote className="border-l-2 border-zinc-200 pl-3 text-zinc-500 italic">
+    <blockquote className="border-l-2 border-border pl-3 text-muted-foreground italic">
       {children}
     </blockquote>
   ),
-  hr: () => <hr className="border-zinc-200" />,
+  hr: () => <hr className="border-border" />,
   table: ({ children }) => (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-left text-xs">
@@ -120,18 +120,18 @@ const components: Components = {
     </div>
   ),
   th: ({ children }) => (
-    <th className="border-b border-zinc-200 px-2 py-1 font-semibold text-zinc-700">
+    <th className="border-b px-2 py-1 font-semibold text-foreground">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="border-b border-zinc-100 px-2 py-1 align-top">{children}</td>
+    <td className="border-b px-2 py-1 align-top">{children}</td>
   ),
   // Inline code only. Fenced blocks are routed through `pre` below, which
   // extracts the text and renders its own dark block — so distinguishing block
   // vs inline here (unreliable for fences with no language) is unnecessary.
   code: ({ children }) => (
-    <code className="rounded bg-zinc-200 px-1 py-0.5 font-mono text-[0.8125rem] text-zinc-800">
+    <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.8125rem] text-foreground">
       {children}
     </code>
   ),
@@ -167,7 +167,7 @@ export function Markdown({ content, className }: MarkdownProps) {
   return (
     <div
       className={cn(
-        "space-y-2 text-sm leading-6 text-zinc-600 [&_p]:m-0",
+        "space-y-2 text-sm leading-6 text-muted-foreground [&_p]:m-0",
         className,
       )}
     >

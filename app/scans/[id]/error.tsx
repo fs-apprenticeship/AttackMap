@@ -29,7 +29,7 @@ export default function Error({
             <RotateCw className="size-4" />
             Try again
           </Button>
-          <Button asChild variant="outline" className="rounded-md bg-white">
+          <Button asChild variant="outline" className="rounded-md bg-background">
             <Link href="/scans">View scans</Link>
           </Button>
         </>

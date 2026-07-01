@@ -3,7 +3,6 @@ import { AlertTriangle, FileQuestion, FileUp, RotateCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 type AppStateCardProps = {
   icon?: React.ReactNode;
@@ -21,15 +20,15 @@ export function AppStateCard({
   className,
 }: AppStateCardProps) {
   return (
-    <Card className={cn("rounded-md border bg-white shadow-sm", className)}>
+    <Card className={className}>
       <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
         {icon ? (
-          <div className="flex size-10 items-center justify-center rounded-md bg-zinc-950 text-white">
+          <div className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
             {icon}
           </div>
         ) : null}
-        <p className="text-sm font-medium text-zinc-950">{title}</p>
-        <p className="max-w-sm text-sm leading-6 text-zinc-500">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="max-w-sm text-sm leading-6 text-muted-foreground">
           {description}
         </p>
         {actions ? (
@@ -42,7 +41,7 @@ export function AppStateCard({
 
 export function PageStateShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
+    <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-[1400px] px-4 py-8 lg:px-6">
         {children}
       </div>
@@ -73,7 +72,7 @@ export function RouteErrorState({
                 Try again
               </Button>
             ) : null}
-            <Button asChild variant="outline" className="rounded-md bg-white">
+            <Button asChild variant="outline" className="bg-background">
               <Link href="/scans">View scans</Link>
             </Button>
           </>
@@ -95,7 +94,7 @@ export function NotFoundState() {
             <Button asChild className="rounded-md">
               <Link href="/scans">View scans</Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-md bg-white">
+            <Button asChild variant="outline" className="bg-background">
               <Link href="/upload">Upload a scan</Link>
             </Button>
           </>

@@ -6,7 +6,7 @@ function SkeletonLine({
   ...props
 }: React.ComponentProps<typeof Skeleton>) {
   return (
-    <Skeleton className={cn("rounded-md bg-zinc-100", className)} {...props} />
+    <Skeleton className={cn("rounded-md bg-muted", className)} {...props} />
   );
 }
 
@@ -18,7 +18,7 @@ function CardSkeleton({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("rounded-md border bg-white shadow-sm", className)}>
+    <div className={cn("rounded-md border bg-card shadow-sm", className)}>
       {children}
     </div>
   );
@@ -52,7 +52,7 @@ export function ScansContentSkeleton() {
               <SkeletonLine key={index} className="h-10" />
             ))}
           </div>
-          <div className="flex items-center justify-between border-t border-zinc-100 pt-3">
+          <div className="flex items-center justify-between border-t pt-3">
             <SkeletonLine className="h-4 w-40" />
             <SkeletonLine className="h-7 w-28" />
           </div>
@@ -60,9 +60,9 @@ export function ScansContentSkeleton() {
       </CardSkeleton>
 
       <CardSkeleton className="overflow-hidden">
-        <div className="grid grid-cols-[minmax(180px,1.5fr)_minmax(160px,1fr)_110px_140px_120px_120px_150px] border-b bg-zinc-50 px-4 py-3">
+        <div className="grid grid-cols-[minmax(180px,1.5fr)_minmax(160px,1fr)_110px_140px_120px_120px_150px] border-b bg-muted/40 px-4 py-3">
           {Array.from({ length: 7 }).map((_, index) => (
-            <SkeletonLine key={index} className="h-3 w-20 bg-zinc-200" />
+            <SkeletonLine key={index} className="h-3 w-20" />
           ))}
         </div>
         {Array.from({ length: 5 }).map((_, rowIndex) => (

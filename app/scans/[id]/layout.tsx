@@ -20,7 +20,7 @@ async function ScanDetailLayoutContent({
 
   if (!scan) {
     return (
-      <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
+      <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
         <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">
           <ScanNotFound />
         </div>

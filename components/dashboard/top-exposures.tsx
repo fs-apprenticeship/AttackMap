@@ -7,7 +7,7 @@ import { SeverityBadge } from "./severity-badge";
 const TOP_LIMIT = 3;
 
 const sectionLabel =
-  "text-xs font-semibold uppercase tracking-wide text-zinc-500";
+  "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
 
 // Leading dot color per severity, mirroring the gauge ring / badge palette.
 const dotClass: Record<Severity, string> = {
@@ -40,7 +40,7 @@ export function TopExposures({ findings }: TopExposuresProps) {
                 )}
                 aria-hidden
               />
-              <span className="min-w-0 flex-1 truncate text-sm text-zinc-700">
+              <span className="min-w-0 flex-1 truncate text-sm text-foreground">
                 {finding.title}
               </span>
               <SeverityBadge severity={finding.severity} />
@@ -48,7 +48,9 @@ export function TopExposures({ findings }: TopExposuresProps) {
           ))}
         </ul>
       ) : (
-        <p className="mt-3 text-sm text-zinc-500">No exposures found.</p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          No exposures found.
+        </p>
       )}
     </div>
   );

@@ -20,7 +20,7 @@ const ringColor: Record<RiskLevel, string> = {
 };
 
 const sectionLabel =
-  "text-xs font-semibold uppercase tracking-wide text-zinc-500";
+  "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
 
 type RiskScoreGaugeProps = {
   score: number;
@@ -48,7 +48,8 @@ export function RiskScoreGauge({ score, level }: RiskScoreGaugeProps) {
               cy={SIZE / 2}
               r={RADIUS}
               fill="none"
-              stroke="#e4e4e7" // zinc-200 track
+            stroke="currentColor"
+            className="text-muted"
               strokeWidth={STROKE}
             />
             <circle
@@ -65,19 +66,19 @@ export function RiskScoreGauge({ score, level }: RiskScoreGaugeProps) {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-semibold text-zinc-900">
+            <span className="text-2xl font-semibold text-foreground">
               {clamped}
             </span>
-            <span className="text-[0.625rem] font-medium uppercase tracking-wide text-zinc-400">
+            <span className="text-[0.625rem] font-medium uppercase tracking-wide text-muted-foreground">
               / 100
             </span>
           </div>
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold capitalize text-zinc-900">
+          <p className="text-sm font-semibold capitalize text-foreground">
             {level} risk
           </p>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
             Rule-based score
           </p>
         </div>

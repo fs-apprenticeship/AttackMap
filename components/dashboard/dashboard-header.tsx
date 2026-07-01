@@ -17,7 +17,7 @@ import { formatDate } from "./utils";
 
 // Inner panels are subtly shaded so they read as floating cards on the white
 // container, without full-bleed dividers that would need to align across columns.
-const panelClass = "rounded-lg border border-zinc-200 bg-zinc-50";
+const panelClass = "rounded-md border bg-muted/40";
 
 type DashboardHeaderProps = {
   activeScan: Scan;
@@ -44,26 +44,26 @@ export function DashboardHeader({
   const aiActive = isAi || generating;
 
   return (
-    <Card className="overflow-hidden rounded-md border bg-white py-0 shadow-sm">
+    <Card className="overflow-hidden py-0">
       {/* Top bar: scan metadata. */}
       <div className="flex flex-wrap items-center gap-2 border-b p-4">
         <Badge
           variant="outline"
-          className="rounded-md border-zinc-200 text-zinc-600"
+          className="rounded-md border-border text-muted-foreground"
         >
           {activeScan.filename}
         </Badge>
         {activeScan.scannedAt ? (
           <Badge
             variant="outline"
-            className="rounded-md border-zinc-200 text-zinc-600"
+            className="rounded-md border-border text-muted-foreground"
           >
             Scanned {formatDate(activeScan.scannedAt)}
           </Badge>
         ) : null}
         <Badge
           variant="outline"
-          className="rounded-md border-zinc-200 text-zinc-600"
+          className="rounded-md border-border text-muted-foreground"
         >
           Parsed {formatDate(activeScan.parsedAt)}
         </Badge>
@@ -71,7 +71,7 @@ export function DashboardHeader({
 
       {/* Scan title, full width so the panels below it form an aligned row. */}
       <div className="px-4 pt-4">
-        <h1 className="text-2xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-normal text-foreground sm:text-3xl">
           Attack surface summary for {activeScan.target}
         </h1>
       </div>
@@ -100,8 +100,8 @@ export function DashboardHeader({
             className={cn(
               "flex h-full flex-col rounded-lg border p-4 sm:p-5",
               aiActive
-                ? "border-emerald-200 bg-gradient-to-br from-emerald-50/60 to-white"
-                : "border-zinc-200 bg-zinc-50",
+                ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/70 dark:bg-emerald-950/20"
+                : "border-border bg-muted/40",
               generating && aiBorder,
             )}
             aria-busy={generating}
@@ -112,8 +112,8 @@ export function DashboardHeader({
                   className={cn(
                     "inline-flex size-6 shrink-0 items-center justify-center rounded-md",
                     aiActive
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-zinc-200 text-zinc-500",
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                      : "bg-muted text-muted-foreground",
                   )}
                 >
                   {aiActive ? (
@@ -122,7 +122,7 @@ export function DashboardHeader({
                     <FileText className="size-3.5" />
                   )}
                 </span>
-                <span className="text-sm font-semibold text-zinc-800">
+                <span className="text-sm font-semibold text-foreground">
                   Summary
                 </span>
                 <AiMarker
@@ -130,7 +130,7 @@ export function DashboardHeader({
                   source={activeScan.summary.source}
                 />
                 {!aiActive ? (
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
+                  <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                     Rule-based
                   </span>
                 ) : null}
