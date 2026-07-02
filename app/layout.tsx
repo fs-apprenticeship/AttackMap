@@ -46,7 +46,13 @@ export default function RootLayout({
           data-enable-grammarly="false"
         >
           <ThemeProvider>
-            <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+            <a
+              href="#main-content"
+              className="fixed left-4 top-4 z-50 -translate-y-16 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-transform focus:translate-y-0 focus:outline-none focus:ring-3 focus:ring-ring/30"
+            >
+              Skip to content
+            </a>
+            <header className="app-header sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
               <div className="flex h-16 items-center justify-between px-4 lg:px-6">
                 <Link
                   href="/"
@@ -72,7 +78,7 @@ export default function RootLayout({
               </div>
             </header>
             <div id="main-content" tabIndex={-1} className="outline-none">
-            {children}
+              {children}
             </div>
             <Toaster position="bottom-right" />
           </ThemeProvider>

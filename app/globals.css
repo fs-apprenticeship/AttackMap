@@ -140,6 +140,14 @@
   }
 }
 
+@layer components {
+  @supports ((backdrop-filter: blur(0)) or (-webkit-backdrop-filter: blur(0))) {
+    .app-header {
+      background-color: color-mix(in oklab, var(--background) 85%, transparent);
+    }
+  }
+}
+
 /* Soft emerald border that "breathes" (pulses brighter/dimmer) around an AI
    element while its content is generating. A gradient is masked down to a thin
    border; standard `mask` is auto-prefixed by Lightning CSS. Applied to rounded
