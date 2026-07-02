@@ -77,14 +77,14 @@ export function ScanDetailFrame({
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">
-        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Button asChild variant="outline" className="w-fit bg-background">
+        <div className="mb-5 grid gap-3 sm:grid-cols-[auto_auto] sm:justify-between">
+          <Button asChild variant="outline" className="bg-background">
             <Link href="/scans">
               <ArrowLeft className="size-4" />
               All scans
             </Link>
           </Button>
-          <Button asChild className="w-fit rounded-md">
+          <Button asChild className="rounded-md">
             <Link href="/upload">
               <Plus className="size-4" />
               New scan

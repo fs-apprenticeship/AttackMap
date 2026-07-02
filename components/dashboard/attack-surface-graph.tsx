@@ -177,8 +177,8 @@ export function AttackSurfaceGraph({ hosts }: AttackSurfaceGraphProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="grid min-h-[540px] gap-0 p-0 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="relative h-[540px] min-w-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px]">
+      <CardContent className="grid min-h-[420px] gap-0 p-0 sm:min-h-[540px] xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="relative h-[420px] min-w-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:28px_28px] sm:h-[540px]">
           {activeHost.services.length === 0 ? (
             <div className="absolute left-4 top-4 z-10 rounded-md border bg-card px-3 py-2 text-xs text-muted-foreground shadow-sm">
               This host has no exposed services in the scan.
