@@ -20,7 +20,10 @@ export function ScanDetailNav({ sections }: ScanDetailNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 overflow-x-auto p-2" aria-label="Scan sections">
+    <nav
+      className="flex gap-1 overflow-x-auto p-2 scroll-px-2"
+      aria-label="Scan sections"
+    >
       {sections.map((section) => {
         const active = pathname === section.href;
 

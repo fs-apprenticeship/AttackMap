@@ -14,7 +14,8 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       className="rounded-md bg-background"
-      aria-label="Toggle theme"
+      aria-label="Toggle color theme"
+      title="Toggle color theme"
       onClick={() => {
         setTheme(
           document.documentElement.classList.contains("dark")
