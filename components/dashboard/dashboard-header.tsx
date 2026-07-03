@@ -71,7 +71,7 @@ export function DashboardHeader({
 
       {/* Scan title, full width so the panels below it form an aligned row. */}
       <div className="px-4 pt-4">
-        <h1 className="text-2xl font-semibold tracking-normal text-foreground sm:text-3xl">
+        <h1 className="text-balance text-2xl font-semibold tracking-normal text-foreground sm:text-3xl">
           Attack surface summary for {activeScan.target}
         </h1>
       </div>
@@ -81,7 +81,7 @@ export function DashboardHeader({
           edges align regardless of the summary/gauge heights above them. DOM
           order leads with the rail (risk before prose on mobile); explicit
           col/row placement forms the 2x2 on desktop. */}
-      <div className="grid grid-cols-1 gap-x-4 gap-y-10 p-4 xl:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)]">
+      <div className="grid grid-cols-1 gap-4 p-4 xl:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)]">
         {/* Risk score — top right. */}
         <div className={cn(panelClass, "order-1 p-5 xl:col-start-2 xl:row-start-1")}>
           <RiskScoreGauge score={risk.score} level={risk.level} />
@@ -106,8 +106,8 @@ export function DashboardHeader({
             )}
             aria-busy={generating}
           >
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+            <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <span
                   className={cn(
                     "inline-flex size-6 shrink-0 items-center justify-center rounded-md",
@@ -140,7 +140,7 @@ export function DashboardHeader({
                 variant={isAi ? "outline" : "default"}
                 onClick={onGenerate}
                 disabled={generating}
-                className="shrink-0"
+                className="w-full shrink-0 sm:w-auto"
               >
                 {generating ? (
                   "Generating..."

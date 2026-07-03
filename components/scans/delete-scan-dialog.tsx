@@ -50,7 +50,7 @@ export function DeleteScanDialog({ scan }: DeleteScanDialogProps) {
           variant="ghost"
           size="icon"
           aria-label={`Delete ${scan.filename}`}
-          className="size-8 shrink-0 rounded-md text-zinc-400 hover:text-red-600"
+          className="shrink-0 rounded-md text-muted-foreground hover:text-red-600"
         >
           <Trash2 className="size-4" />
         </Button>

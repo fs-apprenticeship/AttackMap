@@ -230,6 +230,7 @@ export function UploadCard() {
           type="file"
           accept=".xml,text/xml,application/xml"
           className="sr-only"
+          aria-label="Nmap XML scan file"
           onChange={handleFileChange}
         />
 
@@ -248,14 +249,18 @@ export function UploadCard() {
             <h2 className="text-sm font-semibold">
               {isSuccess ? "Scan ready" : "Upload Nmap XML"}
             </h2>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            <p
+              id="upload-status"
+              className="mt-1 text-sm leading-6 text-muted-foreground"
+              aria-live="polite"
+            >
               {statusMessage}
             </p>
           </div>
           {hasFile && !isSuccess ? (
             <Button
               aria-label="Clear selected file"
-              className="size-8 shrink-0 rounded-md"
+              className="shrink-0 rounded-md"
               disabled={status === "parsing"}
               size="icon"
               type="button"
@@ -292,7 +297,11 @@ export function UploadCard() {
 
         {status === "parsing" ? (
           <div className="mt-4 space-y-2">
-            <Progress value={progress} className="transition-all" />
+            <Progress
+              value={progress}
+              aria-label="Parsing scan"
+              className="transition-all"
+            />
             <p className="text-xs text-muted-foreground">{progress}% complete</p>
           </div>
         ) : null}

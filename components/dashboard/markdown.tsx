@@ -34,7 +34,7 @@ function CopyButton({ value }: { value: string }) {
       type="button"
       onClick={copy}
       aria-label={copied ? "Copied" : "Copy to clipboard"}
-      className="absolute right-2 top-2 inline-flex items-center justify-center rounded p-1.5 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
+      className="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
     >
       {copied ? (
         <Check className="size-4 text-emerald-400" />

@@ -24,6 +24,50 @@ function CardSkeleton({
   );
 }
 
+function MobileScanCardSkeleton() {
+  return (
+    <CardSkeleton>
+      <div className="space-y-4 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-2">
+            <SkeletonLine className="h-4 w-40 max-w-full" />
+            <SkeletonLine className="h-4 w-32 max-w-full" />
+          </div>
+          <SkeletonLine className="h-6 w-16 shrink-0" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <SkeletonLine className="h-3 w-14" />
+            <div className="flex gap-3">
+              <SkeletonLine className="h-4 w-10" />
+              <SkeletonLine className="h-4 w-10" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <SkeletonLine className="h-3 w-14" />
+            <SkeletonLine className="h-4 w-24 max-w-full" />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <SkeletonLine className="h-3 w-16" />
+          <div className="flex gap-1.5">
+            <SkeletonLine className="h-6 w-10" />
+            <SkeletonLine className="h-6 w-10" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-[1fr_auto_auto] gap-2">
+          <SkeletonLine className="h-9" />
+          <SkeletonLine className="size-9" />
+          <SkeletonLine className="size-9" />
+        </div>
+      </div>
+    </CardSkeleton>
+  );
+}
+
 export function ScansContentSkeleton() {
   return (
     <div className="space-y-4" aria-label="Loading scans">
@@ -59,7 +103,13 @@ export function ScansContentSkeleton() {
         </div>
       </CardSkeleton>
 
-      <CardSkeleton className="overflow-hidden">
+      <div className="grid gap-3 md:hidden">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <MobileScanCardSkeleton key={index} />
+        ))}
+      </div>
+
+      <CardSkeleton className="hidden overflow-hidden md:block">
         <div className="grid grid-cols-[minmax(180px,1.5fr)_minmax(160px,1fr)_110px_140px_120px_120px_150px] border-b bg-muted/40 px-4 py-3">
           {Array.from({ length: 7 }).map((_, index) => (
             <SkeletonLine key={index} className="h-3 w-20" />

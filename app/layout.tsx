@@ -46,16 +46,23 @@ export default function RootLayout({
           data-enable-grammarly="false"
         >
           <ThemeProvider>
-            <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+            <a
+              href="#main-content"
+              className="fixed left-4 top-4 z-50 -translate-y-16 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-transform focus:translate-y-0 focus:outline-none focus:ring-3 focus:ring-ring/30"
+            >
+              Skip to content
+            </a>
+            <header className="app-header sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
               <div className="flex h-16 items-center justify-between px-4 lg:px-6">
                 <Link
                   href="/"
-                  className="group flex items-center gap-3 rounded-md outline-none transition-opacity hover:opacity-85 focus-visible:ring-3 focus-visible:ring-ring/30"
+                  aria-label="AttackMap home"
+                  className="group flex min-w-0 items-center gap-3 rounded-md outline-none transition-opacity hover:opacity-85 focus-visible:ring-3 focus-visible:ring-ring/30"
                 >
                   <div className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-[1.03]">
                     <ShieldCheck className="size-5" />
                   </div>
-                  <div>
+                  <div className="hidden min-w-0 sm:block">
                     <p className="text-sm font-semibold leading-5 text-foreground">
                       AttackMap
                     </p>
@@ -64,13 +71,15 @@ export default function RootLayout({
                     </p>
                   </div>
                 </Link>
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <ThemeToggle />
                   <HeaderAuth />
                 </div>
               </div>
             </header>
-            {children}
+            <div id="main-content" tabIndex={-1} className="outline-none">
+              {children}
+            </div>
             <Toaster position="bottom-right" />
           </ThemeProvider>
         </body>
