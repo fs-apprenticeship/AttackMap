@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { AlertTriangle, RotateCw } from "lucide-react";
 
-import { AppStateCard } from "@/components/app-state-common";
+import { AppStateCard } from "@/components/app-shell/app-state-common";
 import { Button } from "@/components/ui/button";
 
 export default function Error({

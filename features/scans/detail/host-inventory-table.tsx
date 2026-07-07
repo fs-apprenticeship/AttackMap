@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/table";
 
 import { SeverityBadge } from "./severity-badge";
-import type { HostWithScan } from "./data";
-import { formatRole, severityOrder } from "./utils";
+import type { HostWithScan } from "@/lib/scans/metrics";
+import { formatRole, severityOrder } from "@/features/scans/shared/utils";
 
 type HostInventoryTableProps = {
   hosts: HostWithScan[];

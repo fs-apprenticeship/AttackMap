@@ -1,14 +1,9 @@
 import { cn } from "@/lib/utils";
 
 import type { Severity } from "@/lib/types";
+import { severityOrder } from "@/lib/scans/severity";
 
-export const severityOrder: Severity[] = [
-  "critical",
-  "high",
-  "medium",
-  "low",
-  "info",
-];
+export { severityOrder };
 
 export const severityClass: Record<Severity, string> = {
   critical: "border-red-300 bg-red-50 text-red-700",

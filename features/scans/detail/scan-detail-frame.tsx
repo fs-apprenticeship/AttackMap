@@ -4,7 +4,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Scan } from "@/lib/types";
-import { ScanChat } from "./scan-chat";
+import { ScanChat } from "@/features/scans/chat/scan-chat";
 import { ScanDetailNav } from "./scan-detail-nav";
 
 export type ScanSection =

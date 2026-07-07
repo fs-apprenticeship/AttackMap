@@ -18,7 +18,7 @@ import type { RemediationPlan, Scan } from "@/lib/types";
 
 import { AiGenerating } from "./ai-generating";
 import { AiMarker, aiBorder } from "./ai-marker";
-import { CodeBlock, Markdown, MarkdownInline } from "./markdown";
+import { CodeBlock, Markdown, MarkdownInline } from "@/features/scans/detail/markdown/markdown";
 
 const sectionLabel =
   "text-[0.6875rem] font-semibold uppercase tracking-wide text-muted-foreground";

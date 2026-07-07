@@ -1,7 +1,7 @@
 "use client";
 
-import { getServiceBreakdown } from "@/components/dashboard/data";
-import { ServiceBreakdown } from "@/components/dashboard/service-breakdown";
+import { getServiceBreakdown } from "@/lib/scans/metrics";
+import { ServiceBreakdown } from "@/features/scans/detail/service-breakdown";
 import { useScanDetail } from "../scan-detail-context";
 
 export default function ServicesPage() {

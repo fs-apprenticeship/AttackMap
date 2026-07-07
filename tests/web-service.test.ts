@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isWebService } from "@/lib/parser/web-service";
+import { isWebService } from "@/lib/nmap/web-service";
 
 describe("isWebService", () => {
   it("classifies services named http (incl. https/http-proxy) as web", () => {

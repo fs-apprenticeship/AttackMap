@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 
 import { SeverityBadge } from "./severity-badge";
-import type { DashboardFinding } from "./data";
+import type { DashboardFinding } from "@/lib/scans/metrics";
 
 type FindingsPanelProps = {
   findings: DashboardFinding[];

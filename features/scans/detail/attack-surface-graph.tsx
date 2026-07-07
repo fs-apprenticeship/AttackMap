@@ -40,7 +40,7 @@ import type { Host, Service, Severity } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 import { SeverityBadge } from "./severity-badge";
-import { formatRole, nodeClass, severityOrder } from "./utils";
+import { formatRole, nodeClass, severityOrder } from "@/features/scans/shared/utils";
 
 type AttackSurfaceGraphProps = {
   hosts: Host[];

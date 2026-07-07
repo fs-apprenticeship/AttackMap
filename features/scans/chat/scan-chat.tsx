@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/sheet";
 import type { Scan } from "@/lib/types";
 
-import { AIHeader } from "./chat/ai-header";
-import { Composer } from "./chat/composer";
-import { Conversation } from "./chat/conversation";
-import { HomeState } from "./chat/home-state";
+import { AIHeader } from "./ai-header";
+import { Composer } from "./composer";
+import { Conversation } from "./conversation";
+import { HomeState } from "./home-state";
 
 // The scan analysis workspace. A non-modal slide-over that fuses a contextual
 // header, a home/landing state, an analysis transcript, and an investigation

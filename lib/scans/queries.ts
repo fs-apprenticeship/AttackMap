@@ -2,7 +2,7 @@ import "server-only";
 import { cacheTag } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { listScans, getScan } from "@/lib/scans/store";
-import type { Scan } from "@/lib/parser/schema";
+import type { Scan } from "@/lib/nmap/schema";
 
 async function fetchScansForUser(userId: string): Promise<Scan[]> {
   "use cache";

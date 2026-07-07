@@ -1,7 +1,7 @@
 "use client";
 
-import { getScanFindings } from "@/components/dashboard/data";
-import { FindingsPanel } from "@/components/dashboard/findings-panel";
+import { getScanFindings } from "@/lib/scans/metrics";
+import { FindingsPanel } from "@/features/scans/detail/findings-panel";
 import { useScanDetail } from "../scan-detail-context";
 
 export default function FindingsPage() {

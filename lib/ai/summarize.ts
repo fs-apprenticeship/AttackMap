@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { z } from "zod";
 
-import { AISummarySchema, type AISummary, type Scan } from "@/lib/parser/schema";
+import { AISummarySchema, type AISummary, type Scan } from "@/lib/nmap/schema";
 
 // Server-only. Generates an AI scan summary via OpenAI structured outputs.
 // The rule-based summary produced by the parser is the fallback/default; this

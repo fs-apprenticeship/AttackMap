@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
-import { parseNmapScan } from "@/lib/parser/parse-nmap";
+import { parseNmapScan } from "@/lib/nmap/parse-nmap";
 import { saveScan } from "@/lib/scans/store";
 import { getOptionalAuth } from "@/lib/auth/sync";
 

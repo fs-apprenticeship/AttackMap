@@ -11,7 +11,7 @@ import { z } from "zod";
 
 import { AiNotConfiguredError } from "@/lib/ai/summarize";
 import { CveLookupError, lookupCves } from "@/lib/ai/tools/lookup-cves";
-import type { Scan } from "@/lib/parser/schema";
+import type { Scan } from "@/lib/nmap/schema";
 
 // Server-only. Powers the scan chat: the user asks questions about one parsed
 // scan and the model answers from the scan context, calling the NVD-backed

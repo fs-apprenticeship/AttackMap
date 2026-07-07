@@ -10,7 +10,7 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
-import { isWebService } from "@/lib/parser/web-service";
+import { isWebService } from "@/lib/nmap/web-service";
 import type { Scan } from "@/lib/types";
 
 // Wraps an AI content region. While generating, the existing rule-based or

@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { ShieldCheck } from 'lucide-react'
 import './globals.css'
 import { cn } from "@/lib/utils"
-import { HeaderAuth } from "@/components/header-auth"
-import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { HeaderAuth } from "@/components/app-shell/header-auth"
+import { ThemeProvider } from "@/components/app-shell/theme-provider"
+import { ThemeToggle } from "@/components/app-shell/theme-toggle"
 import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });

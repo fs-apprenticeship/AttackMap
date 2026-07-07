@@ -1,9 +1,9 @@
 import { Globe, Network, Server, ShieldAlert } from "lucide-react";
 
 import type { Finding, Host, RiskLevel, Scan, Severity } from "@/lib/types";
-import { isWebService } from "@/lib/parser/web-service";
+import { isWebService } from "@/lib/nmap/web-service";
 
-import { severityOrder } from "./utils";
+import { severityOrder } from "@/lib/scans/severity";
 
 export type DashboardFinding = Pick<
   Finding,

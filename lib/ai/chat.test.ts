@@ -3,7 +3,7 @@ import { MockLanguageModelV4 } from "ai/test";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import fixture from "@/fixtures/scans/simple-web-server.json";
-import type { Scan } from "@/lib/parser/schema";
+import type { Scan } from "@/lib/nmap/schema";
 
 import { AiNotConfiguredError } from "./summarize";
 import { streamScanChat } from "./chat";

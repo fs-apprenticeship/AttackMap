@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 
 import { SeverityBadge } from "./severity-badge";
-import type { SeverityCount } from "./data";
+import type { SeverityCount } from "@/lib/scans/metrics";
 
 type RiskDistributionProps = {
   counts: SeverityCount[];

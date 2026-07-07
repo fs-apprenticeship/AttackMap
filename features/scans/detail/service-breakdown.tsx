@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import type { ServiceBreakdownItem } from "./data";
+import type { ServiceBreakdownItem } from "@/lib/scans/metrics";
 
 type ServiceBreakdownProps = {
   services: ServiceBreakdownItem[];

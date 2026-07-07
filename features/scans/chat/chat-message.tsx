@@ -3,7 +3,7 @@
 import type { UIMessage } from "ai";
 import { Crosshair } from "lucide-react";
 
-import { Markdown, MarkdownInline } from "@/components/dashboard/markdown";
+import { Markdown, MarkdownInline } from "@/features/scans/detail/markdown/markdown";
 import { cn } from "@/lib/utils";
 
 import { CveResult, type CveToolPart } from "./cve-result";

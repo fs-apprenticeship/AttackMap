@@ -2,9 +2,9 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Network, Server } from "lucide-react";
 
-import { getScanStats } from "@/components/dashboard/data";
-import { SeverityBadge } from "@/components/dashboard/severity-badge";
-import { formatDate } from "@/components/dashboard/utils";
+import { getScanStats } from "@/lib/scans/metrics";
+import { SeverityBadge } from "@/features/scans/detail/severity-badge";
+import { formatDate } from "@/features/scans/shared/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

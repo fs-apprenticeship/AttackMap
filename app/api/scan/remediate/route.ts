@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { ScanSchema } from "@/lib/parser/schema";
+import { ScanSchema } from "@/lib/nmap/schema";
 import { AiNotConfiguredError } from "@/lib/ai/summarize";
 import { generateRemediationPlan } from "@/lib/ai/remediate";
 import { db } from "@/lib/db";

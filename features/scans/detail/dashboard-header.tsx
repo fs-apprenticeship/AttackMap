@@ -8,12 +8,12 @@ import type { Scan } from "@/lib/types";
 
 import { AiGenerating } from "./ai-generating";
 import { AiMarker, aiBorder } from "./ai-marker";
-import type { DashboardFinding, RiskAssessment, getSummaryCards } from "./data";
-import { Markdown } from "./markdown";
+import type { DashboardFinding, RiskAssessment, getSummaryCards } from "@/lib/scans/metrics";
+import { Markdown } from "@/features/scans/detail/markdown/markdown";
 import { RiskScoreGauge } from "./risk-score-gauge";
 import { StatCard } from "./stat-card";
 import { TopExposures } from "./top-exposures";
-import { formatDate } from "./utils";
+import { formatDate } from "@/features/scans/shared/utils";
 
 // Inner panels are subtly shaded so they read as floating cards on the white
 // container, without full-bleed dividers that would need to align across columns.

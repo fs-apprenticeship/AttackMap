@@ -11,15 +11,15 @@ import {
 } from "lucide-react";
 
 import type { Scan } from "@/lib/types";
-import { useGenerateSummary } from "@/lib/ai/use-generate-summary";
+import { useGenerateSummary } from "@/features/scans/hooks/use-generate-summary";
 
 import {
   getRiskAssessment,
   getScanFindings,
   getServiceBreakdown,
   getSummaryCards,
-} from "@/components/dashboard/data";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+} from "@/lib/scans/metrics";
+import { DashboardHeader } from "@/features/scans/detail/dashboard-header";
 
 type DashboardProps = {
   scan: Scan;

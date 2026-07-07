@@ -1,7 +1,7 @@
 "use client";
 
 import type { Scan } from "@/lib/types";
-import { useGenerateRemediation } from "@/lib/ai/use-generate-remediation";
+import { useGenerateRemediation } from "@/features/scans/hooks/use-generate-remediation";
 
 import { RemediationPlanPanel } from "./remediation-plan";
 

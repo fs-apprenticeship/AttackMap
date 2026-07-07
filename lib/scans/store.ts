@@ -1,20 +1,20 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { buildSummary, buildRemediationPlan } from "@/lib/parser/parse-nmap";
+import { buildSummary, buildRemediationPlan } from "@/lib/nmap/parse-nmap";
 import type {
   Scan,
   Host,
   Finding,
   AISummary,
   RemediationPlan,
-} from "@/lib/parser/schema";
+} from "@/lib/nmap/schema";
 import type {
   Scan as ScanModel,
   Host as HostModel,
   Service as ServiceModel,
   Finding as FindingModel,
   AiSummary as AiSummaryModel,
-} from "@/app/generated/prisma/client";
+} from "@/lib/generated/prisma/client";
 
 // ---------------------------------------------------------------------------
 // DB → Zod mapping

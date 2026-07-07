@@ -8,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 
-import { severityOrder } from "@/components/dashboard/utils";
+import { severityOrder } from "@/features/scans/shared/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

@@ -1,6 +1,6 @@
 import { Clock3, FileWarning, ListChecks, ShieldAlert } from "lucide-react";
 
-import { formatDate } from "@/components/dashboard/utils";
+import { formatDate } from "@/features/scans/shared/utils";
 import { Card, CardContent } from "@/components/ui/card";
 
 import type { ScanAggregateStats } from "./scans-list-data";

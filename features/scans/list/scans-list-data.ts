@@ -1,5 +1,5 @@
-import { getScanStats } from "@/components/dashboard/data";
-import { severityOrder } from "@/components/dashboard/utils";
+import { getScanStats } from "@/lib/scans/metrics";
+import { severityOrder } from "@/features/scans/shared/utils";
 import type { Scan, Severity } from "@/lib/types";
 
 export type SortOption =

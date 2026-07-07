@@ -2,10 +2,10 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { getScanStats } from "@/components/dashboard/data";
-import { SeverityBadge } from "@/components/dashboard/severity-badge";
-import { formatDate } from "@/components/dashboard/utils";
-import { DeleteScanDialog } from "@/components/scans/delete-scan-dialog";
+import { getScanStats } from "@/lib/scans/metrics";
+import { SeverityBadge } from "@/features/scans/detail/severity-badge";
+import { formatDate } from "@/features/scans/shared/utils";
+import { DeleteScanDialog } from "@/features/scans/list/delete-scan-dialog";
 import type { Scan } from "@/lib/types";
 
 type ScanCardProps = {

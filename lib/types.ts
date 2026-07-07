@@ -1,6 +1,6 @@
 // Normalized AttackMap domain model.
 //
-// The runtime shape and types are defined once in `lib/parser/schema.ts` (as a
+// The runtime shape and types are defined once in `lib/nmap/schema.ts` (as a
 // Zod schema) so the parser, the API boundary, and the dashboard can never
 // drift apart. This module simply re-exports the inferred types for UI code.
 
@@ -14,4 +14,4 @@ export type {
   RemediationStep,
   RemediationPlan,
   Scan,
-} from "@/lib/parser/schema";
+} from "@/lib/nmap/schema";

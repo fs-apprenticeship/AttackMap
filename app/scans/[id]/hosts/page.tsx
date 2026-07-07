@@ -1,7 +1,7 @@
 "use client";
 
-import { getHostsForScan } from "@/components/dashboard/data";
-import { HostInventoryTable } from "@/components/dashboard/host-inventory-table";
+import { getHostsForScan } from "@/lib/scans/metrics";
+import { HostInventoryTable } from "@/features/scans/detail/host-inventory-table";
 import { useScanDetail } from "../scan-detail-context";
 
 export default function HostsPage() {

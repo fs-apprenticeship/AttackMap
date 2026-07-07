@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { Severity } from "@/lib/types";
 
-import type { DashboardFinding } from "./data";
+import type { DashboardFinding } from "@/lib/scans/metrics";
 import { SeverityBadge } from "./severity-badge";
 
 const TOP_LIMIT = 3;
