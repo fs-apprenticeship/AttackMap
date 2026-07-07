@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { ArrowRightLeft, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { FirstScanEmptyState } from "@/components/app-state-common";
@@ -19,12 +19,20 @@ export default function ScansPage() {
               Review scan history, risk, findings, and follow-up actions.
             </p>
           </div>
-          <Button asChild className="w-full rounded-md sm:w-auto">
-            <Link href="/upload">
-              <Plus className="size-4" />
-              New scan
-            </Link>
-          </Button>
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            <Button asChild variant="outline" className="w-full rounded-md sm:w-auto">
+              <Link href="/compare">
+                <ArrowRightLeft className="size-4" />
+                Compare
+              </Link>
+            </Button>
+            <Button asChild className="w-full rounded-md sm:w-auto">
+              <Link href="/upload">
+                <Plus className="size-4" />
+                New scan
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="mt-6">
