@@ -208,36 +208,52 @@ async function queryNvd(
 export async function lookupCves(params: LookupCvesParams): Promise<Cve[]> {
   const { cpe, maxResults = DEFAULT_MAX_RESULTS } = params;
 
-  if (cpe) {
+  // OS/hardware CPEs (cpe:/o:, cpe:/h:) describe the platform, not a specific
+  // service, and match thousands of unrelated CVEs — ignore them so they can't
+  // poison the lookup. Only application CPEs are precise enough to query.
+  const usableCpe = cpe && !isOsOrHardwareCpe(cpe) ? cpe : undefined;
+
+  if (usableCpe) {
     const byCpe = await queryNvd(
       "virtualMatchString",
-      toVirtualMatchString(cpe),
+      toVirtualMatchString(usableCpe),
       maxResults,
     );
     if (byCpe.length > 0) return byCpe;
 
     // CPE match came up empty — likely an nmap/NVD vendor-name mismatch. Retry
-    // with a vendor-agnostic keyword search derived from the CPE.
-    const { product, version } = parseCpe(cpe);
-    if (product) {
+    // with a keyword search, but only when we have a *version*: a bare product
+    // term (e.g. "windows") matches far too broadly to be useful.
+    const { product, version } = parseCpe(usableCpe);
+    if (product && version) {
+      return queryNvd("keywordSearch", `${product} ${version}`, maxResults);
+    }
+  }
+
+  // Explicit product search. Require a version unless the product is clearly
+  // specific (multi-word), again to avoid flooding on a single generic term.
+  if (params.product) {
+    const specificEnough = Boolean(params.version) || /\s/.test(params.product.trim());
+    if (specificEnough) {
       return queryNvd(
         "keywordSearch",
-        [product, version].filter(Boolean).join(" "),
+        [params.product, params.version].filter(Boolean).join(" "),
         maxResults,
       );
     }
-    return byCpe;
+    return [];
   }
 
-  if (params.product) {
-    return queryNvd(
-      "keywordSearch",
-      [params.product, params.version].filter(Boolean).join(" "),
-      maxResults,
-    );
-  }
+  // Only an OS/hardware (or otherwise unusable) CPE was given, with nothing
+  // specific to fall back on — no reliable lookup is possible.
+  if (cpe) return [];
 
   throw new CveLookupError("Provide a cpe or a product to look up CVEs.");
+}
+
+/** OS (cpe:/o:) and hardware (cpe:/h:) CPEs — too broad for service CVE lookups. */
+function isOsOrHardwareCpe(cpe: string): boolean {
+  return /^cpe:\/[oh]:/.test(cpe) || /^cpe:2\.3:[oh]:/.test(cpe);
 }
 
 /** Clears the in-memory CVE cache. Exposed for tests. */

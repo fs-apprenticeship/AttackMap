@@ -20,7 +20,10 @@ export function ScanDetailNav({ sections }: ScanDetailNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 overflow-x-auto p-2" aria-label="Scan sections">
+    <nav
+      className="flex gap-1 overflow-x-auto p-2 scroll-px-2"
+      aria-label="Scan sections"
+    >
       {sections.map((section) => {
         const active = pathname === section.href;
 
@@ -30,7 +33,7 @@ export function ScanDetailNav({ sections }: ScanDetailNavProps) {
             asChild
             size="sm"
             variant={active ? "default" : "ghost"}
-            className={cn("rounded-md", !active && "text-zinc-600")}
+            className={cn("rounded-md", !active && "text-muted-foreground")}
           >
             <Link href={section.href} aria-current={active ? "page" : undefined}>
               {section.label}

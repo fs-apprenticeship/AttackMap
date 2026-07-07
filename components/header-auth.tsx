@@ -2,6 +2,8 @@
 
 import { useAuth, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 
+import { Button } from "@/components/ui/button";
+
 export function HeaderAuth() {
   const { isSignedIn } = useAuth();
 
@@ -12,14 +14,14 @@ export function HeaderAuth() {
   return (
     <>
       <SignInButton forceRedirectUrl="/scans">
-        <button className="h-9 rounded-md border bg-white px-3 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50">
+        <Button variant="outline" className="bg-background px-2.5 sm:px-3">
           Sign in
-        </button>
+        </Button>
       </SignInButton>
       <SignUpButton forceRedirectUrl="/scans">
-        <button className="h-9 rounded-md bg-zinc-950 px-3 text-sm font-medium text-white transition hover:bg-zinc-800">
+        <Button className="px-2.5 sm:px-3">
           Sign up
-        </button>
+        </Button>
       </SignUpButton>
     </>
   );

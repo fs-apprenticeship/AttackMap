@@ -137,6 +137,52 @@ describe("lookupCves", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("ignores an OS CPE instead of querying NVD with it", async () => {
+    // cpe:/o:... describes the platform, not a service, and matches thousands
+    // of unrelated CVEs — it must never reach NVD.
+    const cves = await lookupCves({ cpe: "cpe:/o:microsoft:windows" });
+
+    expect(cves).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("ignores a hardware CPE instead of querying NVD with it", async () => {
+    const cves = await lookupCves({ cpe: "cpe:/h:cisco:asa" });
+
+    expect(cves).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("does not keyword-fall-back from a CPE that has no version", async () => {
+    // The precise CPE match may miss, but a bare product term ("openssh") is
+    // too broad to keyword-search — return empty rather than flood.
+    fetchMock.mockResolvedValueOnce(okResponse({ vulnerabilities: [] }));
+
+    const cves = await lookupCves({ cpe: "cpe:/a:openbsd:openssh" });
+
+    expect(cves).toEqual([]);
+    // Only the (empty) virtualMatchString attempt — never a keyword search.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toContain("virtualMatchString");
+  });
+
+  it("does not keyword-search a single generic product with no version", async () => {
+    const cves = await lookupCves({ product: "windows" });
+
+    expect(cves).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keyword-searches a multi-word product even without a version", async () => {
+    // A multi-word product ("Apache httpd") is specific enough to be useful.
+    fetchMock.mockResolvedValue(okResponse(nvdResponse));
+
+    await lookupCves({ product: "Apache httpd" });
+
+    const url = fetchMock.mock.calls[0][0] as string;
+    expect(url).toContain("keywordSearch=Apache+httpd");
+  });
+
   it("throws CveLookupError with a rate-limit hint on 403", async () => {
     fetchMock.mockResolvedValue({
       ok: false,

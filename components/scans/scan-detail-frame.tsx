@@ -4,6 +4,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Scan } from "@/lib/types";
+import { ScanChat } from "./scan-chat";
 import { ScanDetailNav } from "./scan-detail-nav";
 
 export type ScanSection =
@@ -53,10 +54,10 @@ const sections: {
 
 export function ScanNotFound() {
   return (
-    <Card className="rounded-md border bg-white shadow-sm">
+    <Card>
       <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
         <p className="text-sm font-medium">Scan not found</p>
-        <p className="max-w-sm text-sm text-zinc-500">
+        <p className="max-w-sm text-sm text-muted-foreground">
           This scan doesn&apos;t exist or belongs to another account.
         </p>
         <Button asChild className="mt-1 rounded-md">
@@ -75,20 +76,16 @@ export function ScanDetailFrame({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
+    <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">
-        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Button
-            asChild
-            variant="outline"
-            className="w-fit rounded-md bg-white"
-          >
+        <div className="mb-5 grid gap-3 sm:grid-cols-[auto_auto] sm:justify-between">
+          <Button asChild variant="outline" className="bg-background">
             <Link href="/scans">
               <ArrowLeft className="size-4" />
               All scans
             </Link>
           </Button>
-          <Button asChild className="w-fit rounded-md">
+          <Button asChild className="rounded-md">
             <Link href="/upload">
               <Plus className="size-4" />
               New scan
@@ -96,12 +93,13 @@ export function ScanDetailFrame({
           </Button>
         </div>
 
-        <div className="mb-5 overflow-hidden rounded-md border bg-white shadow-sm">
+        <ScanChat scan={scan} />
+
+        <div className="mb-5 overflow-hidden rounded-md border bg-card text-card-foreground shadow-sm">
           <div className="border-b px-4 py-3">
-            <p className="truncate text-sm font-semibold text-zinc-950">
-              {scan.target}
+            <p className="truncate text-sm font-semibold text-foreground">
+              {scan.filename}
             </p>
-            <p className="truncate text-xs text-zinc-500">{scan.filename}</p>
           </div>
           <ScanDetailNav
             sections={sections.map((section) => ({

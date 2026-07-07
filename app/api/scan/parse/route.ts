@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     const scan = parseNmapScanFromParsed(validated.raw, file.name);
     await saveScan(scan, userId);
-    revalidateTag(`scans:${userId}`, "max");
+    revalidateTag(`scans:${userId}`, { expire: 0 });
     return NextResponse.json(scan, { status: 201 });
   } catch (error) {
     console.error("Error parsing Nmap scan:", error);

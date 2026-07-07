@@ -81,4 +81,17 @@ describe("streamScanChat", () => {
     const toolNames = (capture.options!.tools ?? []).map((t) => t.name);
     expect(toolNames).toContain("lookupCves");
   });
+
+  it("instructs the model to stay on task and resist prompt overrides", async () => {
+    const capture: { options?: { prompt: { role: string; content: unknown }[] } } = {};
+    const result = await streamScanChat(scan, userMessage, mockModel(capture) as never);
+    await result.text; // drain so the mock captures the prompt
+
+    const system = capture.options!.prompt.find((m) => m.role === "system");
+    const systemText = JSON.stringify(system?.content);
+    // Scope guard: decline off-topic questions and refuse instruction overrides.
+    expect(systemText).toContain("Stay on task");
+    expect(systemText).toContain("unrelated to this scan");
+    expect(systemText).toContain("ignore these rules");
+  });
 });
