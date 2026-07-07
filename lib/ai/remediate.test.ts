@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import fixture from "@/fixtures/scans/simple-web-server.json";
-import type { Scan } from "@/lib/parser/schema";
+import type { Scan } from "@/lib/nmap/schema";
 
 // Mock the OpenAI client so tests never hit the network.
 const { createMock } = vi.hoisted(() => ({ createMock: vi.fn() }));

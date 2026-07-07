@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, FileUp } from "lucide-react";
 
-import { ScanComparisonView } from "@/components/scans/scan-comparison-view";
+import { ScanComparisonView } from "@/features/scans/scan-comparison-view";
 import { Button } from "@/components/ui/button";
 import { listScansCached } from "@/lib/scans/queries";
 

@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ArrowRightLeft, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { FirstScanEmptyState } from "@/components/app-state-common";
-import { ScansList } from "@/components/scans/scans-list";
-import { ScansContentSkeleton } from "@/components/scans/scans-skeletons";
+import { FirstScanEmptyState } from "@/components/app-shell/app-state-common";
+import { ScansList } from "@/features/scans/list/scans-list";
+import { ScansContentSkeleton } from "@/features/scans/list/scans-skeletons";
 import { listScansCached } from "@/lib/scans/queries";
 
 export default function ScansPage() {

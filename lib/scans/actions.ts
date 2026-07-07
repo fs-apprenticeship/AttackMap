@@ -2,8 +2,8 @@
 
 import { updateTag } from "next/cache";
 import { requireAuthSync } from "@/lib/auth/sync";
-import { parseNmapScan } from "@/lib/parser/parse-nmap";
-import { ScanSchema } from "@/lib/parser/schema";
+import { parseNmapScan } from "@/lib/nmap/parse-nmap";
+import { ScanSchema } from "@/lib/nmap/schema";
 import type { Scan } from "@/lib/types";
 import { deleteScan, saveScan } from "@/lib/scans/store";
 

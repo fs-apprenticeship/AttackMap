@@ -8,7 +8,7 @@ import {
 import {
   statusForUploadValidationIssue,
   validateUploadedScanFile,
-} from "@/lib/parser/upload-validation";
+} from "@/lib/nmap/upload-validation";
 
 export async function POST(request: NextRequest) {
   const userId = await getOptionalAuth();

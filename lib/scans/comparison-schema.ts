@@ -5,7 +5,7 @@ import {
   HostSchema,
   RiskLevelSchema,
   ServiceSchema,
-} from "@/lib/parser/schema";
+} from "@/lib/nmap/schema";
 
 export const ComparisonHostSchema = HostSchema.pick({
   id: true,

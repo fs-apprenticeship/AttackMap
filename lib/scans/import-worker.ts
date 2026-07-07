@@ -3,8 +3,8 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
-import { parseNmapScanFromParsed } from "@/lib/parser/parse-nmap";
-import { parseValidatedNmapXmlText } from "@/lib/parser/upload-validation";
+import { parseNmapScanFromParsed } from "@/lib/nmap/parse-nmap";
+import { parseValidatedNmapXmlText } from "@/lib/nmap/upload-validation";
 import { saveScan } from "@/lib/scans/store";
 
 export const ScanImportJobStatusSchema = z.enum([

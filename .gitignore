@@ -43,6 +43,7 @@ next-env.d.ts
 
 # prisma
 app/generated
+lib/generated
 
 # vscode
 .vscode

@@ -15,7 +15,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { ScanSchema, type Scan, type RemediationPlan } from "@/lib/parser/schema";
+import { ScanSchema, type Scan, type RemediationPlan } from "@/lib/nmap/schema";
 
 const FIXTURES = [
   "simple-web-server",

@@ -1,5 +1,5 @@
 import { ShieldCheck, ScanLine, Brain, FileText } from "lucide-react";
-import { HomeCTA } from "@/components/home-cta";
+import { HomeCTA } from "@/features/landing/home-cta";
 
 export default function LandingPage() {
   return (

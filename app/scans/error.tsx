@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { RouteErrorState } from "@/components/app-state-common";
+import { RouteErrorState } from "@/components/app-shell/app-state-common";
 
 export default function Error({
   error,

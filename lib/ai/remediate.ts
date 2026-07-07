@@ -5,7 +5,7 @@ import {
   RemediationStepSchema,
   type RemediationPlan,
   type Scan,
-} from "@/lib/parser/schema";
+} from "@/lib/nmap/schema";
 import { AiNotConfiguredError, distillScan } from "@/lib/ai/summarize";
 
 // Server-only. Generates a context-aware remediation plan via OpenAI structured

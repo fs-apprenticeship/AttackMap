@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
-import { ScanSchema } from "@/lib/parser/schema";
+import { ScanSchema } from "@/lib/nmap/schema";
 import { AiNotConfiguredError, summarizeScan } from "@/lib/ai/summarize";
 import { db } from "@/lib/db";
 

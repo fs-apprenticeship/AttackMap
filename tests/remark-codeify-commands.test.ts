@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Paragraph, Root } from "mdast";
 
-import { remarkCodeifyCommands } from "@/components/dashboard/remark-codeify-commands";
+import { remarkCodeifyCommands } from "@/features/scans/detail/markdown/remark-codeify-commands";
 
 // Run the plugin against a one-paragraph tree and return that paragraph's
 // children, so tests can assert which spans became inline code.

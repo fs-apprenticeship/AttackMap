@@ -1,6 +1,6 @@
 "use client";
 
-import { Dashboard } from "@/components/dashboard/dashboard";
+import { Dashboard } from "@/features/scans/detail/dashboard";
 import { useScanDetail } from "./scan-detail-context";
 
 export default function ScanDetailPage() {

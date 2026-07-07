@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import {
   ScanDetailFrame,
   ScanNotFound,
-} from "@/components/scans/scan-detail-frame";
-import { ScanDetailSkeleton } from "@/components/scans/scan-detail-skeletons";
+} from "@/features/scans/detail/scan-detail-frame";
+import { ScanDetailSkeleton } from "@/features/scans/detail/scan-detail-skeletons";
 
 import { getScanFromParams } from "./scan-detail-data";
 import { ScanDetailProvider } from "./scan-detail-context";

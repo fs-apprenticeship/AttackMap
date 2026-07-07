@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { Finding, Host, Scan, Service } from "@/lib/parser/schema";
+import type { Finding, Host, Scan, Service } from "@/lib/nmap/schema";
 import { compareScans, findingFingerprint } from "./compare";
 import { ScanComparisonSchema } from "./comparison-schema";
 

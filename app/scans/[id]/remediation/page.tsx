@@ -1,6 +1,6 @@
 "use client";
 
-import { RemediationSection } from "@/components/dashboard/remediation-section";
+import { RemediationSection } from "@/features/scans/detail/remediation-section";
 import { useScanDetail } from "../scan-detail-context";
 
 export default function RemediationPage() {

@@ -1,8 +1,8 @@
 "use client";
 
-import { AttackSurfaceGraph } from "@/components/dashboard/attack-surface-graph";
-import { getServiceRiskCounts } from "@/components/dashboard/data";
-import { RiskDistribution } from "@/components/dashboard/risk-distribution";
+import { AttackSurfaceGraph } from "@/features/scans/detail/attack-surface-graph";
+import { getServiceRiskCounts } from "@/lib/scans/metrics";
+import { RiskDistribution } from "@/features/scans/detail/risk-distribution";
 import { useScanDetail } from "../scan-detail-context";
 
 export default function AttackSurfacePage() {

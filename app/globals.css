@@ -151,7 +151,7 @@
 /* Soft emerald border that "breathes" (pulses brighter/dimmer) around an AI
    element while its content is generating. A gradient is masked down to a thin
    border; standard `mask` is auto-prefixed by Lightning CSS. Applied to rounded
-   containers via `.ai-ring` (see components/dashboard/ai-marker.tsx). */
+   containers via `.ai-ring` (see features/scans/detail/ai-marker.tsx). */
 @keyframes ai-breathe {
   0%,
   100% {

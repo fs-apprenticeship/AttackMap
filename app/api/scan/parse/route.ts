@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
-import { parseNmapScanFromParsed } from "@/lib/parser/parse-nmap";
+import { parseNmapScanFromParsed } from "@/lib/nmap/parse-nmap";
 import {
   readValidatedNmapXml,
   statusForUploadValidationIssue,
-} from "@/lib/parser/upload-validation";
+} from "@/lib/nmap/upload-validation";
 import { saveScan } from "@/lib/scans/store";
 import { getOptionalAuth } from "@/lib/auth/sync";
 

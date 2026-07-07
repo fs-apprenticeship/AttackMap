@@ -1,4 +1,4 @@
-import { UploadCard } from "@/components/dashboard/upload-card";
+import { UploadCard } from "@/features/upload/upload-card";
 
 export default function UploadPage() {
   return (

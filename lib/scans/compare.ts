@@ -1,4 +1,4 @@
-import type { Finding, Host, Scan, Service } from "@/lib/parser/schema";
+import type { Finding, Host, Scan, Service } from "@/lib/nmap/schema";
 
 import {
   ScanComparisonSchema,
