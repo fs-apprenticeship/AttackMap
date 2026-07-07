@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
-import { parseNmapScan } from "@/lib/nmap/parse-nmap";
+import { parseNmapScanFromParsed } from "@/lib/nmap/parse-nmap";
+import {
+  readValidatedNmapXml,
+  statusForUploadValidationIssue,
+} from "@/lib/nmap/upload-validation";
 import { saveScan } from "@/lib/scans/store";
 import { getOptionalAuth } from "@/lib/auth/sync";
 
@@ -15,15 +19,19 @@ export async function POST(request: NextRequest) {
   if (!(file instanceof File))
     return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
 
-  if (!file.name.toLowerCase().endsWith(".xml"))
-    return NextResponse.json(
-      { error: "Invalid file type. Please upload an Nmap XML file." },
-      { status: 400 },
-    );
-
   try {
-    const xml = await file.text();
-    const scan = parseNmapScan(xml, file.name);
+    const validated = await readValidatedNmapXml(file);
+    if (!validated.ok) {
+      return NextResponse.json(
+        {
+          error: validated.issue.message,
+          code: validated.issue.code,
+        },
+        { status: statusForUploadValidationIssue(validated.issue) },
+      );
+    }
+
+    const scan = parseNmapScanFromParsed(validated.raw, file.name);
     await saveScan(scan, userId);
     revalidateTag(`scans:${userId}`, { expire: 0 });
     return NextResponse.json(scan, { status: 201 });
