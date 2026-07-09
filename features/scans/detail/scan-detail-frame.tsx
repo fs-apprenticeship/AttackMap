@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, GitCompareArrows, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -78,19 +78,27 @@ export function ScanDetailFrame({
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">
-        <div className="mb-5 grid gap-3 sm:grid-cols-[auto_auto] sm:justify-between">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <Button asChild variant="outline" className="bg-background">
             <Link href="/scans">
               <ArrowLeft className="size-4" />
               All scans
             </Link>
           </Button>
-          <Button asChild className="rounded-md">
-            <Link href="/upload">
-              <Plus className="size-4" />
-              New scan
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button asChild variant="outline" className="bg-background">
+              <Link href={`/compare?base=${scan.id}`}>
+                <GitCompareArrows className="size-4" />
+                Compare
+              </Link>
+            </Button>
+            <Button asChild className="rounded-md">
+              <Link href="/upload">
+                <Plus className="size-4" />
+                New scan
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <ScanChat scan={scan} />

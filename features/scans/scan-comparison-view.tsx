@@ -53,7 +53,7 @@ type CompareResponse =
   | { error: string; comparison?: never };
 
 const selectTriggerClass =
-  "h-11 w-full rounded-md border-zinc-200 bg-zinc-50 text-left shadow-none hover:bg-white data-[size=default]:h-11";
+  "h-11 w-full rounded-md text-left shadow-none data-[size=default]:h-11";
 
 export function ScanComparisonView({
   scans,
@@ -126,13 +126,13 @@ export function ScanComparisonView({
 
   if (sortedScans.length < 2) {
     return (
-      <Card className="rounded-md border-dashed bg-white shadow-sm">
+      <Card className="rounded-md border-dashed shadow-sm">
         <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
-          <div className="flex size-10 items-center justify-center rounded-md bg-zinc-950 text-white">
+          <div className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <ArrowRightLeft className="size-5" />
           </div>
           <p className="text-sm font-medium">Two scans are needed</p>
-          <p className="max-w-sm text-sm text-zinc-500">
+          <p className="max-w-sm text-sm text-muted-foreground">
             Upload another Nmap XML scan before comparing changes over time.
           </p>
           <Button asChild className="mt-1 rounded-md">
@@ -145,10 +145,10 @@ export function ScanComparisonView({
 
   return (
     <div className="space-y-5">
-      <Card className="rounded-md border bg-white shadow-sm">
+      <Card aria-busy={isComparing}>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <ArrowRightLeft className="size-4 text-zinc-500" />
+            <ArrowRightLeft className="size-4 text-muted-foreground" />
             Select scans
           </CardTitle>
         </CardHeader>
@@ -160,7 +160,7 @@ export function ScanComparisonView({
               scans={sortedScans}
               onValueChange={setBaseScanId}
             />
-            <div className="hidden pb-3 text-zinc-400 lg:block">
+            <div className="hidden pb-3 text-muted-foreground lg:block">
               <ArrowDown className="size-5 -rotate-90" aria-hidden="true" />
             </div>
             <ScanSelect
@@ -171,13 +171,13 @@ export function ScanComparisonView({
             />
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-zinc-600">
+          <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-muted-foreground">
               {baseScan && comparisonScan ? (
                 <>
-                  Comparing <span className="font-medium text-zinc-800">{baseScan.target}</span>{" "}
+                  Comparing <span className="font-medium text-foreground">{baseScan.target}</span>{" "}
                   to{" "}
-                  <span className="font-medium text-zinc-800">
+                  <span className="font-medium text-foreground">
                     {comparisonScan.target}
                   </span>
                 </>
@@ -189,10 +189,13 @@ export function ScanComparisonView({
               type="button"
               className="rounded-md"
               disabled={isComparing}
+              aria-busy={isComparing}
               onClick={handleCompare}
             >
-              {isComparing ? <Loader2 className="size-4 animate-spin" /> : null}
-              Compare scans
+              {isComparing ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              ) : null}
+              {isComparing ? "Comparing..." : "Compare scans"}
             </Button>
           </div>
 
@@ -203,7 +206,9 @@ export function ScanComparisonView({
         </CardContent>
       </Card>
 
-      {comparison ? <ComparisonResults comparison={comparison} /> : null}
+      <div aria-live="polite" aria-busy={isComparing} aria-atomic="true">
+        {comparison ? <ComparisonResults comparison={comparison} /> : null}
+      </div>
     </div>
   );
 }
@@ -221,7 +226,7 @@ function ScanSelect({
 }) {
   return (
     <label className="space-y-2">
-      <span className="text-sm font-medium text-zinc-700">{label}</span>
+      <span className="text-sm font-medium text-foreground">{label}</span>
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className={selectTriggerClass}>
           <SelectValue placeholder="Choose a scan" />
@@ -261,12 +266,12 @@ function ComparisonResults({ comparison }: { comparison: ScanComparison }) {
         <MetricCard label="Total changes" value={totalChanges} />
       </div>
 
-      <Card className="rounded-md border bg-white shadow-sm">
+      <Card>
         <CardContent className="space-y-3 p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-zinc-700">Highest severity</span>
+            <span className="text-sm font-medium text-foreground">Highest severity</span>
             <SeverityBadge severity={comparison.highestSeverityBefore} />
-            <ArrowDown className="size-4 -rotate-90 text-zinc-400" />
+            <ArrowDown className="size-4 -rotate-90 text-muted-foreground" aria-hidden="true" />
             <SeverityBadge severity={comparison.highestSeverityAfter} />
           </div>
           {comparison.warnings.length > 0 ? (
@@ -312,14 +317,14 @@ function MetricCard({
 }) {
   const toneClass =
     tone === "good"
-      ? "text-emerald-700"
+      ? "text-emerald-700 dark:text-emerald-300"
       : tone === "warning"
-        ? "text-red-700"
-        : "text-zinc-950";
+        ? "text-red-700 dark:text-red-300"
+        : "text-foreground";
 
   return (
-    <div className="rounded-md border bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+    <div className="rounded-md border bg-card p-4 shadow-sm">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
       <p className={`mt-2 text-2xl font-semibold ${toneClass}`}>{value}</p>
@@ -360,8 +365,8 @@ function HostsSection({
                   <ChangeBadge type={type} />
                 </TableCell>
                 <TableCell>
-                  <div className="font-medium text-zinc-900">{host.ipAddress}</div>
-                  <div className="text-xs text-zinc-500">
+                  <div className="font-medium text-foreground">{host.ipAddress}</div>
+                  <div className="text-xs text-muted-foreground">
                     {host.hostname ?? host.operatingSystem}
                   </div>
                 </TableCell>
@@ -417,7 +422,7 @@ function ServicesSection({
                     <TableCell>{service.hostLabel}</TableCell>
                     <TableCell>
                       {service.port}/{service.protocol} {service.serviceName}
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-muted-foreground">
                         {formatProduct(service)}
                       </div>
                     </TableCell>
@@ -446,10 +451,10 @@ function ServicesSection({
                     key={`${service.hostId}-${service.protocol}-${service.port}`}
                   >
                     <TableCell>
-                      <div className="font-medium text-zinc-900">
+                      <div className="font-medium text-foreground">
                         {service.hostLabel}
                       </div>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-muted-foreground">
                         {service.port}/{service.protocol}
                       </div>
                     </TableCell>
@@ -461,7 +466,7 @@ function ServicesSection({
                           <Badge
                             key={field}
                             variant="outline"
-                            className="rounded-md border-zinc-200 bg-zinc-50"
+                            className="rounded-md bg-muted"
                           >
                             {field}
                           </Badge>
@@ -512,10 +517,10 @@ function FindingsSection({
                   <ChangeBadge type={type} />
                 </TableCell>
                 <TableCell>
-                  <div className="max-w-md whitespace-normal font-medium text-zinc-900">
+                  <div className="max-w-md whitespace-normal font-medium text-foreground">
                     {finding.title}
                   </div>
-                  <div className="mt-1 max-w-lg whitespace-normal text-xs text-zinc-500">
+                  <div className="mt-1 max-w-lg whitespace-normal text-xs text-muted-foreground">
                     {finding.evidence}
                   </div>
                 </TableCell>
@@ -544,7 +549,7 @@ function ComparisonSection({
   const hasChildren = Boolean(children);
 
   return (
-    <Card className="rounded-md border bg-white shadow-sm">
+    <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
@@ -552,7 +557,7 @@ function ComparisonSection({
         {hasChildren ? (
           children
         ) : (
-          <div className="rounded-md border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-500">
+          <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
             {emptyMessage}
           </div>
         )}
@@ -567,7 +572,7 @@ function ChangeBadge({ type }: { type: "new" | "removed" | "resolved" }) {
       ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : type === "resolved"
         ? "border-sky-200 bg-sky-50 text-sky-700"
-        : "border-zinc-200 bg-zinc-50 text-zinc-600";
+        : "border-border bg-muted text-muted-foreground";
   const Icon = type === "new" ? Plus : type === "resolved" ? CheckCircle2 : Minus;
 
   return (
@@ -592,8 +597,11 @@ function InlineNotice({
       : "border-amber-200 bg-amber-50 text-amber-800";
 
   return (
-    <div className={`flex items-start gap-2 rounded-md border p-3 text-sm ${className}`}>
-      <Icon className="mt-0.5 size-4 shrink-0" />
+    <div
+      role={tone === "warning" ? "alert" : "status"}
+      className={`flex items-start gap-2 rounded-md border p-3 text-sm ${className}`}
+    >
+      <Icon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <span>{message}</span>
     </div>
   );
