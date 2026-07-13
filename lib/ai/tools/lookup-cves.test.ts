@@ -15,6 +15,19 @@ function okResponse(body: unknown) {
   return { ok: true, status: 200, json: async () => body } as Response;
 }
 
+/** A minimal NVD vulnerability entry with a CVSS v3.1 base score. */
+function mkVuln(id: string, baseScore: number) {
+  return {
+    cve: {
+      id,
+      descriptions: [{ lang: "en", value: `${id} description` }],
+      metrics: {
+        cvssMetricV31: [{ cvssData: { baseScore, baseSeverity: "HIGH" } }],
+      },
+    },
+  };
+}
+
 describe("toVirtualMatchString", () => {
   it("converts an nmap CPE 2.2 URI to a CPE 2.3 string", () => {
     expect(toVirtualMatchString("cpe:/a:openbsd:openssh:9.6p1")).toBe(
@@ -212,5 +225,46 @@ describe("lookupCves", () => {
 
     const init = fetchMock.mock.calls[0][1] as RequestInit;
     expect((init.headers as Record<string, string>).apiKey).toBe("test-key");
+  });
+
+  it("fetches a wide window and ranks by CVSS so recent high-severity CVEs aren't dropped", async () => {
+    // Regression: NVD returns matches oldest-first with no severity sort. For a
+    // product with many legacy CVEs plus one recent critical (last in NVD's
+    // order), a page sized to maxResults would return only the old ones and drop
+    // the critical — which is exactly the KEV-relevant CVE. Fetching a wide
+    // window and ranking by CVSS must surface it.
+    const many = Array.from({ length: 12 }, (_, i) =>
+      mkVuln(`CVE-2010-01${String(i).padStart(2, "0")}`, 4.0),
+    );
+    many.push(mkVuln("CVE-2023-9999", 9.8)); // recent, highest, last from NVD
+
+    fetchMock.mockResolvedValue(okResponse({ vulnerabilities: many }));
+
+    const cves = await lookupCves({ cpe: "cpe:/a:acme:widget", maxResults: 3 });
+
+    // The critical survives and ranks first despite being last in NVD's order.
+    expect(cves[0].id).toBe("CVE-2023-9999");
+    expect(cves).toHaveLength(3);
+
+    // And we asked NVD for far more than maxResults, so the ranking is real.
+    const url = new URL(fetchMock.mock.calls[0][0] as string);
+    expect(Number(url.searchParams.get("resultsPerPage"))).toBeGreaterThanOrEqual(50);
+  });
+
+  it("caches the ranked window and serves different maxResults from one fetch", async () => {
+    const many = [
+      mkVuln("CVE-A", 9.0),
+      mkVuln("CVE-B", 8.0),
+      mkVuln("CVE-C", 7.0),
+    ];
+    fetchMock.mockResolvedValue(okResponse({ vulnerabilities: many }));
+
+    const one = await lookupCves({ cpe: "cpe:/a:acme:widget", maxResults: 1 });
+    const two = await lookupCves({ cpe: "cpe:/a:acme:widget", maxResults: 2 });
+
+    expect(one.map((c) => c.id)).toEqual(["CVE-A"]);
+    expect(two.map((c) => c.id)).toEqual(["CVE-A", "CVE-B"]);
+    // The window size is independent of maxResults, so both are one cached fetch.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
