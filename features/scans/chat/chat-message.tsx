@@ -7,6 +7,7 @@ import { Markdown, MarkdownInline } from "@/features/scans/detail/markdown/markd
 import { cn } from "@/lib/utils";
 
 import { CveResult, type CveToolPart } from "./cve-result";
+import { KevResult, type KevToolPart } from "./kev-result";
 
 // One turn in the transcript. Deliberately *not* a chat bubble: the analyst's
 // question reads like a logged query (mono, flush-left, accent rule), and the
@@ -118,6 +119,9 @@ export function ChatMessage({
         }
         if (part.type === "tool-lookupCves") {
           return <CveResult key={index} part={part as unknown as CveToolPart} />;
+        }
+        if (part.type === "tool-checkKev") {
+          return <KevResult key={index} part={part as unknown as KevToolPart} />;
         }
         return null;
       })}

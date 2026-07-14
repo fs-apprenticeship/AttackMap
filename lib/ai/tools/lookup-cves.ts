@@ -14,6 +14,12 @@
 const NVD_API = "https://services.nvd.nist.gov/rest/json/cves/2.0";
 const DEFAULT_MAX_RESULTS = 10;
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+// NVD returns matches oldest-first and offers no severity sort, so requesting a
+// page the size of `maxResults` yields the *oldest* CVEs and silently drops the
+// recent, high-severity ones — exactly the KEV-relevant ones. We instead fetch a
+// wide window, rank it by CVSS ourselves, and slice. NVD caps resultsPerPage at
+// 2000; 200 covers all but the largest products in a single request.
+const NVD_FETCH_WINDOW = 200;
 
 export type CveSeverity =
   | "critical"
@@ -154,18 +160,26 @@ function normalizeCve(entry: NvdVulnerability): Cve | null {
 
 const cache = new Map<string, { at: number; data: Cve[] }>();
 
-/** Run a single NVD query and return normalized, CVSS-sorted, capped results. */
+/**
+ * Run a single NVD query and return normalized results sorted by CVSS, capped to
+ * `maxResults`. We request a wide window (not just `maxResults`) because NVD
+ * returns matches oldest-first with no severity sort — a small page would hand
+ * back legacy CVEs and miss the recent high-severity ones. The ranked superset is
+ * cached, and each caller slices its own `maxResults` from it.
+ */
 async function queryNvd(
   param: "virtualMatchString" | "keywordSearch",
   value: string,
   maxResults: number,
 ): Promise<Cve[]> {
   const search = new URLSearchParams({ [param]: value });
-  search.set("resultsPerPage", String(Math.max(1, Math.min(maxResults, 50))));
+  search.set("resultsPerPage", String(NVD_FETCH_WINDOW));
   const url = `${NVD_API}?${search.toString()}`;
 
   const cached = cache.get(url);
-  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+    return cached.data.slice(0, maxResults);
+  }
 
   // An API key raises NVD's rate limit from 5 to 50 requests per 30s.
   const apiKey = process.env.NVD_API_KEY;
@@ -188,14 +202,15 @@ async function queryNvd(
   }
 
   const body = (await res.json()) as NvdResponse;
-  const cves = (body.vulnerabilities ?? [])
+  const ranked = (body.vulnerabilities ?? [])
     .map(normalizeCve)
     .filter((c): c is Cve => c !== null)
-    .sort((a, b) => (b.cvss ?? -1) - (a.cvss ?? -1))
-    .slice(0, maxResults);
+    .sort((a, b) => (b.cvss ?? -1) - (a.cvss ?? -1));
 
-  cache.set(url, { at: Date.now(), data: cves });
-  return cves;
+  // Cache the full ranked window so different `maxResults` are served from one
+  // fetch; slice per call.
+  cache.set(url, { at: Date.now(), data: ranked });
+  return ranked.slice(0, maxResults);
 }
 
 // ── Public API ──────────────────────────────────────────────────────────────

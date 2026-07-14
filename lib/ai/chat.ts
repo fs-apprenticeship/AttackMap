@@ -11,6 +11,7 @@ import { z } from "zod";
 
 import { AiNotConfiguredError } from "@/lib/ai/summarize";
 import { CveLookupError, lookupCves } from "@/lib/ai/tools/lookup-cves";
+import { KevLookupError, checkKev } from "@/lib/ai/tools/check-kev";
 import type { Scan } from "@/lib/nmap/schema";
 
 // Server-only. Powers the scan chat: the user asks questions about one parsed
@@ -21,8 +22,9 @@ import type { Scan } from "@/lib/nmap/schema";
 const DEFAULT_MODEL = "gpt-4o-mini";
 
 // Cap tool-call round-trips so a single turn can't loop indefinitely: enough
-// for the model to look up CVEs for a few services and then answer.
-const MAX_STEPS = 5;
+// for the model to look up CVEs across a few services, cross-check them against
+// KEV, and then answer.
+const MAX_STEPS = 8;
 
 const SYSTEM_PROMPT = [
   "You are a senior security analyst helping a user understand the results of a",
@@ -37,6 +39,13 @@ const SYSTEM_PROMPT = [
   "operating-system identifier — that is too broad to be meaningful. Only cite",
   "CVE IDs, scores, and links that the tool returns — never invent or recall CVEs",
   "from memory. If the tool returns nothing, say so plainly rather than guessing.",
+  "",
+  "Once you have CVE IDs from `lookupCves`, call `checkKev` with those IDs to find",
+  "which are in CISA's Known Exploited Vulnerabilities catalog — the ones being",
+  "actively exploited in the wild. Treat KEV-listed CVEs as the top priority",
+  "regardless of CVSS score, and specifically call out any that are associated",
+  "with known ransomware campaigns. Only state that a CVE is actively exploited",
+  "when `checkKev` confirms it — never from memory.",
   "",
   "Keep answers concise and specific to this scan. Do not invent hosts,",
   "services, or findings that are not in the data.",
@@ -125,6 +134,33 @@ const cveLookupTool = tool({
   },
 });
 
+/**
+ * The `checkKev` tool: given CVE IDs (from `lookupCves`), flags which are in
+ * CISA's Known Exploited Vulnerabilities catalog — i.e. actively exploited in
+ * the wild — so the model can prioritize them.
+ */
+const kevCheckTool = tool({
+  description:
+    "Check which CVE IDs appear in CISA's Known Exploited Vulnerabilities " +
+    "(KEV) catalog — the vulnerabilities being actively exploited in the wild. " +
+    "Pass the CVE IDs returned by lookupCves. KEV-listed CVEs should be treated " +
+    "as the top priority regardless of CVSS score.",
+  inputSchema: z.object({
+    cveIds: z
+      .array(z.string())
+      .describe('CVE IDs to check, e.g. ["CVE-2021-44228", "CVE-2023-4966"]'),
+  }),
+  execute: async ({ cveIds }) => {
+    try {
+      return await checkKev(cveIds);
+    } catch (error) {
+      // Surface the failure so the model degrades gracefully instead of guessing.
+      if (error instanceof KevLookupError) return { error: error.message };
+      throw error;
+    }
+  },
+});
+
 /** The default OpenAI model. Throws `AiNotConfiguredError` if no key is set. */
 function defaultModel(): LanguageModel {
   if (!process.env.OPENAI_API_KEY) throw new AiNotConfiguredError();
@@ -146,6 +182,6 @@ export async function streamScanChat(
     system: `${SYSTEM_PROMPT}\n\nScan:\n${JSON.stringify(buildScanContext(scan))}`,
     messages: await convertToModelMessages(messages),
     stopWhen: stepCountIs(MAX_STEPS),
-    tools: { lookupCves: cveLookupTool },
+    tools: { lookupCves: cveLookupTool, checkKev: kevCheckTool },
   });
 }
