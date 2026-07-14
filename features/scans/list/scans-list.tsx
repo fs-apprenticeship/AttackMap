@@ -1,20 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import type { Scan, Severity } from "@/lib/types";
 
 import { ScansEmptyState } from "./scans-empty-state";
 import { ScansFilterPanel } from "./scans-filter-panel";
 import {
-  defaultAiStatusFilters,
-  defaultRiskFilters,
   filterAndSortScans,
   getAggregateStats,
-  type AiStatusFilter,
-  type DateRangeFilter,
-  type SortOption,
 } from "./scans-list-data";
+import {
+  defaultScansUrlState,
+  parseScansUrlState,
+  type ScansUrlState,
+  writeScansUrlState,
+} from "./scans-url-state";
 import { ScansSummaryCards } from "./scans-summary-cards";
 import { ScansTable } from "./scans-table";
 
@@ -23,22 +25,37 @@ type ScansListProps = {
 };
 
 export function ScansList({ scans }: ScansListProps) {
-  const [query, setQuery] = useState("");
-  const [riskFilters, setRiskFilters] =
-    useState<Severity[]>(defaultRiskFilters);
-  const [aiStatusFilters, setAiStatusFilters] = useState<AiStatusFilter[]>(
-    defaultAiStatusFilters,
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const urlState = useMemo(
+    () => parseScansUrlState(searchParams),
+    [searchParams],
   );
-  const [dateRange, setDateRange] = useState<DateRangeFilter>("all");
-  const [sort, setSort] = useState<SortOption>("parsed-desc");
+  const { query, riskFilters, aiStatusFilters, dateRange, sort } = urlState;
   const [expandedScanId, setExpandedScanId] = useState<string | null>(null);
+
+  const replaceUrlState = useCallback(
+    (nextState: ScansUrlState) => {
+      const nextParams = writeScansUrlState(
+        new URLSearchParams(searchParams.toString()),
+        nextState,
+      );
+      const queryString = nextParams.toString();
+
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
 
   const normalizedQuery = query.trim().toLowerCase();
   const aggregateStats = useMemo(() => getAggregateStats(scans), [scans]);
   const hasActiveFilters =
     normalizedQuery.length > 0 ||
-    riskFilters.length !== defaultRiskFilters.length ||
-    aiStatusFilters.length !== defaultAiStatusFilters.length ||
+    riskFilters.length !== defaultScansUrlState.riskFilters.length ||
+    aiStatusFilters.length !== defaultScansUrlState.aiStatusFilters.length ||
     dateRange !== "all" ||
     sort !== "parsed-desc";
 
@@ -56,31 +73,34 @@ export function ScansList({ scans }: ScansListProps) {
   );
 
   function toggleRiskFilter(severity: Severity, checked: boolean) {
-    setRiskFilters((current) => {
-      if (checked) {
-        return current.includes(severity) ? current : [...current, severity];
-      }
+    const nextRiskFilters = checked
+      ? riskFilters.includes(severity)
+        ? riskFilters
+        : [...riskFilters, severity]
+      : riskFilters.filter((value) => value !== severity);
 
-      return current.filter((value) => value !== severity);
-    });
+    replaceUrlState({ ...urlState, query, riskFilters: nextRiskFilters });
   }
 
-  function toggleAiStatusFilter(status: AiStatusFilter, checked: boolean) {
-    setAiStatusFilters((current) => {
-      if (checked) {
-        return current.includes(status) ? current : [...current, status];
-      }
+  function toggleAiStatusFilter(
+    status: ScansUrlState["aiStatusFilters"][number],
+    checked: boolean,
+  ) {
+    const nextAiStatusFilters = checked
+      ? aiStatusFilters.includes(status)
+        ? aiStatusFilters
+        : [...aiStatusFilters, status]
+      : aiStatusFilters.filter((value) => value !== status);
 
-      return current.filter((value) => value !== status);
+    replaceUrlState({
+      ...urlState,
+      query,
+      aiStatusFilters: nextAiStatusFilters,
     });
   }
 
   function resetFilters() {
-    setQuery("");
-    setRiskFilters(defaultRiskFilters);
-    setAiStatusFilters(defaultAiStatusFilters);
-    setDateRange("all");
-    setSort("parsed-desc");
+    replaceUrlState(defaultScansUrlState);
   }
 
   function toggleExpandedScan(scanId: string) {
@@ -100,9 +120,15 @@ export function ScansList({ scans }: ScansListProps) {
         filteredCount={filteredScans.length}
         totalCount={scans.length}
         hasActiveFilters={hasActiveFilters}
-        onQueryChange={setQuery}
-        onSortChange={setSort}
-        onDateRangeChange={setDateRange}
+        onQueryChange={(nextQuery) =>
+          replaceUrlState({ ...urlState, query: nextQuery })
+        }
+        onSortChange={(nextSort) =>
+          replaceUrlState({ ...urlState, query, sort: nextSort })
+        }
+        onDateRangeChange={(nextDateRange) =>
+          replaceUrlState({ ...urlState, query, dateRange: nextDateRange })
+        }
         onRiskFilterChange={toggleRiskFilter}
         onAiStatusFilterChange={toggleAiStatusFilter}
         onResetFilters={resetFilters}
