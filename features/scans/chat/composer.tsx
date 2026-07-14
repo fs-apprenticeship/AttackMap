@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { ArrowUp, Square } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { IconButtonTooltip } from "@/components/ui/tooltip";
 
 // The investigation input. A bordered field that lights up on focus, an
 // auto-growing textarea, a send action that flips to Stop while streaming, and
@@ -59,25 +60,29 @@ export function Composer({
           className="max-h-[140px] min-h-6 flex-1 resize-none bg-transparent py-1 text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
         />
         {busy ? (
-          <Button
-            type="button"
-            size="icon-sm"
-            variant="secondary"
-            onClick={onStop}
-            aria-label="Stop generating"
-          >
-            <Square className="size-3.5" />
-          </Button>
+          <IconButtonTooltip label="Stop generating">
+            <Button
+              type="button"
+              size="icon-sm"
+              variant="secondary"
+              onClick={onStop}
+              aria-label="Stop generating"
+            >
+              <Square className="size-3.5" />
+            </Button>
+          </IconButtonTooltip>
         ) : (
-          <Button
-            type="submit"
-            size="icon-sm"
-            disabled={!input.trim()}
-            aria-label="Send"
-            className="bg-emerald-600 text-white hover:bg-emerald-500 disabled:bg-muted disabled:text-muted-foreground"
-          >
-            <ArrowUp className="size-4" />
-          </Button>
+          <IconButtonTooltip label="Send" disabled={!input.trim()}>
+            <Button
+              type="submit"
+              size="icon-sm"
+              disabled={!input.trim()}
+              aria-label="Send"
+              className="bg-emerald-600 text-white hover:bg-emerald-500 disabled:bg-muted disabled:text-muted-foreground"
+            >
+              <ArrowUp className="size-4" />
+            </Button>
+          </IconButtonTooltip>
         )}
       </form>
       <div className="mt-1.5 flex items-center gap-2 px-1 text-[0.6875rem] text-muted-foreground">

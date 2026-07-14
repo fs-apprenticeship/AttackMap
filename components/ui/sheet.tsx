@@ -6,6 +6,7 @@ import { XIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { IconButtonTooltip } from "@/components/ui/tooltip";
 
 // A slide-over panel built on the same Radix Dialog primitive as `dialog.tsx`,
 // but anchored to an edge of the viewport instead of centered. Used for the
@@ -70,16 +71,19 @@ function SheetContent({
       >
         {children}
         {showCloseButton && (
-          <SheetPrimitive.Close asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="absolute top-4 right-4"
-            >
-              <XIcon />
-              <span className="sr-only">Close</span>
-            </Button>
-          </SheetPrimitive.Close>
+          <div className="absolute top-4 right-4">
+            <IconButtonTooltip label="Close panel">
+              <SheetPrimitive.Close asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Close panel"
+                >
+                  <XIcon />
+                </Button>
+              </SheetPrimitive.Close>
+            </IconButtonTooltip>
+          </div>
         )}
       </SheetPrimitive.Content>
     </SheetPortal>

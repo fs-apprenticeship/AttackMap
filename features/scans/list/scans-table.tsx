@@ -8,6 +8,7 @@ import { formatDate } from "@/features/scans/shared/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { IconButtonTooltip } from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -117,17 +118,21 @@ export function ScansTable({
                         >
                           Preview
                         </Button>
-                        <Button
-                          asChild
-                          size="icon-sm"
-                          variant="ghost"
-                          className="rounded-md text-muted-foreground"
-                          aria-label={`Open ${scan.target} dashboard`}
+                        <IconButtonTooltip
+                          label={`Open ${scan.target} dashboard`}
                         >
-                          <Link href={`/scans/${scan.id}`}>
-                            <ArrowUpRight className="size-4" />
-                          </Link>
-                        </Button>
+                          <Button
+                            asChild
+                            size="icon-sm"
+                            variant="ghost"
+                            className="rounded-md text-muted-foreground"
+                            aria-label={`Open ${scan.target} dashboard`}
+                          >
+                            <Link href={`/scans/${scan.id}`}>
+                              <ArrowUpRight className="size-4" />
+                            </Link>
+                          </Button>
+                        </IconButtonTooltip>
                         <DeleteScanDialog scan={scan} />
                       </div>
                     </TableCell>
@@ -228,17 +233,19 @@ function MobileScanCard({
           >
             {isExpanded ? "Hide preview" : "Preview"}
           </Button>
-          <Button
-            asChild
-            size="icon"
-            variant="outline"
-            className="bg-background"
-            aria-label={`Open ${scan.target} dashboard`}
-          >
-            <Link href={`/scans/${scan.id}`}>
-              <ArrowUpRight className="size-4" />
-            </Link>
-          </Button>
+          <IconButtonTooltip label={`Open ${scan.target} dashboard`}>
+            <Button
+              asChild
+              size="icon"
+              variant="outline"
+              className="bg-background"
+              aria-label={`Open ${scan.target} dashboard`}
+            >
+              <Link href={`/scans/${scan.id}`}>
+                <ArrowUpRight className="size-4" />
+              </Link>
+            </Button>
+          </IconButtonTooltip>
           <DeleteScanDialog scan={scan} />
         </div>
 
