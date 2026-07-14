@@ -47,6 +47,16 @@ export function getHostsForScan(scan: Scan): HostWithScan[] {
   return scan.hosts.map((host) => ({ ...host, scanFilename: scan.filename }));
 }
 
+export function getHostHighestRisk(
+  host: Pick<Host, "services">,
+): Severity {
+  return (
+    severityOrder.find((severity) =>
+      host.services.some((service) => service.riskLevel === severity),
+    ) ?? "info"
+  );
+}
+
 export function getServicesForScan(scan: Scan) {
   return getHostsForScan(scan).flatMap((host) =>
     host.services.map((service) => ({ ...service, host })),

@@ -22,8 +22,11 @@ import {
 } from "@/components/ui/table";
 
 import { SeverityBadge } from "./severity-badge";
-import type { HostWithScan } from "@/lib/scans/metrics";
-import { formatRole, severityOrder } from "@/features/scans/shared/utils";
+import {
+  getHostHighestRisk,
+  type HostWithScan,
+} from "@/lib/scans/metrics";
+import { formatRole } from "@/features/scans/shared/utils";
 import { downloadTextFile } from "@/features/scans/shared/download";
 import {
   exportFilename,
@@ -91,11 +94,6 @@ export function HostInventoryTable({
           </TableHeader>
           <TableBody>
             {hosts.map((host) => {
-              const hostSeverity =
-                severityOrder.find((severity) =>
-                  host.services.some((service) => service.riskLevel === severity),
-                ) ?? "info";
-
               return (
                 <TableRow key={host.id} className="hover:bg-muted/40">
                   <TableCell className="px-4 py-3">
@@ -127,7 +125,7 @@ export function HostInventoryTable({
                     {host.services.length}
                   </TableCell>
                   <TableCell className="px-4 py-3">
-                    <SeverityBadge severity={hostSeverity} />
+                    <SeverityBadge severity={getHostHighestRisk(host)} />
                   </TableCell>
                   <TableCell className="px-4 py-3 text-muted-foreground">
                     {host.scanFilename}

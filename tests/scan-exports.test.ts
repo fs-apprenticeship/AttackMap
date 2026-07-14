@@ -55,7 +55,7 @@ describe("host inventory CSV export", () => {
     };
 
     expect(serializeHostInventoryCsv([host])).toBe(
-      "Host,IP address,Operating system,Role,Exposure,Service count,Highest risk,Source scan\r\n'=1+1,'=1+1,Unknown,Database Server,internal,0,Info,'@malicious.xml",
+      "Host,IP address,Operating system,Role,Exposure,Service count,Highest risk,Source scan\r\n'=1+1,'=1+1,,Database Server,internal,0,Info,'@malicious.xml",
     );
   });
 });
@@ -71,7 +71,7 @@ describe("remediation plan Markdown export", () => {
           addresses: ["CVE-2024-0001", "Exposed SSH"],
           summary: "Upgrade the affected package.",
           steps: ["Back up config", "Install the update"],
-          commands: ["sudo apt update\nsudo apt install openssh-server"],
+          commands: ["sudo apt update", "sudo apt install openssh-server"],
           verification: "Run `sshd -V`.",
         },
         {
@@ -112,6 +112,9 @@ Upgrade the affected package.
 
 \`\`\`sh
 sudo apt update
+\`\`\`
+
+\`\`\`sh
 sudo apt install openssh-server
 \`\`\`
 

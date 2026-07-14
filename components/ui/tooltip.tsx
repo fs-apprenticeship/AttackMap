@@ -63,7 +63,14 @@ function IconButtonTooltip({
     <Tooltip>
       <TooltipTrigger asChild>
         {disabled ? (
-          <span className="inline-flex cursor-not-allowed">{children}</span>
+          <span
+            className="inline-flex cursor-not-allowed"
+            tabIndex={0}
+            aria-label={label}
+            aria-disabled="true"
+          >
+            {children}
+          </span>
         ) : (
           children
         )}
