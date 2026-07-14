@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { Check, Copy } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { IconButtonTooltip } from "@/components/ui/tooltip";
 import { remarkCodeifyCommands } from "./remark-codeify-commands";
 
 const remarkPlugins = [remarkGfm, remarkCodeifyCommands];
@@ -30,18 +31,22 @@ function CopyButton({ value }: { value: string }) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={copy}
-      aria-label={copied ? "Copied" : "Copy to clipboard"}
-      className="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
-    >
-      {copied ? (
-        <Check className="size-4 text-emerald-400" />
-      ) : (
-        <Copy className="size-4" />
-      )}
-    </button>
+    <div className="absolute right-2 top-2">
+      <IconButtonTooltip label={copied ? "Copied" : "Copy to clipboard"}>
+        <button
+          type="button"
+          onClick={copy}
+          aria-label={copied ? "Copied" : "Copy to clipboard"}
+          className="inline-flex size-8 items-center justify-center rounded text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
+        >
+          {copied ? (
+            <Check className="size-4 text-emerald-400" />
+          ) : (
+            <Copy className="size-4" />
+          )}
+        </button>
+      </IconButtonTooltip>
+    </div>
   );
 }
 

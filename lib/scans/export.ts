@@ -1,6 +1,8 @@
-import type { HostWithScan } from "@/lib/scans/metrics";
-import { severityOrder } from "@/lib/scans/severity";
-import type { RemediationPlan, Severity } from "@/lib/types";
+import {
+  getHostHighestRisk,
+  type HostWithScan,
+} from "@/lib/scans/metrics";
+import type { RemediationPlan } from "@/lib/types";
 
 const csvHeaders = [
   "Host",
@@ -29,23 +31,15 @@ function csvCell(value: string | number) {
   return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-function highestHostRisk(host: HostWithScan): Severity {
-  return (
-    severityOrder.find((severity) =>
-      host.services.some((service) => service.riskLevel === severity),
-    ) ?? "info"
-  );
-}
-
 export function serializeHostInventoryCsv(hosts: HostWithScan[]) {
   const rows = hosts.map((host) => [
-    host.hostname || host.ipAddress,
+    host.hostname ?? host.ipAddress,
     host.ipAddress,
-    host.operatingSystem || "Unknown",
+    host.operatingSystem ?? "Unknown",
     displayLabel(host.role),
     host.internetExposed ? "internet" : "internal",
     host.services.length,
-    displayLabel(highestHostRisk(host)),
+    displayLabel(getHostHighestRisk(host)),
     host.scanFilename,
   ]);
 

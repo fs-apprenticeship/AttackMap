@@ -34,6 +34,7 @@ export function ScansList({ scans }: ScansListProps) {
   );
   const { query, riskFilters, aiStatusFilters, dateRange, sort } = urlState;
   const [expandedScanId, setExpandedScanId] = useState<string | null>(null);
+  const [searchResetKey, setSearchResetKey] = useState(0);
 
   const replaceUrlState = useCallback(
     (nextState: ScansUrlState) => {
@@ -100,6 +101,7 @@ export function ScansList({ scans }: ScansListProps) {
   }
 
   function resetFilters() {
+    setSearchResetKey((current) => current + 1);
     replaceUrlState(defaultScansUrlState);
   }
 
@@ -120,6 +122,7 @@ export function ScansList({ scans }: ScansListProps) {
         filteredCount={filteredScans.length}
         totalCount={scans.length}
         hasActiveFilters={hasActiveFilters}
+        searchResetKey={searchResetKey}
         onQueryChange={(nextQuery) =>
           replaceUrlState({ ...urlState, query: nextQuery })
         }

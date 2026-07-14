@@ -52,6 +52,7 @@ type ScansFilterPanelProps = {
   filteredCount: number;
   totalCount: number;
   hasActiveFilters: boolean;
+  searchResetKey: number;
   onQueryChange: (query: string) => void;
   onSortChange: (sort: SortOption) => void;
   onDateRangeChange: (range: DateRangeFilter) => void;
@@ -76,6 +77,7 @@ export function ScansFilterPanel({
   filteredCount,
   totalCount,
   hasActiveFilters,
+  searchResetKey,
   onQueryChange,
   onSortChange,
   onDateRangeChange,
@@ -107,7 +109,7 @@ export function ScansFilterPanel({
         <div className="space-y-2">
           <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_180px]">
             <SearchInput
-              key={query}
+              key={`${searchResetKey}:${query}`}
               initialQuery={query}
               onQueryChange={onQueryChange}
             />

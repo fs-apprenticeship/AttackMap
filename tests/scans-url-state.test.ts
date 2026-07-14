@@ -77,4 +77,22 @@ describe("scan list URL state", () => {
 
     expect(params.toString()).toBe("from=dashboard");
   });
+
+  it("round-trips non-default state through its canonical URL", () => {
+    const state = {
+      query: "gateway",
+      riskFilters: ["critical", "medium"] as const,
+      aiStatusFilters: ["summary-ai", "remediation-rule-based"] as const,
+      dateRange: "24h" as const,
+      sort: "findings-desc" as const,
+    };
+
+    const params = writeScansUrlState(new URLSearchParams(), {
+      ...state,
+      riskFilters: [...state.riskFilters],
+      aiStatusFilters: [...state.aiStatusFilters],
+    });
+
+    expect(parseScansUrlState(params)).toEqual(state);
+  });
 });

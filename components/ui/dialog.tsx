@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { IconButtonTooltip } from "@/components/ui/tooltip"
 import { XIcon } from "lucide-react"
 
 function Dialog({
@@ -68,17 +69,20 @@ function DialogContent({
       >
         {children}
         {showCloseButton && (
-          <DialogPrimitive.Close data-slot="dialog-close" asChild>
-            <Button
-              variant="ghost"
-              className="absolute top-4 right-4 bg-secondary"
-              size="icon-sm"
-            >
-              <XIcon
-              />
-              <span className="sr-only">Close</span>
-            </Button>
-          </DialogPrimitive.Close>
+          <div className="absolute top-4 right-4">
+            <IconButtonTooltip label="Close dialog">
+              <DialogPrimitive.Close data-slot="dialog-close" asChild>
+                <Button
+                  variant="ghost"
+                  className="bg-secondary"
+                  size="icon-sm"
+                  aria-label="Close dialog"
+                >
+                  <XIcon />
+                </Button>
+              </DialogPrimitive.Close>
+            </IconButtonTooltip>
+          </div>
         )}
       </DialogPrimitive.Content>
     </DialogPortal>

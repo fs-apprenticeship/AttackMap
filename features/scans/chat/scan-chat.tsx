@@ -12,6 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { IconButtonTooltip } from "@/components/ui/tooltip";
 import type { Scan } from "@/lib/types";
 
 import { AIHeader } from "./ai-header";
@@ -48,19 +49,21 @@ export function ScanChat({ scan }: { scan: Scan }) {
 
   return (
     <Sheet open={open} onOpenChange={setOpen} modal={false}>
-      <SheetTrigger asChild>
-        <button
-          type="button"
-          aria-label="Open the AI security analyst"
-          style={{ position: "fixed" }}
-          className="top-[38%] right-0 z-40 flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-md border border-r-0 border-emerald-600/60 bg-emerald-600 px-2.5 py-4 text-white shadow-[0_0_22px_-6px] shadow-emerald-500/60 transition-[padding,background-color] hover:bg-emerald-500 hover:pr-3.5 focus-visible:ring-3 focus-visible:ring-emerald-300/50 focus-visible:outline-none"
-        >
-          <Crosshair className="size-4" />
-          <span className="text-xs font-medium tracking-wide [writing-mode:vertical-rl]">
-            Ask AI
-          </span>
-        </button>
-      </SheetTrigger>
+      <IconButtonTooltip label="Open the AI security analyst" side="left">
+        <SheetTrigger asChild>
+          <button
+            type="button"
+            aria-label="Open the AI security analyst"
+            style={{ position: "fixed" }}
+            className="top-[38%] right-0 z-40 flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-md border border-r-0 border-emerald-600/60 bg-emerald-600 px-2.5 py-4 text-white shadow-[0_0_22px_-6px] shadow-emerald-500/60 transition-[padding,background-color] hover:bg-emerald-500 hover:pr-3.5 focus-visible:ring-3 focus-visible:ring-emerald-300/50 focus-visible:outline-none"
+          >
+            <Crosshair className="size-4" />
+            <span className="text-xs font-medium tracking-wide [writing-mode:vertical-rl]">
+              Ask AI
+            </span>
+          </button>
+        </SheetTrigger>
+      </IconButtonTooltip>
 
       <SheetContent
         showCloseButton={false}

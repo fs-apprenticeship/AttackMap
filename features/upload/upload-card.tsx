@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { IconButtonTooltip } from "@/components/ui/tooltip";
 import { uploadScanAction } from "@/lib/scans/actions";
 import {
   MAX_SCAN_UPLOAD_BYTES,
@@ -272,17 +273,22 @@ export function UploadCard() {
             </p>
           </div>
           {hasFile && !isSuccess ? (
-            <Button
-              aria-label="Clear selected file"
-              className="shrink-0 rounded-md"
+            <IconButtonTooltip
+              label="Clear selected file"
               disabled={status === "parsing"}
-              size="icon"
-              type="button"
-              variant="ghost"
-              onClick={resetUpload}
             >
-              <X className="size-4" />
-            </Button>
+              <Button
+                aria-label="Clear selected file"
+                className="shrink-0 rounded-md"
+                disabled={status === "parsing"}
+                size="icon"
+                type="button"
+                variant="ghost"
+                onClick={resetUpload}
+              >
+                <X className="size-4" />
+              </Button>
+            </IconButtonTooltip>
           ) : null}
         </div>
 

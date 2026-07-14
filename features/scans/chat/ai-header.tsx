@@ -4,6 +4,7 @@ import { Crosshair, FileText, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SheetClose } from "@/components/ui/sheet";
+import { IconButtonTooltip } from "@/components/ui/tooltip";
 import type { Scan } from "@/lib/types";
 
 // The contextual header: who's answering (prominent product mark) and the scan
@@ -14,16 +15,18 @@ export function AIHeader({ scan }: { scan: Scan }) {
       <div className="flex items-center gap-2 px-4 pt-3">
         <Crosshair className="size-6 text-emerald-600 dark:text-emerald-400" />
         <span className="text-2xl font-bold tracking-tight text-foreground">AttackMap AI</span>
-        <SheetClose asChild>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            className="-mr-1 ml-auto text-muted-foreground hover:text-foreground"
-          >
-            <X className="size-4" />
-            <span className="sr-only">Close</span>
-          </Button>
-        </SheetClose>
+        <IconButtonTooltip label="Close security analyst">
+          <SheetClose asChild>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              className="-mr-1 ml-auto text-muted-foreground hover:text-foreground"
+              aria-label="Close security analyst"
+            >
+              <X className="size-4" />
+            </Button>
+          </SheetClose>
+        </IconButtonTooltip>
       </div>
 
       <div className="px-4 pt-3 pb-3">
