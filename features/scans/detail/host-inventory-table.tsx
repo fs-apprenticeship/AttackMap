@@ -1,4 +1,7 @@
-import { Globe2, ShieldCheck } from "lucide-react";
+"use client";
+
+import { Download, Globe2, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,12 +24,35 @@ import {
 import { SeverityBadge } from "./severity-badge";
 import type { HostWithScan } from "@/lib/scans/metrics";
 import { formatRole, severityOrder } from "@/features/scans/shared/utils";
+import { downloadTextFile } from "@/features/scans/shared/download";
+import {
+  exportFilename,
+  serializeHostInventoryCsv,
+} from "@/lib/scans/export";
 
 type HostInventoryTableProps = {
   hosts: HostWithScan[];
+  scanFilename: string;
 };
 
-export function HostInventoryTable({ hosts }: HostInventoryTableProps) {
+export function HostInventoryTable({
+  hosts,
+  scanFilename,
+}: HostInventoryTableProps) {
+  function exportCsv() {
+    try {
+      downloadTextFile({
+        content: serializeHostInventoryCsv(hosts),
+        filename: exportFilename(scanFilename, "hosts.csv"),
+        type: "text/csv;charset=utf-8",
+        includeUtf8Bom: true,
+      });
+      toast.success("Host inventory exported");
+    } catch {
+      toast.error("Host inventory could not be exported");
+    }
+  }
+
   return (
     <Card className="py-0">
       <CardHeader className="border-b p-4 sm:grid-cols-[1fr_auto]">
@@ -41,7 +67,9 @@ export function HostInventoryTable({ hosts }: HostInventoryTableProps) {
             variant="outline"
             className="rounded-md bg-background text-foreground"
             size="lg"
+            onClick={exportCsv}
           >
+            <Download className="size-4" />
             Export CSV
           </Button>
         </CardAction>
