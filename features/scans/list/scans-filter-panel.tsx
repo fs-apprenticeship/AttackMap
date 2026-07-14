@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   ArrowDownUp,
   CalendarDays,
@@ -103,16 +106,11 @@ export function ScansFilterPanel({
       <CardContent className="space-y-3 p-3 sm:p-4">
         <div className="space-y-2">
           <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_180px]">
-            <label className="relative block">
-              <span className="sr-only">Search scans</span>
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={query}
-                placeholder="Search filename, target, host, service, or port"
-                className="h-10 rounded-md pl-9"
-                onChange={(event) => onQueryChange(event.target.value)}
-              />
-            </label>
+            <SearchInput
+              key={query}
+              initialQuery={query}
+              onQueryChange={onQueryChange}
+            />
 
             <Select
               value={sort}
@@ -306,5 +304,35 @@ export function ScansFilterPanel({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function SearchInput({
+  initialQuery,
+  onQueryChange,
+}: {
+  initialQuery: string;
+  onQueryChange: (query: string) => void;
+}) {
+  const [draft, setDraft] = useState(initialQuery);
+
+  useEffect(() => {
+    if (draft === initialQuery) return;
+
+    const timeout = window.setTimeout(() => onQueryChange(draft), 300);
+    return () => window.clearTimeout(timeout);
+  }, [draft, initialQuery, onQueryChange]);
+
+  return (
+    <label className="relative block">
+      <span className="sr-only">Search scans</span>
+      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        value={draft}
+        placeholder="Search filename, target, host, service, or port"
+        className="h-10 rounded-md pl-9"
+        onChange={(event) => setDraft(event.target.value)}
+      />
+    </label>
   );
 }
