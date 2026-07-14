@@ -1,8 +1,13 @@
+"use client";
+
 import {
+  Copy,
+  Download,
   RefreshCw,
   Sparkles,
   Wrench,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +20,11 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { RemediationPlan, Scan } from "@/lib/types";
+import { downloadTextFile } from "@/features/scans/shared/download";
+import {
+  exportFilename,
+  serializeRemediationPlanMarkdown,
+} from "@/lib/scans/export";
 
 import { AiGenerating } from "./ai-generating";
 import { AiMarker, aiBorder } from "./ai-marker";
@@ -52,6 +62,36 @@ export function RemediationPlanPanel({
 }: RemediationPlanPanelProps) {
   const isAi = plan.source === "ai";
 
+  function planMarkdown() {
+    return serializeRemediationPlanMarkdown({
+      plan,
+      target: scan.target,
+      scanFilename: scan.filename,
+    });
+  }
+
+  async function copyPlan() {
+    try {
+      await navigator.clipboard.writeText(planMarkdown());
+      toast.success("Remediation plan copied");
+    } catch {
+      toast.error("Remediation plan could not be copied");
+    }
+  }
+
+  function exportPlan() {
+    try {
+      downloadTextFile({
+        content: planMarkdown(),
+        filename: exportFilename(scan.filename, "remediation-plan.md"),
+        type: "text/markdown;charset=utf-8",
+      });
+      toast.success("Remediation plan exported");
+    } catch {
+      toast.error("Remediation plan could not be exported");
+    }
+  }
+
   return (
     <Card
       className={cn(
@@ -61,7 +101,7 @@ export function RemediationPlanPanel({
       aria-busy={generating}
     >
       <CardHeader className="border-b p-4">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Wrench className="size-4 text-emerald-600" />
             <CardTitle className="text-base font-semibold text-foreground">
@@ -69,25 +109,35 @@ export function RemediationPlanPanel({
             </CardTitle>
             <AiMarker generating={generating} source={plan.source} />
           </div>
-          <Button
-            variant={isAi ? "outline" : "default"}
-            onClick={onGenerate}
-            disabled={generating}
-          >
-            {generating ? (
-              "Generating..."
-            ) : isAi ? (
-              <>
-                <RefreshCw className="size-4" data-icon="inline-start" />
-                Regenerate
-              </>
-            ) : (
-              <>
-                <Sparkles className="size-4" data-icon="inline-start" />
-                Generate AI remediation plan
-              </>
-            )}
-          </Button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button variant="outline" onClick={copyPlan} disabled={generating}>
+              <Copy className="size-4" />
+              Copy plan
+            </Button>
+            <Button variant="outline" onClick={exportPlan} disabled={generating}>
+              <Download className="size-4" />
+              Export Markdown
+            </Button>
+            <Button
+              variant={isAi ? "outline" : "default"}
+              onClick={onGenerate}
+              disabled={generating}
+            >
+              {generating ? (
+                "Generating..."
+              ) : isAi ? (
+                <>
+                  <RefreshCw className="size-4" data-icon="inline-start" />
+                  Regenerate
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" data-icon="inline-start" />
+                  Generate AI remediation plan
+                </>
+              )}
+            </Button>
+          </div>
         </div>
         <CardDescription className="mt-1 text-sm text-muted-foreground">
           {isAi
