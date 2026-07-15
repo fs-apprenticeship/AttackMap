@@ -11,6 +11,7 @@ import {
   Loader2,
   Minus,
   Plus,
+  PowerOff,
 } from "lucide-react";
 
 import { SeverityBadge } from "@/features/scans/detail/severity-badge";
@@ -343,7 +344,10 @@ function HostsSection({
 }) {
   const rows = [
     ...added.map((host) => ({ type: "new" as const, host })),
-    ...removed.map((host) => ({ type: "removed" as const, host })),
+    ...removed.map((host) => ({
+      type: host.status === "down" ? ("down" as const) : ("removed" as const),
+      host,
+    })),
   ];
 
   return (
@@ -566,14 +570,27 @@ function ComparisonSection({
   );
 }
 
-function ChangeBadge({ type }: { type: "new" | "removed" | "resolved" }) {
+function ChangeBadge({
+  type,
+}: {
+  type: "new" | "removed" | "resolved" | "down";
+}) {
   const className =
     type === "new"
       ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : type === "resolved"
         ? "border-sky-200 bg-sky-50 text-sky-700"
-        : "border-border bg-muted text-muted-foreground";
-  const Icon = type === "new" ? Plus : type === "resolved" ? CheckCircle2 : Minus;
+        : type === "down"
+          ? "border-amber-200 bg-amber-50 text-amber-700"
+          : "border-border bg-muted text-muted-foreground";
+  const Icon =
+    type === "new"
+      ? Plus
+      : type === "resolved"
+        ? CheckCircle2
+        : type === "down"
+          ? PowerOff
+          : Minus;
 
   return (
     <Badge variant="outline" className={`rounded-md ${className}`}>
