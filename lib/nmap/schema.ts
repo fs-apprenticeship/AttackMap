@@ -30,6 +30,11 @@ export const HostSchema = z.object({
   services: z.array(ServiceSchema),
 });
 
+export const DownHostSchema = z.object({
+  ipAddress: z.string(),
+  hostname: z.string().optional(),
+});
+
 export const FindingSchema = z.object({
   id: z.string(),
   hostId: z.string().optional(),
@@ -40,7 +45,6 @@ export const FindingSchema = z.object({
   remediation: z.string(),
 });
 
-// Defined before AISummarySchema so the summary can embed remediationPlan.
 export const RemediationStepSchema = z.object({
   priority: z.enum(["now", "next", "later"]),
   title: z.string(),
@@ -73,6 +77,7 @@ export const ScanSchema = z.object({
   parsedAt: z.string(),
   scannedAt: z.string().optional(),
   hosts: z.array(HostSchema),
+  downHosts: z.array(DownHostSchema).default([]),
   findings: z.array(FindingSchema),
   summary: AISummarySchema,
   remediationPlan: RemediationPlanSchema,
@@ -82,6 +87,7 @@ export type RiskLevel = z.infer<typeof RiskLevelSchema>;
 export type Severity = RiskLevel;
 export type Service = z.infer<typeof ServiceSchema>;
 export type Host = z.infer<typeof HostSchema>;
+export type DownHost = z.infer<typeof DownHostSchema>;
 export type Finding = z.infer<typeof FindingSchema>;
 export type RemediationStep = z.infer<typeof RemediationStepSchema>;
 export type RemediationPlan = z.infer<typeof RemediationPlanSchema>;

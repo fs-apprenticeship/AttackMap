@@ -71,9 +71,6 @@ model Scan {
   scannedAt  DateTime? @map("scanned_at")
   uploadedAt DateTime  @default(now()) @map("uploaded_at")
   parsedAt   DateTime  @map("parsed_at")
-  // Hosts nmap reported as down: [{ ipAddress, hostname? }]. Kept separately
-  // from `hosts` (which only holds up hosts) so Compare can tell "scanned
-  // and found down" apart from "not in this scan's target range at all".
   downHosts  Json      @default("[]") @map("down_hosts")
 
   user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -173,25 +170,11 @@ model AiSummary {
   @@map("ai_summaries")
 }
 
-// ---------------------------------------------------------------------------
-// Scan import jobs (large-file async processing)
-// ---------------------------------------------------------------------------
-// Persisted job record for the large-scan (> MAX_SCAN_UPLOAD_BYTES) upload
-// path. Replaces an in-memory job map, which does not survive Vercel
-// serverless cold starts and isn't shared across instances. See
-// docs/LARGE_SCAN_PROCESSING.md.
-
 model ScanImportJob {
   id            String           @id @default(cuid())
   userId        String           @map("user_id")
   filename      String
   fileSizeBytes Int              @map("file_size_bytes")
-  // Points at the ScanUploadChunk rows for this upload (see below), not a
-  // Vercel Blob URL — this app has no Vercel dashboard access to attach Blob
-  // storage, so large files are chunked and reassembled from Postgres
-  // instead. Kept distinct from `id` so a client can start uploading chunks
-  // before the job row exists (the job is only created once all chunks are
-  // in, by the finalize call).
   uploadId      String           @map("upload_id")
   status        ScanImportStatus @default(queued)
   scanId        String?          @unique @map("scan_id")
@@ -210,16 +193,6 @@ model ScanImportJob {
   @@index([status, updatedAt])
   @@map("scan_import_jobs")
 }
-
-// ---------------------------------------------------------------------------
-// Scan upload chunks (large-file transport, no Blob storage required)
-// ---------------------------------------------------------------------------
-// Vercel Functions hard-cap request bodies at 4.5MB, so a large scan can't be
-// received in one request. The client splits it client-side and PUTs each
-// piece here; once all chunks for an uploadId are present, the finalize call
-// reassembles them in order and hands the result to the same parser/save
-// pipeline the Blob-backed design would have used. Rows are deleted once
-// their job reaches a terminal state (see processScanImportJob).
 
 model ScanUploadChunk {
   id         String   @id @default(cuid())

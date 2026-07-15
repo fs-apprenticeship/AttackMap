@@ -33,24 +33,8 @@ export const ScanImportJobSchema = z.object({
 export type ScanImportJobStatus = z.infer<typeof ScanImportJobStatusSchema>;
 export type ScanImportJob = z.infer<typeof ScanImportJobSchema>;
 
-// A job stuck in a non-terminal status this long without an update is
-// assumed dead (the `after()` invocation that owned it crashed, was killed
-// by maxDuration, or never ran). Set comfortably above maxDuration (300s, see
-// app/api/scan/import/route.ts) so a legitimately-still-running "saving"
-// step on a large scan — which can hold that status for the whole 300s
-// budget without a fresher updatedAt — never gets mistaken for dead and
-// reprocessed concurrently by another sweep.
 const STALE_THRESHOLD_MS = 6 * 60 * 1000;
 
-// No CRON_SECRET gates the reconciliation endpoint (this deploy has no
-// Vercel dashboard access to add one), so it's callable by anyone who knows
-// the URL. That's safe by design — it only retries/fails jobs already stuck
-// in the DB, using each job's own stored userId; a caller can't target
-// arbitrary data through it. The one real risk is compute-cost abuse
-// (Hobby's Active CPU budget), so the actual sweep query is throttled here,
-// shared across every trigger (piggyback page visits, the GitHub Actions
-// schedule, and Vercel's own daily cron) — spamming the endpoint just keeps
-// hitting this cheap in-memory check instead of the DB.
 const RECONCILE_MIN_INTERVAL_MS = 2 * 60 * 1000;
 
 const NON_TERMINAL_STATUSES: ScanImportStatusModel[] = [
@@ -92,19 +76,12 @@ function toScanImportJob(row: JobRow): ScanImportJob {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Chunk transport (replaces Vercel Blob — see app/api/scan/import/chunk/route.ts)
-// ---------------------------------------------------------------------------
-
 export async function saveUploadChunk(input: {
   uploadId: string;
   userId: string;
   chunkIndex: number;
   data: Buffer;
 }): Promise<void> {
-  // Prisma's Bytes field wants a plain Uint8Array<ArrayBuffer>; Buffer's
-  // backing ArrayBufferLike can widen to SharedArrayBuffer, which TS rejects
-  // here even though it's never actually shared in practice.
   const data = new Uint8Array(input.data);
   await db.scanUploadChunk.upsert({
     where: { uploadId_chunkIndex: { uploadId: input.uploadId, chunkIndex: input.chunkIndex } },
@@ -141,16 +118,9 @@ async function deleteUploadChunks(uploadId: string): Promise<void> {
   await db.scanUploadChunk.deleteMany({ where: { uploadId } }).catch(() => {});
 }
 
-// Called before creating a job, so a finalize request that races ahead of a
-// still-in-flight (or failed) chunk upload gets a clean 400 instead of
-// silently processing a truncated file.
 export async function countUploadChunks(uploadId: string, userId: string): Promise<number> {
   return db.scanUploadChunk.count({ where: { uploadId, userId } });
 }
-
-// ---------------------------------------------------------------------------
-// Job lifecycle
-// ---------------------------------------------------------------------------
 
 export async function createScanImportJob(input: {
   userId: string;
@@ -211,24 +181,10 @@ async function failJob(
   invalidateScansCache(userId);
 }
 
-/**
- * Runs one processing attempt for a queued/retried import job: reassemble
- * the uploaded chunks, validate, parse, and chunk-upsert into Postgres. Safe
- * to call again for the same job — any Scan row left over from a prior
- * failed attempt is deleted first, since parseNmapScanFromParsed mints a
- * fresh scan.id on every call and would otherwise never revisit (or clean
- * up) it.
- */
 export async function processScanImportJob(jobId: string): Promise<void> {
   const job = await db.scanImportJob.findUnique({ where: { id: jobId } });
   if (!job || job.status === "complete" || job.status === "failed") return;
 
-  // Optimistic claim: only proceed if the row still matches what we just
-  // read (same status + updatedAt). With reconciliation triggered from
-  // several places — piggyback page visits, the GitHub Actions sweep, and
-  // the daily Vercel cron — two triggers can race to pick up the same stale
-  // job. If another one claimed it first, `count` is 0 and we back off
-  // instead of double-processing it.
   const claim = await db.scanImportJob.updateMany({
     where: { id: jobId, status: job.status, updatedAt: job.updatedAt },
     data: {
@@ -242,10 +198,6 @@ export async function processScanImportJob(jobId: string): Promise<void> {
   });
   if (claim.count === 0) return;
 
-  // Any Scan row from a prior attempt is now orphaned — parseNmapScanFromParsed
-  // mints a fresh scan.id on every call, so this attempt's writes would never
-  // revisit (or clean up) it otherwise. Safe to delete now that we've
-  // confirmed (via the claim above) nobody else is mid-attempt on this job.
   if (job.scanId) {
     await db.scan.deleteMany({ where: { id: job.scanId } });
   }
@@ -278,22 +230,10 @@ export async function processScanImportJob(jobId: string): Promise<void> {
       await failJob(jobId, job.userId, "import_failed", message);
       await deleteUploadChunks(job.uploadId);
     }
-    // Otherwise leave status at whatever step it reached — the next
-    // reconciliation sweep retries it once updatedAt goes stale.
     throw error;
   }
 }
 
-/**
- * Finds stale non-terminal jobs and either retries or fails each one.
- * Shared by every reconciliation trigger: the GitHub Actions schedule
- * (.github/workflows/reconcile-scan-imports.yml), the daily Vercel cron
- * (app/api/cron/reconcile-scan-imports/route.ts), and the piggyback trigger
- * fired from page loads (lib/scans/reconcile-trigger.ts) — one code path so
- * all three stay consistent, and one shared cooldown (see
- * RECONCILE_MIN_INTERVAL_MS) so none of them, individually or combined, can
- * turn into a flood of sweep queries.
- */
 export async function runReconciliationSweep(): Promise<{
   checked: number;
   failed: number;

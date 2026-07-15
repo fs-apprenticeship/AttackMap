@@ -11,15 +11,8 @@ import {
 } from "@/lib/scans/import-jobs";
 import { MAX_LARGE_SCAN_UPLOAD_BYTES } from "@/lib/nmap/upload-validation-config";
 
-// Bounds how long the background parse+save can run inside the same
-// invocation that creates the job (see after() below). The reconciliation
-// cron (app/api/cron/reconcile-scan-imports/route.ts) is the safety net for
-// anything that doesn't finish within this window.
 export const maxDuration = 300;
 
-// Finalizes an upload that's already been split into chunks and POSTed to
-// /api/scan/import/chunk (see features/upload/upload-card.tsx) — this route
-// never receives the file body itself, just small JSON.
 const ImportRequestSchema = z.object({
   uploadId: z.string().min(1),
   filename: z.string().min(1),
@@ -66,9 +59,6 @@ export async function POST(request: NextRequest) {
 
   const job = await createScanImportJob({ userId, filename, fileSizeBytes, uploadId });
 
-  // Runs after the response is sent, in the same invocation — no dependency
-  // on a queue or external worker for the common case. The reconciliation
-  // cron catches it if this invocation is killed before finishing.
   after(() =>
     processScanImportJob(job.id).catch((error) => {
       console.error(`Scan import job ${job.id} failed:`, error);

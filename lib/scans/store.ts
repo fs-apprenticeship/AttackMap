@@ -18,10 +18,6 @@ import type {
   AiSummary as AiSummaryModel,
 } from "@/lib/generated/prisma/client";
 
-// ---------------------------------------------------------------------------
-// DB → Zod mapping
-// ---------------------------------------------------------------------------
-
 const SCAN_INCLUDE = {
   hosts: { include: { services: true } },
   findings: true,
@@ -34,11 +30,6 @@ type ScanRow = ScanModel & {
   aiSummary: AiSummaryModel | null;
 };
 
-// Host/Service IDs from the parser are scan-local (a bare IP, or ip:proto:port),
-// but Host.id / Service.id are GLOBAL primary keys. Two scans that share an IP
-// (a re-scan, or two users scanning the same host) would collide. Namespace the
-// IDs by scanId on write and strip the prefix on read, so the DB keys are unique
-// while the app keeps working with the original scan-local IDs.
 const SCOPE_SEP = "::";
 const scopeId = (scanId: string, id: string) => `${scanId}${SCOPE_SEP}${id}`;
 const unscopeId = (scanId: string, id: string) => {
@@ -76,10 +67,6 @@ function toScan(row: ScanRow): Scan {
     remediation: f.remediation,
   }));
 
-  // The rule-based summary and remediation plan are pure functions of the
-  // stored hosts/findings, so we recompute them on read rather than storing a
-  // baseline. AiSummary holds ONLY AI output and overrides the defaults when
-  // present (summary when source is "ai", remediation when an AI plan exists).
   const ai = row.aiSummary;
 
   const summary: AISummary =
@@ -112,10 +99,6 @@ function toScan(row: ScanRow): Scan {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
 export async function listScans(userId?: string): Promise<Scan[]> {
   const rows = await db.scan.findMany({
     where: userId ? { userId } : undefined,
@@ -133,10 +116,6 @@ export async function getScan(id: string, userId?: string): Promise<Scan | undef
   return row ? toScan(row) : undefined;
 }
 
-// Ownership guard. The scan upsert keys on id alone, so without this a signed
-// in user who knows another user's scan id could overwrite (and re-own) it.
-// Refuse to save over a scan that belongs to a different user; a brand-new
-// scan (no existing row) and the owner's own scan both pass.
 async function assertOwnership(scanId: string, userId?: string): Promise<void> {
   if (!userId) return;
   const existing = await db.scan.findUnique({
@@ -215,10 +194,6 @@ function scanUpsertArgs(scan: Scan, userId?: string) {
   } as const;
 }
 
-// AiSummary holds ONLY AI output. The rule-based summary/remediation are
-// recomputed on read (see toScan), so a plain upload writes no AiSummary
-// row. We persist one only once the user has generated AI content — an AI
-// summary, an AI remediation plan, or both.
 function aiSummaryUpsertArgs(scan: Scan) {
   const hasAiSummary = scan.summary.source === "ai";
   const hasAiRemediation = scan.remediationPlan.source === "ai";
@@ -229,8 +204,6 @@ function aiSummaryUpsertArgs(scan: Scan) {
     riskScore: scan.summary.riskScore,
     riskLevel: scan.summary.riskLevel,
     topRisks: scan.summary.topRisks,
-    // Store the remediation plan only when it's the AI one; otherwise leave
-    // it null so the rule-based plan stays derived-on-read.
     remediation: hasAiRemediation ? scan.remediationPlan : undefined,
     source: (hasAiSummary ? "ai" : "rule_based") as "ai" | "rule_based",
   };
@@ -260,19 +233,6 @@ export async function saveScan(scan: Scan, userId?: string): Promise<void> {
     }
   });
 }
-
-// ---------------------------------------------------------------------------
-// Chunked upsert — large-scan async import path (lib/scans/import-jobs.ts).
-// Small scans keep using saveScan's delete + createMany above, unchanged.
-//
-// A single delete+createMany call puts every row of a scan in one Postgres
-// statement with no bound-parameter safeguard; for a scan near
-// MAX_NMAP_HOSTS/MAX_NMAP_PORTS that can approach Postgres's ~65,535
-// bound-parameter ceiling and holds locks for the whole statement. This
-// upserts in fixed-size batches instead, inside one transaction, using
-// ON CONFLICT so a retried job (see reconcile-scan-imports) is safe to
-// re-run against partially-written data.
-// ---------------------------------------------------------------------------
 
 const UPSERT_CHUNK_SIZE = 750;
 
@@ -369,11 +329,6 @@ export async function saveScanChunked(scan: Scan, userId?: string): Promise<void
         await upsertFindingsChunk(tx, rows);
       }
 
-      // Remove rows left over from a prior save of this scan.id that this
-      // parse no longer produced (e.g. a host that went down between saves).
-      // A no-op for the common case (large-scan uploads always parse to a
-      // brand-new scan.id), but keeps this correct if it's ever called again
-      // for the same scan.id.
       await tx.host.deleteMany({
         where: { scanId: scan.id, id: { notIn: hostRows.map((h) => h.id) } },
       });

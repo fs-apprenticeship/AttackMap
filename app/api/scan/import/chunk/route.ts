@@ -7,11 +7,6 @@ import {
   MAX_UPLOAD_CHUNKS,
 } from "@/lib/nmap/upload-validation-config";
 
-// One piece of a large-scan upload. The client splits the file client-side
-// (see features/upload/upload-card.tsx) since Vercel Functions cap request
-// bodies at 4.5MB — there's no single request that could carry the whole
-// file. Raw bytes as the body (not JSON/base64) to avoid ~33% encoding
-// overhead eating into that margin. See docs/LARGE_SCAN_PROCESSING.md.
 export async function POST(request: NextRequest) {
   const userId = await getOptionalAuth();
   if (!userId) {
