@@ -14,11 +14,11 @@ export default function ComparePage({
   searchParams: CompareSearchParams;
 }) {
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-zinc-100 text-zinc-950">
+    <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-6xl px-4 py-8 lg:px-6">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <Button asChild variant="outline" className="mb-4 rounded-md bg-white">
+            <Button asChild variant="outline" className="mb-4 rounded-md bg-background">
               <Link href="/scans">
                 <ArrowLeft className="size-4" />
                 All scans
@@ -27,7 +27,7 @@ export default function ComparePage({
             <h1 className="text-2xl font-semibold tracking-tight">
               Compare scans
             </h1>
-            <p className="mt-1 text-sm text-zinc-600">
+            <p className="mt-1 text-sm text-muted-foreground">
               Validate parser output across saved scans and review host, service,
               finding, and risk changes.
             </p>
@@ -67,8 +67,8 @@ async function CompareContent({
 function CompareSkeleton() {
   return (
     <div className="animate-pulse space-y-3">
-      <div className="h-24 rounded-md bg-white" />
-      <div className="h-64 rounded-md bg-white" />
+      <div className="h-24 rounded-md border bg-card" />
+      <div className="h-64 rounded-md border bg-card" />
     </div>
   );
 }
