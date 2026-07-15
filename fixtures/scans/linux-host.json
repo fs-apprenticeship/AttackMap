@@ -87,6 +87,7 @@
       ]
     }
   ],
+  "downHosts": [],
   "findings": [
     {
       "id": "finding_linux-host_001",

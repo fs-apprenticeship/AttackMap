@@ -16,6 +16,7 @@ export const ComparisonHostSchema = HostSchema.pick({
   internetExposed: true,
 }).extend({
   serviceCount: z.number(),
+  status: z.enum(["down", "removed"]).optional(),
 });
 
 export const ComparisonServiceSchema = ServiceSchema.pick({

@@ -19,6 +19,9 @@ export function compareScans(base: Scan, comparison: Scan): ScanComparison {
   const comparisonServices = serviceMap(comparison);
   const baseFindings = mapBy(base.findings, findingFingerprint);
   const comparisonFindings = mapBy(comparison.findings, findingFingerprint);
+  const comparisonDownIps = new Set(
+    comparison.downHosts.map((h) => h.ipAddress.trim().toLowerCase()),
+  );
 
   const result: ScanComparison = {
     baseScanId: base.id,
@@ -31,8 +34,15 @@ export function compareScans(base: Scan, comparison: Scan): ScanComparison {
     riskAfter: comparison.summary.riskScore,
     highestSeverityBefore: base.summary.riskLevel,
     highestSeverityAfter: comparison.summary.riskLevel,
-    newHosts: diffAdded(baseHosts, comparisonHosts).map(toComparisonHost),
-    removedHosts: diffRemoved(baseHosts, comparisonHosts).map(toComparisonHost),
+    newHosts: diffAdded(baseHosts, comparisonHosts).map((host) =>
+      toComparisonHost(host),
+    ),
+    removedHosts: diffRemoved(baseHosts, comparisonHosts).map((host) =>
+      toComparisonHost(
+        host,
+        comparisonDownIps.has(hostKey(host)) ? "down" : "removed",
+      ),
+    ),
     newServices: diffAdded(baseServices, comparisonServices).map(({ host, service }) =>
       toComparisonService(host, service),
     ),
@@ -59,11 +69,6 @@ export function serviceKey(host: Host, service: Service): string {
   return `${hostKey(host)}:${service.protocol.toLowerCase()}:${service.port}`;
 }
 
-// Identity is (host, severity, title) only. Every finding title emitted by
-// the parser is a fixed string per finding category (see parse-nmap.ts), so
-// title already acts as a stable "finding type" - evidence is left out of the
-// key because it carries dynamic, run-specific detail (ports, banners) that
-// would otherwise make an unchanged finding look like new+resolved churn.
 export function findingFingerprint(finding: Finding): string {
   const host = (finding.hostId ?? finding.host ?? "").trim().toLowerCase();
   return [host, finding.severity, finding.title].join("|").trim().toLowerCase();
@@ -171,7 +176,10 @@ function serviceMap(scan: Scan) {
   return new Map(entries);
 }
 
-function toComparisonHost(host: Host): ComparisonHost {
+function toComparisonHost(
+  host: Host,
+  status?: "down" | "removed",
+): ComparisonHost {
   return {
     id: host.id,
     ipAddress: host.ipAddress,
@@ -180,6 +188,7 @@ function toComparisonHost(host: Host): ComparisonHost {
     role: host.role,
     internetExposed: host.internetExposed,
     serviceCount: host.services.length,
+    ...(status ? { status } : {}),
   };
 }
 

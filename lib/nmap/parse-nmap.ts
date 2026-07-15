@@ -4,6 +4,7 @@ import {
   ScanSchema,
   type Scan,
   type Host,
+  type DownHost,
   type Service,
   type Finding,
   type AISummary,
@@ -75,6 +76,16 @@ function isPrivateIP(ip: string): boolean {
   if (a === 127) return true;
   if (a === 169 && b === 254) return true;
   return false;
+}
+
+function extractIpAndHostname(rawHost: AnyNode): { ip: string; hostname?: string } {
+  const addresses: AnyNode[] = Array.isArray(rawHost.address)
+    ? rawHost.address
+    : [rawHost.address];
+  const ipv4 = addresses.find((a: AnyNode) => a?.["@_addrtype"] === "ipv4");
+  const ip = String(ipv4?.["@_addr"] ?? addresses[0]?.["@_addr"] ?? "0.0.0.0");
+  const hostname = rawHost.hostnames?.hostname?.[0]?.["@_name"];
+  return hostname ? { ip, hostname: String(hostname) } : { ip };
 }
 
 // ─── OS detection ─────────────────────────────────────────────────────────────
@@ -574,16 +585,18 @@ export function parseNmapScanFromParsed(raw: AnyNode, filename: string): Scan {
       ? new Date(startEpoch * 1000).toISOString()
       : undefined;
 
+  const downHosts: DownHost[] = allRawHosts
+    .filter((h: AnyNode) => h.status?.["@_state"] !== "up")
+    .map((rawHost: AnyNode) => {
+      const { ip, hostname } = extractIpAndHostname(rawHost);
+      return hostname ? { ipAddress: ip, hostname } : { ipAddress: ip };
+    });
+
   const hosts: Host[] = upRawHosts.map((rawHost: AnyNode) => {
     const rawPorts: AnyNode[] = rawHost.ports?.port ?? [];
     const openPorts = rawPorts.filter((p: AnyNode) => p.state?.["@_state"] === "open");
 
-    const addresses: AnyNode[] = Array.isArray(rawHost.address)
-      ? rawHost.address
-      : [rawHost.address];
-    const ipv4 = addresses.find((a: AnyNode) => a?.["@_addrtype"] === "ipv4");
-    const ip = String(ipv4?.["@_addr"] ?? addresses[0]?.["@_addr"] ?? "0.0.0.0");
-    const hostname = rawHost.hostnames?.hostname?.[0]?.["@_name"];
+    const { ip, hostname } = extractIpAndHostname(rawHost);
 
     const services: Service[] = openPorts.map((p: AnyNode) => {
       const port = Number(p["@_portid"]);
@@ -636,6 +649,7 @@ export function parseNmapScanFromParsed(raw: AnyNode, filename: string): Scan {
     parsedAt: now,
     scannedAt,
     hosts,
+    downHosts,
     findings,
     summary,
     remediationPlan,

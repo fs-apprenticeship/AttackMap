@@ -151,6 +151,7 @@
       ]
     }
   ],
+  "downHosts": [],
   "findings": [
     {
       "id": "finding_domain-controller_001",
