@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/cron/reconcile-scan-imports", "schedule": "0 3 * * *" }
+  ]
+}
