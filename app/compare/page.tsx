@@ -5,6 +5,7 @@ import { ArrowLeft, FileUp } from "lucide-react";
 import { ScanComparisonView } from "@/features/scans/scan-comparison-view";
 import { Button } from "@/components/ui/button";
 import { listScansCached } from "@/lib/scans/queries";
+import { triggerOpportunisticReconcile } from "@/lib/scans/reconcile-trigger";
 
 type CompareSearchParams = Promise<{ base?: string; comparison?: string }>;
 
@@ -13,6 +14,8 @@ export default function ComparePage({
 }: {
   searchParams: CompareSearchParams;
 }) {
+  triggerOpportunisticReconcile();
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-6xl px-4 py-8 lg:px-6">

@@ -7,8 +7,11 @@ import { FirstScanEmptyState } from "@/components/app-shell/app-state-common";
 import { ScansList } from "@/features/scans/list/scans-list";
 import { ScansContentSkeleton } from "@/features/scans/list/scans-skeletons";
 import { listScansCached } from "@/lib/scans/queries";
+import { triggerOpportunisticReconcile } from "@/lib/scans/reconcile-trigger";
 
 export default function ScansPage() {
+  triggerOpportunisticReconcile();
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-[1400px] px-4 py-8 lg:px-6">

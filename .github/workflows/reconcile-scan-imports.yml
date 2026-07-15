@@ -1,0 +1,15 @@
+name: Reconcile scan imports
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call reconciliation endpoint
+        run: |
+          curl --fail --silent --show-error \
+            "${{ vars.APP_URL }}/api/cron/reconcile-scan-imports"
