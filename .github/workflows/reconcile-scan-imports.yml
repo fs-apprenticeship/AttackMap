@@ -12,4 +12,5 @@ jobs:
       - name: Call reconciliation endpoint
         run: |
           curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             "${{ vars.APP_URL }}/api/cron/reconcile-scan-imports"
