@@ -10,7 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Call reconciliation endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET is not set yet — skipping this run. Add a CRON_SECRET repository secret (matching the server's) to enable reconciliation."
+            exit 0
+          fi
+
           curl --fail --silent --show-error \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Authorization: Bearer $CRON_SECRET" \
             "${{ vars.APP_URL }}/api/cron/reconcile-scan-imports"
