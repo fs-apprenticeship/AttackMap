@@ -7,6 +7,7 @@ import { Markdown, MarkdownInline } from "@/features/scans/detail/markdown/markd
 import { cn } from "@/lib/utils";
 
 import { CveResult, type CveToolPart } from "./cve-result";
+import { EpssResult, type EpssToolPart } from "./epss-result";
 import { KevResult, type KevToolPart } from "./kev-result";
 
 // One turn in the transcript. Deliberately *not* a chat bubble: the analyst's
@@ -122,6 +123,9 @@ export function ChatMessage({
         }
         if (part.type === "tool-checkKev") {
           return <KevResult key={index} part={part as unknown as KevToolPart} />;
+        }
+        if (part.type === "tool-getEpss") {
+          return <EpssResult key={index} part={part as unknown as EpssToolPart} />;
         }
         return null;
       })}

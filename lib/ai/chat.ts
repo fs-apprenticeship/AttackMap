@@ -12,6 +12,7 @@ import { z } from "zod";
 import { AiNotConfiguredError } from "@/lib/ai/summarize";
 import { CveLookupError, lookupCves } from "@/lib/ai/tools/lookup-cves";
 import { KevLookupError, checkKev } from "@/lib/ai/tools/check-kev";
+import { EpssLookupError, getEpss } from "@/lib/ai/tools/get-epss";
 import type { Scan } from "@/lib/nmap/schema";
 
 // Server-only. Powers the scan chat: the user asks questions about one parsed
@@ -23,8 +24,8 @@ const DEFAULT_MODEL = "gpt-4o-mini";
 
 // Cap tool-call round-trips so a single turn can't loop indefinitely: enough
 // for the model to look up CVEs across a few services, cross-check them against
-// KEV, and then answer.
-const MAX_STEPS = 8;
+// KEV and EPSS, and then answer.
+const MAX_STEPS = 10;
 
 const SYSTEM_PROMPT = [
   "You are a senior security analyst helping a user understand the results of a",
@@ -46,6 +47,13 @@ const SYSTEM_PROMPT = [
   "regardless of CVSS score, and specifically call out any that are associated",
   "with known ransomware campaigns. Only state that a CVE is actively exploited",
   "when `checkKev` confirms it — never from memory.",
+  "",
+  "Also call `getEpss` with the same CVE IDs to get each one's EPSS score — the",
+  "modeled probability (0–1) that it will be exploited in the next 30 days. Use",
+  "it to rank CVEs that are not KEV-listed: a high EPSS score (roughly 0.5+)",
+  "means real-world exploitation is likely even without confirmed activity. Order",
+  "your recommendations KEV first, then by EPSS probability, then by CVSS. Only",
+  "cite EPSS numbers that `getEpss` returns — never estimate them from memory.",
   "",
   "Keep answers concise and specific to this scan. Do not invent hosts,",
   "services, or findings that are not in the data.",
@@ -161,6 +169,33 @@ const kevCheckTool = tool({
   },
 });
 
+/**
+ * The `getEpss` tool: given CVE IDs (from `lookupCves`), returns each one's EPSS
+ * score — the modeled probability of exploitation in the next 30 days — so the
+ * model can rank CVEs by real-world likelihood, not just CVSS severity.
+ */
+const epssLookupTool = tool({
+  description:
+    "Get EPSS scores for CVE IDs — the modeled probability (0–1) that each CVE " +
+    "will be exploited in the wild within 30 days. Pass the CVE IDs returned by " +
+    "lookupCves. Use it to prioritize CVEs that are not KEV-listed: a high EPSS " +
+    "score means exploitation is likely even without confirmed activity.",
+  inputSchema: z.object({
+    cveIds: z
+      .array(z.string())
+      .describe('CVE IDs to score, e.g. ["CVE-2021-44228", "CVE-2024-6387"]'),
+  }),
+  execute: async ({ cveIds }) => {
+    try {
+      return await getEpss(cveIds);
+    } catch (error) {
+      // Surface the failure so the model degrades gracefully instead of guessing.
+      if (error instanceof EpssLookupError) return { error: error.message };
+      throw error;
+    }
+  },
+});
+
 /** The default OpenAI model. Throws `AiNotConfiguredError` if no key is set. */
 function defaultModel(): LanguageModel {
   if (!process.env.OPENAI_API_KEY) throw new AiNotConfiguredError();
@@ -182,6 +217,10 @@ export async function streamScanChat(
     system: `${SYSTEM_PROMPT}\n\nScan:\n${JSON.stringify(buildScanContext(scan))}`,
     messages: await convertToModelMessages(messages),
     stopWhen: stepCountIs(MAX_STEPS),
-    tools: { lookupCves: cveLookupTool, checkKev: kevCheckTool },
+    tools: {
+      lookupCves: cveLookupTool,
+      checkKev: kevCheckTool,
+      getEpss: epssLookupTool,
+    },
   });
 }
