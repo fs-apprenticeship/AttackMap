@@ -1,6 +1,9 @@
 import { UploadCard } from "@/features/upload/upload-card";
+import { triggerOpportunisticReconcile } from "@/lib/scans/reconcile-trigger";
 
 export default function UploadPage() {
+  triggerOpportunisticReconcile();
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background">
       <div className="mx-auto w-full max-w-2xl px-4 py-12 lg:py-16">

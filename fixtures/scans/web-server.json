@@ -46,6 +46,7 @@
       ]
     }
   ],
+  "downHosts": [],
   "findings": [
     {
       "id": "finding_web-server_001",

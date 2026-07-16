@@ -61,6 +61,7 @@
       ]
     }
   ],
+  "downHosts": [],
   "findings": [
     {
       "id": "finding_scanme-public-host_001",

@@ -32,6 +32,15 @@ enum AiSource {
   rule_based
 }
 
+enum ScanImportStatus {
+  queued
+  validating
+  parsing
+  saving
+  complete
+  failed
+}
+
 // ---------------------------------------------------------------------------
 // Users
 // ---------------------------------------------------------------------------
@@ -43,7 +52,9 @@ model User {
   email     String   @unique
   createdAt DateTime @default(now()) @map("created_at")
 
-  scans Scan[]
+  scans            Scan[]
+  scanImportJobs   ScanImportJob[]
+  scanUploadChunks ScanUploadChunk[]
 
   @@map("users")
 }
@@ -60,11 +71,13 @@ model Scan {
   scannedAt  DateTime? @map("scanned_at")
   uploadedAt DateTime  @default(now()) @map("uploaded_at")
   parsedAt   DateTime  @map("parsed_at")
+  downHosts  Json      @default("[]") @map("down_hosts")
 
-  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   hosts     Host[]
   findings  Finding[]
   aiSummary AiSummary?
+  importJob ScanImportJob?
 
   @@index([userId])
   @@map("scans")
@@ -88,6 +101,7 @@ model Host {
   findings Finding[]
 
   @@index([scanId])
+  @@unique([scanId, ipAddress], map: "hosts_scan_id_ip_address_key")
   @@map("hosts")
 }
 
@@ -110,6 +124,7 @@ model Service {
   host Host @relation(fields: [hostId], references: [id], onDelete: Cascade)
 
   @@index([hostId])
+  @@unique([hostId, port, protocol], map: "services_host_id_port_protocol_key")
   @@map("services")
 }
 
@@ -131,6 +146,7 @@ model Finding {
 
   @@index([scanId])
   @@index([severity])
+  @@unique([scanId, hostId, severity, title], map: "findings_natural_key")
   @@map("findings")
 }
 
@@ -152,4 +168,43 @@ model AiSummary {
   scan Scan @relation(fields: [scanId], references: [id], onDelete: Cascade)
 
   @@map("ai_summaries")
+}
+
+model ScanImportJob {
+  id            String           @id @default(cuid())
+  userId        String           @map("user_id")
+  filename      String
+  fileSizeBytes Int              @map("file_size_bytes")
+  uploadId      String           @map("upload_id")
+  status        ScanImportStatus @default(queued)
+  scanId        String?          @unique @map("scan_id")
+  errorCode     String?          @map("error_code")
+  errorMessage  String?          @map("error_message") @db.Text
+  attempts      Int              @default(0)
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  startedAt     DateTime?        @map("started_at")
+  completedAt   DateTime?        @map("completed_at")
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scan Scan? @relation(fields: [scanId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status, updatedAt])
+  @@map("scan_import_jobs")
+}
+
+model ScanUploadChunk {
+  id         String   @id @default(cuid())
+  uploadId   String   @map("upload_id")
+  userId     String   @map("user_id")
+  chunkIndex Int      @map("chunk_index")
+  data       Bytes
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([uploadId, chunkIndex], map: "scan_upload_chunks_upload_id_chunk_index_key")
+  @@index([uploadId])
+  @@map("scan_upload_chunks")
 }

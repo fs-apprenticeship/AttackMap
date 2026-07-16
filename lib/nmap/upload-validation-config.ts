@@ -1,7 +1,12 @@
-// Current in-request pipeline cap. Larger scans should move to the large-scan
-// path described in docs/LARGE_SCAN_PROCESSING.md rather than raising this
-// indefinitely and parsing huge XML payloads inside a route handler.
-export const MAX_SCAN_UPLOAD_BYTES = 10 * 1024 * 1024;
+export const MAX_SCAN_UPLOAD_BYTES = 4 * 1024 * 1024;
+
+export const MAX_LARGE_SCAN_UPLOAD_BYTES = 100 * 1024 * 1024;
+
+export const MAX_UPLOAD_CHUNK_BYTES = 3.5 * 1024 * 1024;
+
+export const MAX_UPLOAD_CHUNKS = Math.ceil(
+  MAX_LARGE_SCAN_UPLOAD_BYTES / MAX_UPLOAD_CHUNK_BYTES,
+) + 2;
 
 export const XML_FILE_TYPES = new Set(["text/xml", "application/xml"]);
 

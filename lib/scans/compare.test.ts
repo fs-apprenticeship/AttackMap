@@ -53,6 +53,7 @@ function makeScan(overrides: Partial<Scan> = {}): Scan {
     uploadedAt: new Date().toISOString(),
     parsedAt: new Date().toISOString(),
     hosts: [],
+    downHosts: [],
     findings: [],
     summary: {
       executive: "Test summary.",
@@ -88,7 +89,35 @@ describe("compareScans", () => {
 
     expect(result.removedHosts).toHaveLength(1);
     expect(result.removedHosts[0].ipAddress).toBe("10.0.0.9");
+    expect(result.removedHosts[0].status).toBe("removed");
     expect(result.newHosts).toHaveLength(0);
+  });
+
+  it("reports a host the comparison scan found down as down, not removed", () => {
+    const host = makeHost({ ipAddress: "10.0.0.9" });
+    const base = makeScan({ hosts: [host] });
+    const comparison = makeScan({
+      hosts: [],
+      downHosts: [{ ipAddress: "10.0.0.9" }],
+    });
+
+    const result = compareScans(base, comparison);
+
+    expect(result.removedHosts).toHaveLength(1);
+    expect(result.removedHosts[0].status).toBe("down");
+  });
+
+  it("matches down hosts by normalized IP regardless of case/whitespace", () => {
+    const host = makeHost({ ipAddress: "10.0.0.9" });
+    const base = makeScan({ hosts: [host] });
+    const comparison = makeScan({
+      hosts: [],
+      downHosts: [{ ipAddress: " 10.0.0.9 " }],
+    });
+
+    const result = compareScans(base, comparison);
+
+    expect(result.removedHosts[0].status).toBe("down");
   });
 
   it("matches hosts by normalized IP regardless of case/whitespace", () => {
