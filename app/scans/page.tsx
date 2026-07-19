@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { FirstScanEmptyState } from "@/components/app-shell/app-state-common";
 import { ScansList } from "@/features/scans/list/scans-list";
 import { ScansContentSkeleton } from "@/features/scans/list/scans-skeletons";
-import { listScansCached } from "@/lib/scans/queries";
+import { ImportJobsBanner } from "@/features/scans/list/import-jobs-banner";
+import { listScansCached, listImportJobsCached } from "@/lib/scans/queries";
 import { triggerOpportunisticReconcile } from "@/lib/scans/reconcile-trigger";
 
 export default function ScansPage() {
@@ -39,6 +40,12 @@ export default function ScansPage() {
         </div>
 
         <div className="mt-6">
+          <Suspense fallback={null}>
+            <ImportJobsContent />
+          </Suspense>
+        </div>
+
+        <div className="mt-4">
           <Suspense fallback={<ScansContentSkeleton />}>
             <ScansContent />
           </Suspense>
@@ -46,6 +53,11 @@ export default function ScansPage() {
       </div>
     </main>
   );
+}
+
+async function ImportJobsContent() {
+  const jobs = await listImportJobsCached();
+  return <ImportJobsBanner jobs={jobs} />;
 }
 
 async function ScansContent() {
