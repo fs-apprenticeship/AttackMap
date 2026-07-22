@@ -43,11 +43,25 @@ const NON_TERMINAL_STATUSES: ScanImportStatusModel[] = [
   "parsing",
   "saving",
 ];
-export const MAX_ATTEMPTS = 3;
+export const MAX_ATTEMPTS = 2;
 
 const globalForReconcile = globalThis as typeof globalThis & {
   attackMapLastReconcileSweepAt?: number;
 };
+
+// Thrown for failures that will reproduce identically on every retry (bad
+// upload data, a parser bug on validated input). These reject immediately
+// instead of consuming the reconciliation retry budget, which exists to
+// recover from the function dying mid-flight, not from deterministic errors.
+class NonRetryableImportError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "NonRetryableImportError";
+  }
+}
 
 type JobRow = {
   id: string;
@@ -98,17 +112,23 @@ async function assembleUploadedXml(uploadId: string, userId: string): Promise<st
   });
 
   if (chunks.length === 0) {
-    throw new Error("Uploaded scan data was not found (chunks may have expired).");
+    throw new NonRetryableImportError(
+      "chunks_missing",
+      "Uploaded scan data was not found (chunks may have expired).",
+    );
   }
   chunks.forEach((chunk, index) => {
     if (chunk.chunkIndex !== index) {
-      throw new Error("Uploaded scan is missing a chunk.");
+      throw new NonRetryableImportError("chunks_missing", "Uploaded scan is missing a chunk.");
     }
   });
 
   const totalBytes = chunks.reduce((sum, chunk) => sum + chunk.data.length, 0);
   if (totalBytes > MAX_LARGE_SCAN_UPLOAD_BYTES) {
-    throw new Error("Uploaded scan exceeds the large-scan size limit.");
+    throw new NonRetryableImportError(
+      "upload_too_large",
+      "Uploaded scan exceeds the large-scan size limit.",
+    );
   }
 
   return Buffer.concat(chunks.map((chunk) => chunk.data)).toString("utf-8");
@@ -140,6 +160,19 @@ export async function getScanImportJob(
   return row ? toScanImportJob(row) : undefined;
 }
 
+export async function listActiveOrFailedImportJobs(userId: string): Promise<ScanImportJob[]> {
+  const rows = await db.scanImportJob.findMany({
+    where: { userId, status: { not: "complete" } },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+  return rows.map(toScanImportJob);
+}
+
+export async function dismissImportJob(id: string, userId: string): Promise<void> {
+  await db.scanImportJob.deleteMany({ where: { id, userId } });
+}
+
 export async function findStaleImportJobs(): Promise<
   { id: string; attempts: number }[]
 > {
@@ -150,6 +183,28 @@ export async function findStaleImportJobs(): Promise<
     },
     select: { id: true, attempts: true },
   });
+}
+
+async function reconcileStaleJob(job: { id: string; attempts: number }): Promise<void> {
+  if (job.attempts >= MAX_ATTEMPTS) {
+    await failStaleJob(job.id);
+  } else {
+    await processScanImportJob(job.id);
+  }
+}
+
+export async function reconcileJobIfStale(id: string, userId: string): Promise<void> {
+  const job = await db.scanImportJob.findFirst({
+    where: {
+      id,
+      userId,
+      status: { in: NON_TERMINAL_STATUSES },
+      updatedAt: { lt: new Date(Date.now() - STALE_THRESHOLD_MS) },
+    },
+    select: { id: true, attempts: true },
+  });
+  if (!job) return;
+  await reconcileStaleJob(job);
 }
 
 export async function failStaleJob(id: string): Promise<void> {
@@ -198,22 +253,26 @@ export async function processScanImportJob(jobId: string): Promise<void> {
   });
   if (claim.count === 0) return;
 
-  if (job.scanId) {
-    await db.scan.deleteMany({ where: { id: job.scanId } });
-  }
-
   try {
+    if (job.scanId) {
+      await db.scan.deleteMany({ where: { id: job.scanId } });
+    }
+
     const xml = await assembleUploadedXml(job.uploadId, job.userId);
 
     const validation = parseValidatedNmapXmlText(xml);
     if (!validation.ok) {
-      await failJob(jobId, job.userId, validation.issue.code, validation.issue.message);
-      await deleteUploadChunks(job.uploadId);
-      return;
+      throw new NonRetryableImportError(validation.issue.code, validation.issue.message);
     }
 
     await db.scanImportJob.update({ where: { id: jobId }, data: { status: "parsing" } });
-    const scan = parseNmapScanFromParsed(validation.raw, job.filename);
+    let scan;
+    try {
+      scan = parseNmapScanFromParsed(validation.raw, job.filename);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to parse scan.";
+      throw new NonRetryableImportError("parse_failed", message);
+    }
 
     await db.scanImportJob.update({ where: { id: jobId }, data: { status: "saving" } });
     await saveScanChunked(scan, job.userId);
@@ -225,10 +284,14 @@ export async function processScanImportJob(jobId: string): Promise<void> {
     await deleteUploadChunks(job.uploadId);
     invalidateScansCache(job.userId);
   } catch (error) {
+    const nonRetryable = error instanceof NonRetryableImportError;
+    const code = error instanceof NonRetryableImportError ? error.code : "import_failed";
     const message = error instanceof Error ? error.message : "Failed to import scan.";
-    if (job.attempts + 1 >= MAX_ATTEMPTS) {
-      await failJob(jobId, job.userId, "import_failed", message);
+
+    if (nonRetryable || job.attempts + 1 >= MAX_ATTEMPTS) {
+      await failJob(jobId, job.userId, code, message);
       await deleteUploadChunks(job.uploadId);
+      return;
     }
     throw error;
   }
@@ -248,13 +311,7 @@ export async function runReconciliationSweep(): Promise<{
 
   const staleJobs = await findStaleImportJobs();
 
-  const results = await Promise.allSettled(
-    staleJobs.map((job) =>
-      job.attempts >= MAX_ATTEMPTS
-        ? failStaleJob(job.id)
-        : processScanImportJob(job.id),
-    ),
-  );
+  const results = await Promise.allSettled(staleJobs.map(reconcileStaleJob));
 
   return {
     checked: staleJobs.length,

@@ -7,6 +7,7 @@ import { ScanSchema } from "@/lib/nmap/schema";
 import type { Scan } from "@/lib/types";
 import { deleteScan, saveScan } from "@/lib/scans/store";
 import { invalidateScansCache } from "@/lib/scans/cache";
+import { dismissImportJob } from "@/lib/scans/import-jobs";
 
 export async function uploadScanAction(formData: FormData): Promise<Scan> {
   const userId = await requireAuthSync();
@@ -35,5 +36,11 @@ export async function saveScanAction(scan: Scan): Promise<void> {
 export async function deleteScanAction(id: string): Promise<void> {
   const userId = await requireAuthSync();
   await deleteScan(id, userId);
+  invalidateScansCache(userId);
+}
+
+export async function dismissImportJobAction(jobId: string): Promise<void> {
+  const userId = await requireAuthSync();
+  await dismissImportJob(jobId, userId);
   invalidateScansCache(userId);
 }

@@ -8,6 +8,7 @@ import {
   createScanImportJob,
   getScanImportJob,
   processScanImportJob,
+  reconcileJobIfStale,
 } from "@/lib/scans/import-jobs";
 import { MAX_LARGE_SCAN_UPLOAD_BYTES } from "@/lib/nmap/upload-validation-config";
 
@@ -78,6 +79,12 @@ export async function GET(request: NextRequest) {
   if (!jobId) {
     return NextResponse.json({ error: "Missing jobId." }, { status: 400 });
   }
+
+  after(() =>
+    reconcileJobIfStale(jobId, userId).catch((error) => {
+      console.error(`Stale job reconcile for ${jobId} failed:`, error);
+    }),
+  );
 
   const job = await getScanImportJob(jobId, userId);
   if (!job) {
