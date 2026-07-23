@@ -144,14 +144,15 @@ export function ScansFilterPanel({
                   aria-label="Filter by risk"
                   className={filterTriggerClass}
                 >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <ShieldAlert className="size-4 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{riskFilterLabel}</span>
-                  </span>
+                  <ShieldAlert className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="truncate">{riskFilterLabel}</span>
                   <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) rounded-md">
+              <DropdownMenuContent
+                align="end"
+                className="w-auto rounded-md"
+              >
                 {severityOrder.map((severity) => {
                   const checked = riskFilters.includes(severity);
 
@@ -184,14 +185,15 @@ export function ScansFilterPanel({
                   aria-label="Filter by AI status"
                   className={filterTriggerClass}
                 >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <Sparkles className="size-4 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{aiStatusLabel}</span>
-                  </span>
+                  <Sparkles className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="truncate">{aiStatusLabel}</span>
                   <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) rounded-md">
+              <DropdownMenuContent
+                align="end"
+                className="w-auto rounded-md"
+              >
                 {defaultAiStatusFilters.map((status) => {
                   const checked = aiStatusFilters.includes(status);
 
