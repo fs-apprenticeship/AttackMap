@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { ComponentProps } from "react";
 
 import { Brand } from "@/components/app-shell/brand";
 import { isDashboardNavItemActive } from "@/components/app-shell/dashboard-navigation";
@@ -47,6 +48,15 @@ const navigationItems = [
   },
 ] as const;
 
+function SidebarLink({
+  mobile,
+  ...props
+}: ComponentProps<typeof Link> & { mobile: boolean }) {
+  const link = <Link {...props} />;
+
+  return mobile ? <SheetClose asChild>{link}</SheetClose> : link;
+}
+
 function DashboardNavigation({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
 
@@ -62,8 +72,10 @@ function DashboardNavigation({ mobile = false }: { mobile?: boolean }) {
             href,
             matchDescendants,
           );
-          const link = (
-            <Link
+          return (
+            <SidebarLink
+              key={href}
+              mobile={mobile}
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
@@ -75,15 +87,7 @@ function DashboardNavigation({ mobile = false }: { mobile?: boolean }) {
             >
               <Icon className="size-4 shrink-0" />
               <span>{label}</span>
-            </Link>
-          );
-
-          return mobile ? (
-            <SheetClose asChild key={href}>
-              {link}
-            </SheetClose>
-          ) : (
-            <div key={href}>{link}</div>
+            </SidebarLink>
           );
         },
       )}
@@ -92,34 +96,25 @@ function DashboardNavigation({ mobile = false }: { mobile?: boolean }) {
 }
 
 function DashboardSidebarContent({ mobile = false }: { mobile?: boolean }) {
+  const brand = <Brand href="/dashboard/scans" />;
+
   return (
     <>
       <div className="border-b border-sidebar-border p-4">
-        <Brand href="/dashboard/scans" />
+        {mobile ? <SheetClose asChild>{brand}</SheetClose> : brand}
       </div>
 
       <DashboardNavigation mobile={mobile} />
 
       <div className="mt-auto space-y-3 border-t border-sidebar-border p-3">
-        {mobile ? (
-          <SheetClose asChild>
-            <Link
-              href="/docs"
-              className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/30"
-            >
-              <BookOpen className="size-4" />
-              Documentation
-            </Link>
-          </SheetClose>
-        ) : (
-          <Link
-            href="/docs"
-            className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/30"
-          >
-            <BookOpen className="size-4" />
-            Documentation
-          </Link>
-        )}
+        <SidebarLink
+          mobile={mobile}
+          href="/docs"
+          className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/30"
+        >
+          <BookOpen className="size-4" />
+          Documentation
+        </SidebarLink>
         <div className="flex items-center justify-between rounded-md border border-sidebar-border bg-sidebar-accent/35 p-2">
           <span className="pl-1 text-xs font-medium text-sidebar-foreground/70">
             Appearance
@@ -136,6 +131,23 @@ function DashboardSidebarContent({ mobile = false }: { mobile?: boolean }) {
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+
+  useEffect(() => {
+    const desktopBreakpoint = window.matchMedia("(min-width: 64rem)");
+    const closeNavigationOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setMobileNavigationOpen(false);
+      }
+    };
+
+    desktopBreakpoint.addEventListener("change", closeNavigationOnDesktop);
+    return () => {
+      desktopBreakpoint.removeEventListener(
+        "change",
+        closeNavigationOnDesktop,
+      );
+    };
+  }, []);
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -164,8 +176,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         <SheetContent
           side="left"
-          className="w-72 gap-0 bg-sidebar p-0 text-sidebar-foreground sm:max-w-72"
-          overlayClassName="pointer-events-auto bg-black/40"
+          className="w-72 gap-0 bg-sidebar p-0 text-sidebar-foreground sm:max-w-72 lg:hidden"
+          overlayClassName="pointer-events-auto bg-black/40 lg:hidden"
         >
           <SheetTitle className="sr-only">Dashboard navigation</SheetTitle>
           <SheetDescription className="sr-only">
