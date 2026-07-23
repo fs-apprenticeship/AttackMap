@@ -30,7 +30,7 @@ export default function Error({
             Try again
           </Button>
           <Button asChild variant="outline" className="rounded-md bg-background">
-            <Link href="/scans">View scans</Link>
+            <Link href="/dashboard/scans">View scans</Link>
           </Button>
         </>
       }

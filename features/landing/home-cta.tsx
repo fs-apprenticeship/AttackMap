@@ -13,7 +13,7 @@ export function HomeCTA() {
     return (
       <div className="flex flex-wrap items-center gap-3">
         <Button asChild size="lg">
-          <Link href="/scans">
+          <Link href="/dashboard/scans">
             View scans
             <ArrowRight className="size-4" />
           </Link>
@@ -30,7 +30,7 @@ export function HomeCTA() {
 
   return (
     <>
-      <SignUpButton forceRedirectUrl="/scans">
+      <SignUpButton forceRedirectUrl="/dashboard/scans">
         <Button size="lg">
           Get started
           <ArrowRight className="size-4" />

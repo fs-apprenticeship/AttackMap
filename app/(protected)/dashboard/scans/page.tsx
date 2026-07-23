@@ -14,7 +14,7 @@ export default function ScansPage() {
   triggerOpportunisticReconcile();
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
+    <main className="bg-background text-foreground">
       <div className="mx-auto w-full max-w-[1400px] px-4 py-8 lg:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -25,13 +25,13 @@ export default function ScansPage() {
           </div>
           <div className="flex w-full items-center gap-2 sm:w-auto">
             <Button asChild variant="outline" className="w-full rounded-md sm:w-auto">
-              <Link href="/compare">
+              <Link href="/dashboard/compare">
                 <ArrowRightLeft className="size-4" />
                 Compare
               </Link>
             </Button>
             <Button asChild className="w-full rounded-md sm:w-auto">
-              <Link href="/upload">
+              <Link href="/dashboard/upload">
                 <Plus className="size-4" />
                 New scan
               </Link>

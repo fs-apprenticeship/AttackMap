@@ -73,7 +73,7 @@ export function RouteErrorState({
               </Button>
             ) : null}
             <Button asChild variant="outline" className="bg-background">
-              <Link href="/scans">View scans</Link>
+              <Link href="/dashboard/scans">View scans</Link>
             </Button>
           </>
         }
@@ -92,10 +92,10 @@ export function NotFoundState() {
         actions={
           <>
             <Button asChild className="rounded-md">
-              <Link href="/scans">View scans</Link>
+              <Link href="/dashboard/scans">View scans</Link>
             </Button>
             <Button asChild variant="outline" className="bg-background">
-              <Link href="/upload">Upload a scan</Link>
+              <Link href="/dashboard/upload">Upload a scan</Link>
             </Button>
           </>
         }
@@ -113,7 +113,7 @@ export function FirstScanEmptyState() {
       description="Upload an Nmap XML scan to start tracking hosts, services, findings, and remediation work."
       actions={
         <Button asChild className="rounded-md">
-          <Link href="/upload">Upload a scan</Link>
+          <Link href="/dashboard/upload">Upload a scan</Link>
         </Button>
       }
     />

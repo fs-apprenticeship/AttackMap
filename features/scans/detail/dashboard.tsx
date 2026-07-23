@@ -53,31 +53,31 @@ export function Dashboard({ scan }: DashboardProps) {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {[
           {
-            href: `/scans/${scan.id}/attack-surface`,
+            href: `/dashboard/scans/${scan.id}/attack-surface`,
             label: "Attack surface",
             value: `${scan.hosts.length} hosts`,
             icon: Workflow,
           },
           {
-            href: `/scans/${scan.id}/findings`,
+            href: `/dashboard/scans/${scan.id}/findings`,
             label: "Findings",
             value: `${data.findings.length} findings`,
             icon: FileWarning,
           },
           {
-            href: `/scans/${scan.id}/remediation`,
+            href: `/dashboard/scans/${scan.id}/remediation`,
             label: "Remediation",
             value: `${scan.remediationPlan.steps.length} steps`,
             icon: ListChecks,
           },
           {
-            href: `/scans/${scan.id}/services`,
+            href: `/dashboard/scans/${scan.id}/services`,
             label: "Services",
             value: `${data.serviceBreakdown.length} categories`,
             icon: Network,
           },
           {
-            href: `/scans/${scan.id}/hosts`,
+            href: `/dashboard/scans/${scan.id}/hosts`,
             label: "Hosts",
             value: `${scan.hosts.length} assets`,
             icon: Server,

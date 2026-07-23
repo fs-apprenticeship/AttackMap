@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 
-import { AppHeader } from "@/components/app-shell/app-header";
 import { requireAuthSync } from "@/lib/auth/sync";
 
 export default function ProtectedLayout({
@@ -18,10 +17,5 @@ export default function ProtectedLayout({
 async function ProtectedShell({ children }: { children: React.ReactNode }) {
   await requireAuthSync();
 
-  return (
-    <>
-      <AppHeader />
-      {children}
-    </>
-  );
+  return children;
 }

@@ -137,7 +137,7 @@ export function ScanComparisonView({
             Upload another Nmap XML scan before comparing changes over time.
           </p>
           <Button asChild className="mt-1 rounded-md">
-            <Link href="/upload">Upload a scan</Link>
+            <Link href="/dashboard/upload">Upload a scan</Link>
           </Button>
         </CardContent>
       </Card>

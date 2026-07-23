@@ -166,7 +166,7 @@ export default function DocsPage() {
 
           <DocsSection id="upload" title="Upload the XML" icon={FileUp}>
             <p>
-              Open <Link href="/upload">New scan</Link>, then drag the file into
+              Open <Link href="/dashboard/upload">New scan</Link>, then drag the file into
               the upload area or use the file picker. AttackMap accepts Nmap XML
               files up to <strong>{maximumUpload}</strong>.
             </p>
@@ -331,13 +331,13 @@ export default function DocsPage() {
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild>
-                <Link href="/upload">
+                <Link href="/dashboard/upload">
                   Upload an authorized scan
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" className="bg-background">
-                <Link href="/scans">View scans</Link>
+                <Link href="/dashboard/scans">View scans</Link>
               </Button>
             </div>
           </DocsSection>
@@ -352,7 +352,7 @@ export default function DocsPage() {
               view.
             </p>
             <Button asChild size="sm" className="mt-4 w-full">
-              <Link href="/upload">New scan</Link>
+              <Link href="/dashboard/upload">New scan</Link>
             </Button>
           </div>
         </aside>
