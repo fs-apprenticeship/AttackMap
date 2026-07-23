@@ -95,13 +95,20 @@ function DashboardNavigation({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
-function DashboardSidebarContent({ mobile = false }: { mobile?: boolean }) {
-  const brand = <Brand href="/dashboard/scans" />;
-
+function DashboardSidebarContent({
+  mobile = false,
+  onBrandNavigate,
+}: {
+  mobile?: boolean;
+  onBrandNavigate?: () => void;
+}) {
   return (
     <>
       <div className="border-b border-sidebar-border p-4">
-        {mobile ? <SheetClose asChild>{brand}</SheetClose> : brand}
+        <Brand
+          href="/dashboard/scans"
+          onClick={mobile ? onBrandNavigate : undefined}
+        />
       </div>
 
       <DashboardNavigation mobile={mobile} />
@@ -184,7 +191,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             Navigate between scans, uploads, comparison tools, and
             documentation.
           </SheetDescription>
-          <DashboardSidebarContent mobile />
+          <DashboardSidebarContent
+            mobile
+            onBrandNavigate={() => setMobileNavigationOpen(false)}
+          />
         </SheetContent>
       </Sheet>
 
