@@ -1,13 +1,9 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Geist, Geist_Mono, Inter } from 'next/font/google'
-import Link from 'next/link'
-import { ShieldCheck } from 'lucide-react'
 import './globals.css'
 import { cn } from "@/lib/utils"
-import { HeaderAuth } from "@/components/app-shell/header-auth"
 import { ThemeProvider } from "@/components/app-shell/theme-provider"
-import { ThemeToggle } from "@/components/app-shell/theme-toggle"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
@@ -54,31 +50,6 @@ export default function RootLayout({
             >
               Skip to content
             </a>
-            <header className="app-header sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
-              <div className="flex h-16 items-center justify-between px-4 lg:px-6">
-                <Link
-                  href="/"
-                  aria-label="AttackMap home"
-                  className="group flex min-w-0 items-center gap-3 rounded-md outline-none transition-opacity hover:opacity-85 focus-visible:ring-3 focus-visible:ring-ring/30"
-                >
-                  <div className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-[1.03]">
-                    <ShieldCheck className="size-5" />
-                  </div>
-                  <div className="hidden min-w-0 sm:block">
-                    <p className="text-sm font-semibold leading-5 text-foreground">
-                      AttackMap
-                    </p>
-                    <p className="hidden text-xs text-muted-foreground sm:block">
-                      Network scan intelligence
-                    </p>
-                  </div>
-                </Link>
-                <div className="flex shrink-0 items-center gap-2">
-                  <ThemeToggle />
-                  <HeaderAuth />
-                </div>
-              </div>
-            </header>
             <div id="main-content" tabIndex={-1} className="outline-none">
               {children}
             </div>
