@@ -54,7 +54,7 @@ type CompareResponse =
   | { error: string; comparison?: never };
 
 const selectTriggerClass =
-  "h-11 w-full rounded-md text-left shadow-none data-[size=default]:h-11";
+  "h-11 w-full min-w-0 max-w-full rounded-md text-left shadow-none data-[size=default]:h-11";
 
 export function ScanComparisonView({
   scans,
@@ -137,7 +137,7 @@ export function ScanComparisonView({
             Upload another Nmap XML scan before comparing changes over time.
           </p>
           <Button asChild className="mt-1 rounded-md">
-            <Link href="/upload">Upload a scan</Link>
+            <Link href="/dashboard/upload">Upload a scan</Link>
           </Button>
         </CardContent>
       </Card>
@@ -226,13 +226,20 @@ function ScanSelect({
   onValueChange: (value: string) => void;
 }) {
   return (
-    <label className="space-y-2">
+    <label className="min-w-0 space-y-2">
       <span className="text-sm font-medium text-foreground">{label}</span>
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className={selectTriggerClass}>
-          <SelectValue placeholder="Choose a scan" />
+          <SelectValue
+            className="min-w-0 flex-1 truncate"
+            placeholder="Choose a scan"
+          />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          position="popper"
+          align="start"
+          className="w-(--radix-select-trigger-width) max-w-(--radix-select-content-available-width)"
+        >
           {scans.map((scan) => (
             <SelectItem key={scan.id} value={scan.id}>
               {scan.filename} - {scan.target} - {formatDate(scan.parsedAt)}

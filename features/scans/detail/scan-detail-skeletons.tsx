@@ -27,7 +27,7 @@ function CardSkeleton({
 export function ScanDetailSkeleton() {
   return (
     <main
-      className="min-h-[calc(100vh-4rem)] bg-background text-foreground"
+      className="bg-background text-foreground"
       aria-label="Loading scan details"
     >
       <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">

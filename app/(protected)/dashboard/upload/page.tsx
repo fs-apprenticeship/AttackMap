@@ -5,7 +5,7 @@ export default function UploadPage() {
   triggerOpportunisticReconcile();
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-background">
+    <main className="bg-background">
       <div className="mx-auto w-full max-w-2xl px-4 py-12 lg:py-16">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">

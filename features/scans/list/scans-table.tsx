@@ -81,7 +81,7 @@ export function ScansTable({
                   <TableRow>
                     <TableCell className="max-w-[260px] px-4">
                       <Link
-                        href={`/scans/${scan.id}`}
+                        href={`/dashboard/scans/${scan.id}`}
                         className="block truncate rounded-sm text-sm font-semibold text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       >
                         {scan.filename}
@@ -128,7 +128,7 @@ export function ScansTable({
                             className="rounded-md text-muted-foreground"
                             aria-label={`Open ${scan.target} dashboard`}
                           >
-                            <Link href={`/scans/${scan.id}`}>
+                            <Link href={`/dashboard/scans/${scan.id}`}>
                               <ArrowUpRight className="size-4" />
                             </Link>
                           </Button>
@@ -182,7 +182,7 @@ function MobileScanCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <Link
-              href={`/scans/${scan.id}`}
+              href={`/dashboard/scans/${scan.id}`}
               className="block truncate rounded-sm text-sm font-semibold text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {scan.filename}
@@ -241,7 +241,7 @@ function MobileScanCard({
               className="bg-background"
               aria-label={`Open ${scan.target} dashboard`}
             >
-              <Link href={`/scans/${scan.id}`}>
+              <Link href={`/dashboard/scans/${scan.id}`}>
                 <ArrowUpRight className="size-4" />
               </Link>
             </Button>
@@ -350,13 +350,13 @@ function ScanPreview({
         </p>
         <div className="mt-3 grid gap-2">
           <Button asChild variant="outline" className="rounded-md bg-background">
-            <Link href={`/scans/${scan.id}`}>Open dashboard</Link>
+            <Link href={`/dashboard/scans/${scan.id}`}>Open dashboard</Link>
           </Button>
           <Button asChild variant="outline" className="rounded-md bg-background">
-            <Link href={`/scans/${scan.id}/findings`}>Review findings</Link>
+            <Link href={`/dashboard/scans/${scan.id}/findings`}>Review findings</Link>
           </Button>
           <Button asChild variant="outline" className="rounded-md bg-background">
-            <Link href={`/scans/${scan.id}/hosts`}>View hosts</Link>
+            <Link href={`/dashboard/scans/${scan.id}/hosts`}>View hosts</Link>
           </Button>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">

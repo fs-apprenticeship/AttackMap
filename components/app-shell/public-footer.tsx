@@ -16,7 +16,7 @@ export function PublicFooter() {
           <Link className="transition-colors hover:text-foreground" href="/docs">
             Documentation
           </Link>
-          <Link className="transition-colors hover:text-foreground" href="/scans">
+          <Link className="transition-colors hover:text-foreground" href="/dashboard/scans">
             Open app
           </Link>
         </nav>
