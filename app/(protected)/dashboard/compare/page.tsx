@@ -17,12 +17,12 @@ export default function ComparePage({
   triggerOpportunisticReconcile();
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
+    <main className="bg-background text-foreground">
       <div className="mx-auto w-full max-w-6xl px-4 py-8 lg:px-6">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Button asChild variant="outline" className="mb-4 rounded-md bg-background">
-              <Link href="/scans">
+              <Link href="/dashboard/scans">
                 <ArrowLeft className="size-4" />
                 All scans
               </Link>
@@ -36,7 +36,7 @@ export default function ComparePage({
             </p>
           </div>
           <Button asChild className="rounded-md">
-            <Link href="/upload">
+            <Link href="/dashboard/upload">
               <FileUp className="size-4" />
               Upload scan
             </Link>

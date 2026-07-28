@@ -23,32 +23,32 @@ const sections: {
   {
     id: "overview",
     label: "Overview",
-    path: (scanId) => `/scans/${scanId}`,
+    path: (scanId) => `/dashboard/scans/${scanId}`,
   },
   {
     id: "attack-surface",
     label: "Attack surface",
-    path: (scanId) => `/scans/${scanId}/attack-surface`,
+    path: (scanId) => `/dashboard/scans/${scanId}/attack-surface`,
   },
   {
     id: "findings",
     label: "Findings",
-    path: (scanId) => `/scans/${scanId}/findings`,
+    path: (scanId) => `/dashboard/scans/${scanId}/findings`,
   },
   {
     id: "remediation",
     label: "Remediation",
-    path: (scanId) => `/scans/${scanId}/remediation`,
+    path: (scanId) => `/dashboard/scans/${scanId}/remediation`,
   },
   {
     id: "services",
     label: "Services",
-    path: (scanId) => `/scans/${scanId}/services`,
+    path: (scanId) => `/dashboard/scans/${scanId}/services`,
   },
   {
     id: "hosts",
     label: "Hosts",
-    path: (scanId) => `/scans/${scanId}/hosts`,
+    path: (scanId) => `/dashboard/scans/${scanId}/hosts`,
   },
 ];
 
@@ -61,7 +61,7 @@ export function ScanNotFound() {
           This scan doesn&apos;t exist or belongs to another account.
         </p>
         <Button asChild className="mt-1 rounded-md">
-          <Link href="/upload">Upload a scan</Link>
+          <Link href="/dashboard/upload">Upload a scan</Link>
         </Button>
       </CardContent>
     </Card>
@@ -76,24 +76,24 @@ export function ScanDetailFrame({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
+    <main className="bg-background text-foreground">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <Button asChild variant="outline" className="bg-background">
-            <Link href="/scans">
+            <Link href="/dashboard/scans">
               <ArrowLeft className="size-4" />
               All scans
             </Link>
           </Button>
           <div className="flex flex-wrap items-center gap-3">
             <Button asChild variant="outline" className="bg-background">
-              <Link href={`/compare?base=${scan.id}`}>
+              <Link href={`/dashboard/compare?base=${scan.id}`}>
                 <GitCompareArrows className="size-4" />
                 Compare
               </Link>
             </Button>
             <Button asChild className="rounded-md">
-              <Link href="/upload">
+              <Link href="/dashboard/upload">
                 <Plus className="size-4" />
                 New scan
               </Link>

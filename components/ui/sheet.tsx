@@ -9,9 +9,8 @@ import { Button } from "@/components/ui/button";
 import { IconButtonTooltip } from "@/components/ui/tooltip";
 
 // A slide-over panel built on the same Radix Dialog primitive as `dialog.tsx`,
-// but anchored to an edge of the viewport instead of centered. Used for the
-// scan chat drawer. Only the `right` side is wired up for now; add others as
-// needed.
+// but anchored to an edge of the viewport instead of centered. Used by the
+// dashboard navigation and scan chat drawers.
 
 function Sheet(props: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
@@ -53,18 +52,24 @@ function SheetContent({
   className,
   children,
   showCloseButton = true,
+  side = "right",
+  overlayClassName,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   showCloseButton?: boolean;
+  side?: "left" | "right";
+  overlayClassName?: string;
 }) {
   return (
     <SheetPortal>
-      <SheetOverlay />
+      <SheetOverlay className={overlayClassName} />
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex h-full w-full flex-col gap-0 border-l bg-card text-card-foreground shadow-xl ring-1 ring-foreground/5 duration-300 outline-none sm:max-w-md dark:ring-foreground/10",
-          "data-open:animate-in data-open:slide-in-from-right data-closed:animate-out data-closed:slide-out-to-right",
+          "fixed inset-y-0 z-50 flex h-full w-full flex-col gap-0 bg-card text-card-foreground shadow-xl ring-1 ring-foreground/5 duration-300 outline-none sm:max-w-md dark:ring-foreground/10",
+          side === "right"
+            ? "right-0 border-l data-open:animate-in data-open:slide-in-from-right data-closed:animate-out data-closed:slide-out-to-right"
+            : "left-0 border-r data-open:animate-in data-open:slide-in-from-left data-closed:animate-out data-closed:slide-out-to-left",
           className,
         )}
         {...props}

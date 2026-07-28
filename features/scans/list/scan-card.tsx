@@ -19,7 +19,7 @@ export function ScanCard({ scan }: ScanCardProps) {
     <Card className="py-0 transition-colors hover:border-ring/50">
       <CardContent className="flex items-center gap-2 p-4">
         <Link
-          href={`/scans/${scan.id}`}
+          href={`/dashboard/scans/${scan.id}`}
           className="flex min-w-0 flex-1 items-center gap-4 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <div className="min-w-0 flex-1">

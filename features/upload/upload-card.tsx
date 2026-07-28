@@ -502,7 +502,7 @@ export function UploadCard() {
                 onClick={() => {
                   if (!viewScanId) return;
                   startNavigation(() => {
-                    router.push(`/scans/${viewScanId}`);
+                    router.push(`/dashboard/scans/${viewScanId}`);
                     resetUpload();
                   });
                 }}
