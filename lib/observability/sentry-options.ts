@@ -1,15 +1,8 @@
-// Shared, runtime-safe Sentry configuration primitives. This module is
-// imported from the browser, Node, and Edge init files, so it must only
-// contain primitive values and pure functions — no Node-only APIs, no
-// database/Prisma imports, nothing that would break the client bundle.
 
 
 import type { Breadcrumb, Event } from "@sentry/nextjs";
 
-// `@sentry/nextjs` only re-exports a curated subset of `@sentry/core`'s
-// types — `TransactionEvent` and `TracesSamplerSamplingContext` aren't in it.
-// `Event` is the common base of both `ErrorEvent` and `TransactionEvent`, and
-// covers every field this module touches, so callers can pass either.
+
 type TracesSamplerSamplingContext = { name?: string };
 
 export const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -37,8 +30,7 @@ const BASE_TRACES_SAMPLE_RATE: Record<string, number> = {
   production: 0.05,
 };
 
-// Low-volume, high-value flows keep a higher trace rate so they aren't
-// drowned out by high-volume polling/status requests on the same routes.
+
 const PRIORITY_TRACE_ROUTES = [
   "/api/scan/import",
   "/api/cron/reconcile-scan-imports",
@@ -59,9 +51,6 @@ export function sentryTracesSampler(
 }
 
 // --- Sensitive-data scrubbing ---------------------------------------------
-// Defense in depth alongside `sendDefaultPii: false` and server-side Sentry
-// scrubbing rules. Allowlist-shaped: strip everything from `request` except
-// the path, then redact known-sensitive headers if any remain.
 
 const SENSITIVE_HEADER_KEYS = new Set([
   "authorization",
@@ -111,11 +100,7 @@ function scrubRequest(
   };
 }
 
-/**
- * Applied via `beforeSend`/`beforeSendTransaction` in all three runtime
- * configs. Removes hostnames/IPs, request bodies, cookies, auth headers, and
- * anything beyond the opaque Clerk user id.
- */
+
 export function scrubSentryEvent<E extends Event>(event: E): E {
   const scrubbed: E = { ...event };
   scrubbed.request = scrubRequest(event.request);
