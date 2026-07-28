@@ -2,8 +2,7 @@
 // imported from the browser, Node, and Edge init files, so it must only
 // contain primitive values and pure functions — no Node-only APIs, no
 // database/Prisma imports, nothing that would break the client bundle.
-//
-// See docs/SENTRY_IMPLEMENTATION.md for the policy this file implements.
+
 
 import type { Breadcrumb, Event } from "@sentry/nextjs";
 
@@ -30,8 +29,7 @@ export function isSentryEnabled(): boolean {
 }
 
 // --- Tracing sampling ----------------------------------------------------
-// Starting values per docs/SENTRY_IMPLEMENTATION.md #8 — review after a week
-// of real traffic and tune against quota, not permanent promises.
+
 
 const BASE_TRACES_SAMPLE_RATE: Record<string, number> = {
   development: 0,
