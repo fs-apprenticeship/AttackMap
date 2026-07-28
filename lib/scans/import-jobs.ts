@@ -1,6 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
+import * as Sentry from "@sentry/nextjs";
 
 import { db } from "@/lib/db";
 import { invalidateScansCache } from "@/lib/scans/cache";
@@ -9,6 +10,7 @@ import { parseNmapScanFromParsed } from "@/lib/nmap/parse-nmap";
 import { parseValidatedNmapXmlText } from "@/lib/nmap/upload-validation";
 import { MAX_LARGE_SCAN_UPLOAD_BYTES } from "@/lib/nmap/upload-validation-config";
 import type { ScanImportStatus as ScanImportStatusModel } from "@/lib/generated/prisma/client";
+import { captureSanitizedException } from "@/lib/observability/capture-sanitized-exception";
 
 export const ScanImportJobStatusSchema = z.enum([
   "queued",
@@ -221,6 +223,13 @@ export async function failStaleJob(id: string): Promise<void> {
   });
   await deleteUploadChunks(job.uploadId);
   invalidateScansCache(job.userId);
+
+  // Terminal, actionable outcome: the job exhausted its retry budget without
+  // ever completing (e.g. the function died mid-flight repeatedly).
+  Sentry.captureMessage("Scan import job timed out after repeated attempts.", {
+    level: "warning",
+    tags: { operation: "scan_import", errorCode: "timed_out" },
+  });
 }
 
 async function failJob(
@@ -289,6 +298,13 @@ export async function processScanImportJob(jobId: string): Promise<void> {
     const message = error instanceof Error ? error.message : "Failed to import scan.";
 
     if (nonRetryable || job.attempts + 1 >= MAX_ATTEMPTS) {
+      // Terminal, actionable outcome — the job will not be retried again.
+      // Transient retry-eligible failures (the `throw error` below) are
+      // expected operational noise and are intentionally not captured.
+      captureSanitizedException(error, "Scan import job failed.", {
+        operation: "scan_import",
+        errorCode: code,
+      });
       await failJob(jobId, job.userId, code, message);
       await deleteUploadChunks(job.uploadId);
       return;
