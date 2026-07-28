@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { setSentryRequestUser } from "@/lib/observability/sentry-request-user";
 
 async function syncUser(userId: string): Promise<void> {
   const clerkUser = await currentUser();
@@ -23,6 +24,7 @@ async function syncUser(userId: string): Promise<void> {
 export async function requireAuthSync(): Promise<string> {
   const { userId } = await auth();
   if (!userId) redirect("/");
+  setSentryRequestUser(userId);
   await syncUser(userId);
   return userId;
 }
@@ -34,6 +36,7 @@ export async function requireAuthSync(): Promise<string> {
 export async function getOptionalAuth(): Promise<string | null> {
   const { userId } = await auth();
   if (!userId) return null;
+  setSentryRequestUser(userId);
   await syncUser(userId);
   return userId;
 }

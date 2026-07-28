@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { AiNotConfiguredError } from "@/lib/ai/summarize";
 import { streamScanChat } from "@/lib/ai/chat";
 import { getScan } from "@/lib/scans/store";
+import { setSentryRequestUser } from "@/lib/observability/sentry-request-user";
+import { captureSanitizedException } from "@/lib/observability/capture-sanitized-exception";
 
 // Chat endpoint for asking questions about a single scan. The client sends the
 // conversation plus a `scanId`; we load that scan server-side (ownership-scoped)
@@ -17,6 +19,7 @@ export async function POST(request: NextRequest) {
   const { userId } = await auth();
   if (!userId)
     return NextResponse.json({ error: "Sign in to use the scan chat." }, { status: 401 });
+  setSentryRequestUser(userId);
 
   let body: unknown;
   try {
@@ -48,6 +51,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof AiNotConfiguredError)
       return NextResponse.json({ error: "AI is not configured on the server." }, { status: 503 });
     console.error("Error in scan chat:", error);
+    captureSanitizedException(error, "Scan chat failed.", { operation: "scan_chat" });
     return NextResponse.json({ error: "Scan chat failed" }, { status: 500 });
   }
 }

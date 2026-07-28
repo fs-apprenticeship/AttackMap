@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { captureSanitizedException } from "@/lib/observability/capture-sanitized-exception";
 import { parseNmapScanFromParsed } from "@/lib/nmap/parse-nmap";
 import {
   readValidatedNmapXml,
@@ -37,6 +38,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(scan, { status: 201 });
   } catch (error) {
     console.error("Error parsing Nmap scan:", error);
+    captureSanitizedException(error, "Nmap scan parsing failed.", {
+      operation: "scan_parse",
+    });
     return NextResponse.json({ error: "Failed to parse Nmap scan" }, { status: 500 });
   }
 }

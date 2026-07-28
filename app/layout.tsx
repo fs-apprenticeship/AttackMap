@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { ThemeProvider } from "@/components/app-shell/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { SentryUser } from "@/components/observability/sentry-user"
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -42,6 +43,7 @@ export default function RootLayout({
           data-gramm_editor="false"
           data-enable-grammarly="false"
         >
+          <SentryUser />
           <ThemeProvider>
             <TooltipProvider>
             <a

@@ -4,6 +4,8 @@ import { ScanSchema } from "@/lib/nmap/schema";
 import { AiNotConfiguredError, summarizeScan } from "@/lib/ai/summarize";
 import { invalidateScansCache } from "@/lib/scans/cache";
 import { db } from "@/lib/db";
+import { setSentryRequestUser } from "@/lib/observability/sentry-request-user";
+import { captureSanitizedException } from "@/lib/observability/capture-sanitized-exception";
 
 const TOP_RISKS_LIMIT = 5;
 const SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"] as const;
@@ -12,6 +14,7 @@ export async function POST(request: NextRequest) {
   const { userId } = await auth();
   if (!userId)
     return NextResponse.json({ error: "Sign in to use AI analysis." }, { status: 401 });
+  setSentryRequestUser(userId);
 
   let body: unknown;
   try {
@@ -71,6 +74,9 @@ export async function POST(request: NextRequest) {
     if (error instanceof AiNotConfiguredError)
       return NextResponse.json({ error: "AI is not configured on the server." }, { status: 503 });
     console.error("Error generating AI summary:", error);
+    captureSanitizedException(error, "AI summary generation failed.", {
+      operation: "ai_summary",
+    });
     return NextResponse.json({ error: "Failed to generate AI summary" }, { status: 500 });
   }
 }
