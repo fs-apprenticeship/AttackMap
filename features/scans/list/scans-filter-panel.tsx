@@ -42,6 +42,8 @@ import {
   type DateRangeFilter,
   type SortOption,
 } from "./scans-list-data";
+import { ScansFilterPresetsControl } from "./scans-filter-presets-control";
+import type { ScansUrlState } from "./scans-url-state";
 
 type ScansFilterPanelProps = {
   query: string;
@@ -53,12 +55,14 @@ type ScansFilterPanelProps = {
   totalCount: number;
   hasActiveFilters: boolean;
   searchResetKey: number;
+  currentState: ScansUrlState;
   onQueryChange: (query: string) => void;
   onSortChange: (sort: SortOption) => void;
   onDateRangeChange: (range: DateRangeFilter) => void;
   onRiskFilterChange: (severity: Severity, checked: boolean) => void;
   onAiStatusFilterChange: (status: AiStatusFilter, checked: boolean) => void;
   onResetFilters: () => void;
+  onApplyPreset: (state: ScansUrlState) => void;
 };
 
 const filterTriggerClass =
@@ -78,12 +82,14 @@ export function ScansFilterPanel({
   totalCount,
   hasActiveFilters,
   searchResetKey,
+  currentState,
   onQueryChange,
   onSortChange,
   onDateRangeChange,
   onRiskFilterChange,
   onAiStatusFilterChange,
   onResetFilters,
+  onApplyPreset,
 }: ScansFilterPanelProps) {
   const allRisksSelected = riskFilters.length === severityOrder.length;
   const allAiStatusesSelected =
@@ -107,11 +113,16 @@ export function ScansFilterPanel({
     <Card className="py-0">
       <CardContent className="space-y-3 p-3 sm:p-4">
         <div className="space-y-2">
-          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_180px]">
+          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto_180px]">
             <SearchInput
               key={`${searchResetKey}:${query}`}
               initialQuery={query}
               onQueryChange={onQueryChange}
+            />
+
+            <ScansFilterPresetsControl
+              currentState={currentState}
+              onApply={onApplyPreset}
             />
 
             <Select
