@@ -1,6 +1,13 @@
 import { Globe, Network, Server, ShieldAlert } from "lucide-react";
 
-import type { Finding, Host, RiskLevel, Scan, Severity } from "@/lib/types";
+import type {
+  Finding,
+  Host,
+  RiskLevel,
+  Scan,
+  Service,
+  Severity,
+} from "@/lib/types";
 import { isWebService } from "@/lib/nmap/web-service";
 
 import { severityOrder } from "@/lib/scans/severity";
@@ -14,6 +21,10 @@ export type DashboardFinding = Pick<
 
 export type HostWithScan = Host & {
   scanFilename: string;
+};
+
+export type ServiceWithHost = Service & {
+  host: HostWithScan;
 };
 
 export type ServiceBreakdownItem = [service: string, count: number];
@@ -59,7 +70,7 @@ export function getHostHighestRisk(
   );
 }
 
-export function getServicesForScan(scan: Scan) {
+export function getServicesForScan(scan: Scan): ServiceWithHost[] {
   return getHostsForScan(scan).flatMap((host) =>
     host.services.map((service) => ({ ...service, host })),
   );
