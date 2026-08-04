@@ -7,8 +7,10 @@ import { severityOrder } from "@/lib/scans/severity";
 
 export type DashboardFinding = Pick<
   Finding,
-  "id" | "severity" | "title" | "evidence"
->;
+  "id" | "hostId" | "severity" | "title" | "evidence"
+> & {
+  host?: string;
+};
 
 export type HostWithScan = Host & {
   scanFilename: string;
@@ -65,9 +67,22 @@ export function getServicesForScan(scan: Scan) {
 
 export function getScanFindings(scan: Scan): DashboardFinding[] {
   // Findings are always rule-based — the factual layer. Sorted by severity.
+  const hostsById = new Map(scan.hosts.map((host) => [host.id, host]));
+
   return [...scan.findings]
     .sort((a, b) => severityOrder.indexOf(a.severity) - severityOrder.indexOf(b.severity))
-    .map(({ id, severity, title, evidence }) => ({ id, severity, title, evidence }));
+    .map(({ id, host, hostId, severity, title, evidence }) => {
+      const associatedHost = hostId ? hostsById.get(hostId) : undefined;
+
+      return {
+        id,
+        hostId,
+        host: host ?? associatedHost?.hostname ?? associatedHost?.ipAddress,
+        severity,
+        title,
+        evidence,
+      };
+    });
 }
 
 export function getServiceBreakdown(scan: Scan): ServiceBreakdownItem[] {
