@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Download, Globe2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,7 +17,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
@@ -32,6 +32,13 @@ import {
   exportFilename,
   serializeHostInventoryCsv,
 } from "@/lib/scans/export";
+import {
+  defaultHostSort,
+  sortHosts,
+  toggleSort,
+  type HostSortColumn,
+} from "./inventory-table-data";
+import { SortableTableHead } from "./sortable-table-head";
 
 type HostInventoryTableProps = {
   hosts: HostWithScan[];
@@ -42,10 +49,13 @@ export function HostInventoryTable({
   hosts,
   scanFilename,
 }: HostInventoryTableProps) {
+  const [sort, setSort] = useState(defaultHostSort);
+  const sortedHosts = useMemo(() => sortHosts(hosts, sort), [hosts, sort]);
+
   function exportCsv() {
     try {
       downloadTextFile({
-        content: serializeHostInventoryCsv(hosts),
+        content: serializeHostInventoryCsv(sortedHosts),
         filename: exportFilename(scanFilename, "hosts.csv"),
         type: "text/csv;charset=utf-8",
         includeUtf8Bom: true,
@@ -54,6 +64,21 @@ export function HostInventoryTable({
     } catch {
       toast.error("Host inventory could not be exported");
     }
+  }
+
+  function sortBy(column: HostSortColumn) {
+    setSort((current) => toggleSort(current, column));
+  }
+
+  function sortHead(column: HostSortColumn, label: string) {
+    return (
+      <SortableTableHead
+        label={label}
+        active={sort.column === column}
+        direction={sort.direction}
+        onSort={() => sortBy(column)}
+      />
+    );
   }
 
   return (
@@ -78,22 +103,33 @@ export function HostInventoryTable({
         </CardAction>
       </CardHeader>
       <CardContent className="p-0">
-        <Table className="min-w-[920px]">
+        <Table
+          className="min-w-[920px]"
+          containerClassName="max-h-[60vh] overflow-auto"
+        >
           <TableHeader className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <TableRow>
-              <TableHead className="px-4 py-3 font-semibold">Host</TableHead>
-              <TableHead className="px-4 py-3 font-semibold">OS</TableHead>
-              <TableHead className="px-4 py-3 font-semibold">Role</TableHead>
-              <TableHead className="px-4 py-3 font-semibold">Exposure</TableHead>
-              <TableHead className="px-4 py-3 font-semibold">Services</TableHead>
-              <TableHead className="px-4 py-3 font-semibold">
-                Highest risk
-              </TableHead>
-              <TableHead className="px-4 py-3 font-semibold">Source</TableHead>
+              {sortHead("host", "Host")}
+              {sortHead("operatingSystem", "OS")}
+              {sortHead("role", "Role")}
+              {sortHead("exposure", "Exposure")}
+              {sortHead("services", "Services")}
+              {sortHead("risk", "Highest risk")}
+              {sortHead("source", "Source")}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {hosts.map((host) => {
+            {sortedHosts.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="px-4 py-8 text-center text-muted-foreground"
+                >
+                  No hosts were detected for this scan.
+                </TableCell>
+              </TableRow>
+            ) : null}
+            {sortedHosts.map((host) => {
               return (
                 <TableRow key={host.id} className="hover:bg-muted/40">
                   <TableCell className="px-4 py-3">
