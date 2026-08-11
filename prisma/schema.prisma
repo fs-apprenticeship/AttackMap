@@ -55,6 +55,7 @@ model User {
   scans            Scan[]
   scanImportJobs   ScanImportJob[]
   scanUploadChunks ScanUploadChunk[]
+  rateLimitBuckets RateLimitBucket[]
 
   @@map("users")
 }
@@ -80,6 +81,7 @@ model Scan {
   importJob ScanImportJob?
 
   @@index([userId])
+  @@index([userId, target])
   @@map("scans")
 }
 
@@ -191,7 +193,30 @@ model ScanImportJob {
 
   @@index([userId])
   @@index([status, updatedAt])
+  @@index([uploadId])
   @@map("scan_import_jobs")
+}
+
+// ---------------------------------------------------------------------------
+// Rate limiting
+// ---------------------------------------------------------------------------
+// Fixed-window request counters, one row per (user, limiter key, window).
+// windowStart is the window's floor timestamp (Date.now() rounded down to the
+// window size), so a request's window is deterministic from its own
+// timestamp — no separate scheduler needed to roll windows over.
+
+model RateLimitBucket {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  key         String
+  windowStart DateTime @map("window_start")
+  count       Int      @default(1)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key, windowStart], map: "rate_limit_buckets_user_id_key_window_start_key")
+  @@index([windowStart])
+  @@map("rate_limit_buckets")
 }
 
 model ScanUploadChunk {
