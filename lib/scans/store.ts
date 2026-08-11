@@ -116,6 +116,22 @@ export async function getScan(id: string, userId?: string): Promise<Scan | undef
   return row ? toScan(row) : undefined;
 }
 
+// Scans sharing a `target` string are treated as repeat scans of the same
+// asset (see parseNmapScanFromParsed: target is the first host's hostname or
+// IP), so this is what powers the risk-over-time trend. Oldest first, so
+// callers can plot/derive deltas in chronological order without re-sorting.
+export async function listScansForTarget(
+  target: string,
+  userId?: string,
+): Promise<Scan[]> {
+  const rows = await db.scan.findMany({
+    where: userId ? { target, userId } : { target },
+    orderBy: { uploadedAt: "asc" },
+    include: SCAN_INCLUDE,
+  });
+  return rows.map(toScan);
+}
+
 async function assertOwnership(scanId: string, userId?: string): Promise<void> {
   if (!userId) return;
   const existing = await db.scan.findUnique({
@@ -212,26 +228,6 @@ function aiSummaryUpsertArgs(scan: Scan) {
     update: data,
     create: { scanId: scan.id, ...data },
   } as const;
-}
-
-export async function saveScan(scan: Scan, userId?: string): Promise<void> {
-  await assertOwnership(scan.id, userId);
-  const { hostRows, serviceRows, findingRows } = buildScanRows(scan);
-
-  await db.$transaction(async (tx) => {
-    await tx.scan.upsert(scanUpsertArgs(scan, userId));
-
-    await tx.host.deleteMany({ where: { scanId: scan.id } });
-    await tx.finding.deleteMany({ where: { scanId: scan.id } });
-    await tx.host.createMany({ data: hostRows });
-    await tx.service.createMany({ data: serviceRows });
-    await tx.finding.createMany({ data: findingRows });
-
-    const aiSummaryArgs = aiSummaryUpsertArgs(scan);
-    if (aiSummaryArgs) {
-      await tx.aiSummary.upsert(aiSummaryArgs);
-    }
-  });
 }
 
 const UPSERT_CHUNK_SIZE = 750;

@@ -5,7 +5,7 @@ import { parseNmapScanFromParsed } from "@/lib/nmap/parse-nmap";
 import { readValidatedNmapXml } from "@/lib/nmap/upload-validation";
 import { ScanSchema } from "@/lib/nmap/schema";
 import type { Scan } from "@/lib/types";
-import { deleteScan, saveScan } from "@/lib/scans/store";
+import { deleteScan, saveScanChunked } from "@/lib/scans/store";
 import { invalidateScansCache } from "@/lib/scans/cache";
 import { dismissImportJob } from "@/lib/scans/import-jobs";
 
@@ -20,7 +20,7 @@ export async function uploadScanAction(formData: FormData): Promise<Scan> {
 
   const scan = parseNmapScanFromParsed(validated.raw, (file as File).name);
 
-  await saveScan(scan, userId);
+  await saveScanChunked(scan, userId);
   invalidateScansCache(userId);
 
   return scan;
@@ -29,7 +29,7 @@ export async function uploadScanAction(formData: FormData): Promise<Scan> {
 export async function saveScanAction(scan: Scan): Promise<void> {
   const userId = await requireAuthSync();
   const validated = ScanSchema.parse(scan);
-  await saveScan(validated, userId);
+  await saveScanChunked(validated, userId);
   invalidateScansCache(userId);
 }
 
