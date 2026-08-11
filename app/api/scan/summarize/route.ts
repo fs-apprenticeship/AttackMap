@@ -6,6 +6,8 @@ import { invalidateScansCache } from "@/lib/scans/cache";
 import { db } from "@/lib/db";
 import { setSentryRequestUser } from "@/lib/observability/sentry-request-user";
 import { captureSanitizedException } from "@/lib/observability/capture-sanitized-exception";
+import { SUMMARIZE_RATE_LIMIT } from "@/lib/rate-limit/config";
+import { enforceRateLimit } from "@/lib/rate-limit/guard";
 
 const TOP_RISKS_LIMIT = 5;
 const SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"] as const;
@@ -15,6 +17,9 @@ export async function POST(request: NextRequest) {
   if (!userId)
     return NextResponse.json({ error: "Sign in to use AI analysis." }, { status: 401 });
   setSentryRequestUser(userId);
+
+  const limited = await enforceRateLimit(userId, SUMMARIZE_RATE_LIMIT);
+  if (limited) return limited;
 
   let body: unknown;
   try {
