@@ -47,6 +47,12 @@ const NON_TERMINAL_STATUSES: ScanImportStatusModel[] = [
 ];
 export const MAX_ATTEMPTS = 2;
 
+// Per-process only — on multiple concurrent instances each one throttles
+// independently, so this bounds redundant work on a single instance rather
+// than guaranteeing a fleet-wide "once per interval." That's fine: the claim
+// in processScanImportJob (an updateMany conditioned on the job's current
+// status + updatedAt) is what actually prevents two overlapping sweeps from
+// double-processing the same job — a losing claim just matches zero rows.
 const globalForReconcile = globalThis as typeof globalThis & {
   attackMapLastReconcileSweepAt?: number;
 };
