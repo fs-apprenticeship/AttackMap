@@ -6,7 +6,7 @@ vi.mock("@/lib/auth/sync", () => ({
 }));
 
 vi.mock("@/lib/scans/store", () => ({
-  saveScan: vi.fn(),
+  saveScanChunked: vi.fn(),
 }));
 
 vi.mock("@/lib/scans/cache", () => ({
@@ -19,7 +19,7 @@ vi.mock("@/lib/observability/capture-sanitized-exception", () => ({
 
 import { POST } from "@/app/api/scan/parse/route";
 import { getOptionalAuth } from "@/lib/auth/sync";
-import { saveScan } from "@/lib/scans/store";
+import { saveScanChunked } from "@/lib/scans/store";
 import { invalidateScansCache } from "@/lib/scans/cache";
 import { captureSanitizedException } from "@/lib/observability/capture-sanitized-exception";
 
@@ -92,12 +92,12 @@ describe("POST /api/scan/parse", () => {
     expect(res.status).toBe(201);
     expect(body.filename).toBe("scan.xml");
     expect(body.hosts).toHaveLength(1);
-    expect(saveScan).toHaveBeenCalledWith(expect.objectContaining({ filename: "scan.xml" }), "user_1");
+    expect(saveScanChunked).toHaveBeenCalledWith(expect.objectContaining({ filename: "scan.xml" }), "user_1");
     expect(invalidateScansCache).toHaveBeenCalledWith("user_1");
   });
 
   it("returns 500 and reports a sanitized exception when saving fails", async () => {
-    vi.mocked(saveScan).mockRejectedValue(new Error("db unavailable"));
+    vi.mocked(saveScanChunked).mockRejectedValue(new Error("db unavailable"));
     const file = new File([VALID_XML], "scan.xml", { type: "text/xml" });
 
     const res = await POST(makeRequest(file));
