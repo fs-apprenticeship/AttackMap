@@ -166,9 +166,10 @@ export default function DocsPage() {
 
           <DocsSection id="upload" title="Upload the XML" icon={FileUp}>
             <p>
-              Open <Link href="/dashboard/upload">New scan</Link>, then drag the file into
-              the upload area or use the file picker. AttackMap accepts Nmap XML
-              files up to <strong>{maximumUpload}</strong>.
+              Open <Link href="/dashboard/upload">New scan</Link>, then drag one
+              or more files into the upload area or use the file picker.
+              AttackMap accepts Nmap XML files up to{" "}
+              <strong>{maximumUpload}</strong> each.
             </p>
             <div className="mt-6 rounded-lg border bg-card p-5">
               <h3 className="font-semibold text-foreground">
@@ -176,7 +177,7 @@ export default function DocsPage() {
               </h3>
               <div className="mt-4 space-y-4">
                 {[
-                  "The file type, size, and XML structure are validated.",
+                  "Each file's type, size, and XML structure are validated.",
                   "Hosts, services, OS hints, scripts, and findings are parsed.",
                   "A rule-based risk summary and remediation baseline are created.",
                   "The completed scan is saved and opened from your account.",
@@ -192,9 +193,9 @@ export default function DocsPage() {
               </div>
             </div>
             <p className="mt-5">
-              Larger files are uploaded in chunks and processed as an import
-              job, so they can take longer to become available. Keep the page
-              open while the upload completes.
+              Files are processed one at a time. Larger files are uploaded in
+              chunks and processed as import jobs, so they can take longer to
+              become available. Keep the page open while the batch completes.
             </p>
           </DocsSection>
 

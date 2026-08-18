@@ -25,10 +25,10 @@ import {
   XML_FILE_TYPES,
   formatUploadLimit,
 } from "@/lib/nmap/upload-validation-config";
-import type { Scan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type UploadState = "idle" | "selected" | "parsing" | "success" | "error";
+type UploadItemStatus = "selected" | "processing" | "success" | "error";
 type ScanImportJobStatus =
   | "queued"
   | "validating"
@@ -37,7 +37,16 @@ type ScanImportJobStatus =
   | "complete"
   | "failed";
 
-const IDLE_MESSAGE = "Drop an Nmap XML file here, or click to browse.";
+type UploadItem = {
+  key: string;
+  file: File;
+  status: UploadItemStatus;
+  scanId?: string;
+  stats?: { hosts: number; services: number; findings: number };
+  error?: string;
+};
+
+const IDLE_MESSAGE = "Drop Nmap XML files here, or click to browse.";
 const JOB_POLL_INTERVAL_MS = 2000;
 
 const PARSE_STEPS = [
@@ -48,14 +57,6 @@ const PARSE_STEPS = [
 ];
 const MIN_PARSE_MS = 1800;
 
-const LARGE_STATUS_MESSAGES: Record<ScanImportJobStatus, string> = {
-  queued: "Queued for processing…",
-  validating: "Validating scan…",
-  parsing: "Parsing hosts & services…",
-  saving: "Saving to database…",
-  complete: "Scan imported. Ready to review.",
-  failed: "Import failed.",
-};
 const LARGE_STATUS_PROGRESS: Record<ScanImportJobStatus, number> = {
   queued: 45,
   validating: 55,
@@ -93,9 +94,7 @@ export function UploadCard() {
   const parseTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [status, setStatus] = useState<UploadState>("idle");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [parsedScan, setParsedScan] = useState<Scan | null>(null);
-  const [completedScanId, setCompletedScanId] = useState<string | null>(null);
+  const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState(IDLE_MESSAGE);
@@ -128,9 +127,7 @@ export function UploadCard() {
   function resetUpload() {
     stopParseAnimation();
     stopJobPolling();
-    setSelectedFile(null);
-    setParsedScan(null);
-    setCompletedScanId(null);
+    setUploadItems([]);
     setStatus("idle");
     setProgress(0);
     setStatusMessage(IDLE_MESSAGE);
@@ -140,39 +137,44 @@ export function UploadCard() {
     }
   }
 
-  function selectFile(file: File) {
+  function selectFiles(files: File[]) {
     if (status === "parsing") {
       return;
     }
 
-    const validationMessage = getClientFileValidationMessage(file);
-    if (validationMessage) {
-      setSelectedFile(file);
-      setParsedScan(null);
-      setCompletedScanId(null);
+    const items = files.map((file, index) => {
+      const error = getClientFileValidationMessage(file) ?? undefined;
+      return {
+        key: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+        file,
+        status: error ? ("error" as const) : ("selected" as const),
+        error,
+      };
+    });
+    const invalidCount = items.filter((item) => item.error).length;
+
+    setUploadItems(items);
+    setProgress(0);
+
+    if (invalidCount > 0) {
       setStatus("error");
-      setProgress(0);
-      setStatusMessage(validationMessage);
+      setStatusMessage(
+        `${invalidCount} ${invalidCount === 1 ? "file needs" : "files need"} attention before uploading.`,
+      );
       return;
     }
 
-    setSelectedFile(file);
-    setParsedScan(null);
-    setCompletedScanId(null);
     setStatus("selected");
-    setProgress(0);
     setStatusMessage(
-      fileTier(file) === "large"
-        ? "Ready to upload this large scan for background processing."
-        : "Ready to parse this scan.",
+      `${items.length} ${items.length === 1 ? "scan is" : "scans are"} ready to upload.`,
     );
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files ?? []);
 
-    if (file) {
-      selectFile(file);
+    if (files.length > 0) {
+      selectFiles(files);
     }
   }
 
@@ -180,43 +182,103 @@ export function UploadCard() {
     event.preventDefault();
     setIsDragging(false);
 
-    const file = event.dataTransfer.files?.[0];
+    const files = Array.from(event.dataTransfer.files ?? []);
 
-    if (file) {
-      selectFile(file);
+    if (files.length > 0) {
+      selectFiles(files);
     }
   }
 
   async function handleAnalyzeScan() {
-    if (!selectedFile || status === "parsing") {
+    if (uploadItems.length === 0 || status === "parsing") {
       return;
     }
 
-    const validationMessage = getClientFileValidationMessage(selectedFile);
-    if (validationMessage) {
+    if (uploadItems.some((item) => getClientFileValidationMessage(item.file))) {
       setStatus("error");
-      setStatusMessage(validationMessage);
+      setStatusMessage("Fix the invalid files before uploading this batch.");
       return;
     }
 
-    if (fileTier(selectedFile) === "large") {
-      await handleLargeUpload(selectedFile);
+    setStatus("parsing");
+    setProgress(0);
+    let successCount = 0;
+    let failureCount = 0;
+
+    for (let index = 0; index < uploadItems.length; index++) {
+      const item = uploadItems[index];
+      const batchProgress = (fileProgress: number) =>
+        setProgress(
+          Math.round(((index + fileProgress / 100) / uploadItems.length) * 100),
+        );
+
+      setUploadItems((current) =>
+        current.map((candidate) =>
+          candidate.key === item.key
+            ? { ...candidate, status: "processing", error: undefined }
+            : candidate,
+        ),
+      );
+      setStatusMessage(
+        `Processing ${index + 1} of ${uploadItems.length}: ${item.file.name}`,
+      );
+
+      try {
+        const result =
+          fileTier(item.file) === "large"
+            ? { scanId: await handleLargeUpload(item.file, batchProgress) }
+            : await handleSmallUpload(item.file, batchProgress);
+
+        successCount += 1;
+        setUploadItems((current) =>
+          current.map((candidate) =>
+            candidate.key === item.key
+              ? { ...candidate, ...result, status: "success" }
+              : candidate,
+          ),
+        );
+      } catch (error) {
+        failureCount += 1;
+        const message =
+          error instanceof Error ? error.message : "Failed to import scan.";
+        setUploadItems((current) =>
+          current.map((candidate) =>
+            candidate.key === item.key
+              ? { ...candidate, status: "error", error: message }
+              : candidate,
+          ),
+        );
+      }
+    }
+
+    setProgress(100);
+    if (failureCount === 0) {
+      setStatus("success");
+      setStatusMessage(
+        `${successCount} ${successCount === 1 ? "scan" : "scans"} uploaded successfully.`,
+      );
+      toast.success(
+        `${successCount} ${successCount === 1 ? "scan" : "scans"} uploaded`,
+      );
     } else {
-      await handleSmallUpload(selectedFile);
+      setStatus("error");
+      setStatusMessage(
+        `${successCount} uploaded, ${failureCount} failed. Review the files below.`,
+      );
+      toast.error(`${failureCount} ${failureCount === 1 ? "scan" : "scans"} failed`);
     }
   }
 
-  async function handleSmallUpload(file: File) {
-    setStatus("parsing");
-    setProgress(8);
-    setStatusMessage(PARSE_STEPS[0]);
-
+  async function handleSmallUpload(
+    file: File,
+    onProgress: (progress: number) => void,
+  ): Promise<Pick<UploadItem, "scanId" | "stats">> {
+    onProgress(8);
     let step = 0;
     stopParseAnimation();
     parseTimerRef.current = setInterval(() => {
       step = Math.min(step + 1, PARSE_STEPS.length - 1);
-      setStatusMessage(PARSE_STEPS[step]);
-      setProgress((p) => Math.min(90, p + 22));
+      onProgress(Math.min(90, 8 + step * 22));
     }, MIN_PARSE_MS / PARSE_STEPS.length);
 
     const startedAt = Date.now();
@@ -234,27 +296,28 @@ export function UploadCard() {
       }
 
       stopParseAnimation();
-      setProgress(100);
-      setParsedScan(scan);
-      setStatus("success");
-      setStatusMessage("Scan parsed. Ready to review.");
-      toast.success("Scan parsed");
-    } catch (error) {
+      onProgress(100);
+      return {
+        scanId: scan.id,
+        stats: {
+          hosts: scan.hosts.length,
+          services: scan.hosts.reduce(
+            (total, host) => total + host.services.length,
+            0,
+          ),
+          findings: scan.findings.length,
+        },
+      };
+    } finally {
       stopParseAnimation();
-      const message =
-        error instanceof Error ? error.message : "Failed to parse scan.";
-      setStatus("error");
-      setProgress(0);
-      setStatusMessage(message);
-      toast.error(message);
     }
   }
 
-  async function handleLargeUpload(file: File) {
-    setStatus("parsing");
-    setProgress(1);
-    setStatusMessage("Uploading large scan…");
-
+  async function handleLargeUpload(
+    file: File,
+    onProgress: (progress: number) => void,
+  ): Promise<string> {
+    onProgress(1);
     const uploadId = crypto.randomUUID();
     const totalChunks = Math.max(1, Math.ceil(file.size / MAX_UPLOAD_CHUNK_BYTES));
 
@@ -275,11 +338,11 @@ export function UploadCard() {
           );
         }
 
-        setProgress(Math.min(40, Math.round(((chunkIndex + 1) / totalChunks) * 40)));
-        setStatusMessage(`Uploading large scan… (${chunkIndex + 1}/${totalChunks})`);
+        onProgress(
+          Math.min(40, Math.round(((chunkIndex + 1) / totalChunks) * 40)),
+        );
       }
 
-      setStatusMessage("Queuing import job…");
       const response = await fetch("/api/scan/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -302,19 +365,17 @@ export function UploadCard() {
         job: { id: string; status: ScanImportJobStatus };
       };
 
-      await pollImportJob(job.id);
+      return await pollImportJob(job.id, onProgress);
     } catch (error) {
       stopJobPolling();
-      const message =
-        error instanceof Error ? error.message : "Failed to import scan.";
-      setStatus("error");
-      setProgress(0);
-      setStatusMessage(message);
-      toast.error(message);
+      throw error;
     }
   }
 
-  function pollImportJob(jobId: string): Promise<void> {
+  function pollImportJob(
+    jobId: string,
+    onProgress: (progress: number) => void,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       stopJobPolling();
       pollTimerRef.current = setInterval(async () => {
@@ -330,15 +391,15 @@ export function UploadCard() {
             };
           };
 
-          setProgress(LARGE_STATUS_PROGRESS[job.status]);
-          setStatusMessage(job.errorMessage ?? LARGE_STATUS_MESSAGES[job.status]);
+          onProgress(LARGE_STATUS_PROGRESS[job.status]);
 
           if (job.status === "complete") {
             stopJobPolling();
-            setCompletedScanId(job.scanId ?? null);
-            setStatus("success");
-            toast.success("Scan imported");
-            resolve();
+            if (!job.scanId) {
+              reject(new Error("Import completed without a scan ID."));
+              return;
+            }
+            resolve(job.scanId);
           } else if (job.status === "failed") {
             stopJobPolling();
             reject(new Error(job.errorMessage ?? "Failed to import scan."));
@@ -355,21 +416,14 @@ export function UploadCard() {
     });
   }
 
-  const hasFile = selectedFile !== null;
-  const canAnalyze = hasFile && status === "selected";
-  const isSuccess =
-    status === "success" && (parsedScan !== null || completedScanId !== null);
-  const viewScanId = parsedScan?.id ?? completedScanId;
-  const stats = parsedScan
-    ? {
-        hosts: parsedScan.hosts.length,
-        services: parsedScan.hosts.reduce(
-          (total, host) => total + host.services.length,
-          0,
-        ),
-        findings: parsedScan.findings.length,
-      }
-    : null;
+  const hasFiles = uploadItems.length > 0;
+  const canAnalyze =
+    hasFiles &&
+    status === "selected" &&
+    uploadItems.every((item) => item.status === "selected");
+  const successfulItems = uploadItems.filter((item) => item.status === "success");
+  const showResults = status === "success" || successfulItems.length > 0;
+  const viewScanId = successfulItems.length === 1 ? successfulItems[0].scanId : null;
   const statusIcon = {
     idle: <FileUp className="size-5" />,
     selected: <FileText className="size-5" />,
@@ -404,9 +458,10 @@ export function UploadCard() {
         <input
           ref={fileInputRef}
           type="file"
+          multiple
           accept=".xml,text/xml,application/xml"
           className="sr-only"
-          aria-label="Nmap XML scan file"
+          aria-label="Nmap XML scan files"
           onChange={handleFileChange}
         />
 
@@ -423,7 +478,7 @@ export function UploadCard() {
         <div className="mt-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold">
-              {isSuccess ? "Scan ready" : "Upload Nmap XML"}
+              {showResults ? "Upload complete" : "Upload Nmap XML scans"}
             </h2>
             <p
               id="upload-status"
@@ -433,13 +488,13 @@ export function UploadCard() {
               {statusMessage}
             </p>
           </div>
-          {hasFile && !isSuccess ? (
+          {hasFiles && !showResults ? (
             <IconButtonTooltip
-              label="Clear selected file"
+              label="Clear selected files"
               disabled={status === "parsing"}
             >
               <Button
-                aria-label="Clear selected file"
+                aria-label="Clear selected files"
                 className="shrink-0 rounded-md"
                 disabled={status === "parsing"}
                 size="icon"
@@ -453,30 +508,47 @@ export function UploadCard() {
           ) : null}
         </div>
 
-        {hasFile ? (
-          <div className="mt-4 rounded-md border bg-background p-3">
-            <div className="flex items-center gap-2">
-              <FileText className="size-4 shrink-0 text-muted-foreground" />
-              <p className="truncate text-sm font-medium text-foreground">
-                {selectedFile.name}
-              </p>
-            </div>
-            {isSuccess && stats ? (
-              <p className="mt-1 text-xs font-medium text-emerald-700">
-                {stats.hosts} {stats.hosts === 1 ? "host" : "hosts"} ·{" "}
-                {stats.services} {stats.services === 1 ? "service" : "services"}{" "}
-                · {stats.findings}{" "}
-                {stats.findings === 1 ? "finding" : "findings"}
-              </p>
-            ) : isSuccess ? (
-              <p className="mt-1 text-xs font-medium text-emerald-700">
-                Large scan imported in the background.
-              </p>
-            ) : (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {(selectedFile.size / 1024).toFixed(1)} KB
-              </p>
-            )}
+        {hasFiles ? (
+          <div className="mt-4 divide-y rounded-md border bg-background">
+            {uploadItems.map((item) => (
+              <div className="flex items-start gap-3 p-3" key={item.key}>
+                {item.status === "processing" ? (
+                  <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-primary" />
+                ) : item.status === "success" ? (
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+                ) : item.status === "error" ? (
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-600" />
+                ) : (
+                  <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {item.file.name}
+                  </p>
+                  {item.error ? (
+                    <p className="mt-1 text-xs text-red-700 dark:text-red-400">
+                      {item.error}
+                    </p>
+                  ) : item.stats ? (
+                    <p className="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                      {item.stats.hosts} {item.stats.hosts === 1 ? "host" : "hosts"} ·{" "}
+                      {item.stats.services}{" "}
+                      {item.stats.services === 1 ? "service" : "services"} ·{" "}
+                      {item.stats.findings}{" "}
+                      {item.stats.findings === 1 ? "finding" : "findings"}
+                    </p>
+                  ) : item.status === "success" ? (
+                    <p className="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                      Imported in the background.
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {(item.file.size / 1024).toFixed(1)} KB
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         ) : null}
 
@@ -492,17 +564,18 @@ export function UploadCard() {
         ) : null}
 
         <div className="mt-4 grid gap-2">
-          {isSuccess ? (
+          {showResults ? (
             <>
               <Button
                 className="w-full rounded-md"
                 size="lg"
                 type="button"
-                disabled={isNavigating || !viewScanId}
+                disabled={isNavigating || successfulItems.length === 0}
                 onClick={() => {
-                  if (!viewScanId) return;
                   startNavigation(() => {
-                    router.push(`/dashboard/scans/${viewScanId}`);
+                    router.push(
+                      viewScanId ? `/dashboard/scans/${viewScanId}` : "/dashboard/scans",
+                    );
                     resetUpload();
                   });
                 }}
@@ -513,7 +586,7 @@ export function UploadCard() {
                     Opening…
                   </>
                 ) : (
-                  "View scan"
+                  viewScanId ? "View scan" : "View scans"
                 )}
               </Button>
               <Button
@@ -523,7 +596,7 @@ export function UploadCard() {
                 variant="outline"
                 onClick={resetUpload}
               >
-                Upload another
+                Upload more
               </Button>
             </>
           ) : (
@@ -533,12 +606,12 @@ export function UploadCard() {
                 disabled={status === "parsing"}
                 size="lg"
                 type="button"
-                variant={hasFile ? "outline" : "default"}
+                variant={hasFiles ? "outline" : "default"}
                 onClick={openFilePicker}
               >
-                {hasFile ? "Replace file" : "Select file"}
+                {hasFiles ? "Choose different files" : "Select files"}
               </Button>
-              {hasFile ? (
+              {hasFiles ? (
                 <Button
                   className="w-full rounded-md"
                   disabled={!canAnalyze}
@@ -546,7 +619,9 @@ export function UploadCard() {
                   type="button"
                   onClick={handleAnalyzeScan}
                 >
-                  {status === "parsing" ? "Processing..." : "Analyze scan"}
+                  {status === "parsing"
+                    ? "Processing..."
+                    : `Upload ${uploadItems.length} ${uploadItems.length === 1 ? "scan" : "scans"}`}
                 </Button>
               ) : null}
             </>
