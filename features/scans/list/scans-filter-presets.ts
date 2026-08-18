@@ -2,7 +2,6 @@ import { severityOrder } from "@/features/scans/shared/utils";
 
 import {
   defaultAiStatusFilters,
-  type AiStatusFilter,
   type DateRangeFilter,
   type SortOption,
 } from "./scans-list-data";
@@ -43,19 +42,25 @@ function canonicalizeState(value: unknown): ScansUrlState | null {
   }
 
   const query = value.query.trim();
-  const riskFilters = severityOrder.filter((risk) => value.riskFilters.includes(risk));
+  const storedRiskFilters = value.riskFilters;
+  const storedAiStatusFilters = value.aiStatusFilters;
+  const riskFilters = severityOrder.filter((risk) =>
+    storedRiskFilters.includes(risk),
+  );
   const aiStatusFilters = defaultAiStatusFilters.filter((status) =>
-    value.aiStatusFilters.includes(status),
+    storedAiStatusFilters.includes(status),
   );
   const dateRange = value.dateRange as DateRangeFilter;
   const sort = value.sort as SortOption;
 
   if (
     query !== value.query ||
-    riskFilters.length !== value.riskFilters.length ||
-    aiStatusFilters.length !== value.aiStatusFilters.length ||
-    !riskFilters.every((risk, index) => risk === value.riskFilters[index]) ||
-    !aiStatusFilters.every((status, index) => status === value.aiStatusFilters[index]) ||
+    riskFilters.length !== storedRiskFilters.length ||
+    aiStatusFilters.length !== storedAiStatusFilters.length ||
+    !riskFilters.every((risk, index) => risk === storedRiskFilters[index]) ||
+    !aiStatusFilters.every(
+      (status, index) => status === storedAiStatusFilters[index],
+    ) ||
     !["all", "24h", "7d", "30d"].includes(dateRange) ||
     ![
       "parsed-desc",
@@ -69,7 +74,7 @@ function canonicalizeState(value: unknown): ScansUrlState | null {
     return null;
   }
 
-  return { query, riskFilters, aiStatusFilters: aiStatusFilters as AiStatusFilter[], dateRange, sort };
+  return { query, riskFilters, aiStatusFilters, dateRange, sort };
 }
 
 function parsePreset(value: unknown): SavedScansFilterPreset | null {
