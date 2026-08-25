@@ -1,6 +1,5 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
 import {
   ArrowRightLeft,
   BookOpen,
@@ -14,6 +13,7 @@ import { useEffect, useState } from "react";
 import type { ComponentProps } from "react";
 
 import { Brand } from "@/components/app-shell/brand";
+import { ClerkUserButton } from "@/components/app-shell/clerk-user-button";
 import { isDashboardNavItemActive } from "@/components/app-shell/dashboard-navigation";
 import { ThemeToggle } from "@/components/app-shell/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -128,7 +128,7 @@ function DashboardSidebarContent({
           </span>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <UserButton />
+            <ClerkUserButton />
           </div>
         </div>
       </div>

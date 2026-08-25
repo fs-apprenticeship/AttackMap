@@ -1,8 +1,9 @@
 "use client";
 
-import { useAuth, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { useAuth, SignInButton, SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
 
+import { ClerkUserButton } from "@/components/app-shell/clerk-user-button";
 import { Button } from "@/components/ui/button";
 
 export function HeaderAuth() {
@@ -14,7 +15,7 @@ export function HeaderAuth() {
         <Button asChild className="hidden sm:inline-flex">
           <Link href="/dashboard/scans">Open app</Link>
         </Button>
-        <UserButton />
+        <ClerkUserButton />
       </>
     );
   }

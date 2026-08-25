@@ -1,4 +1,5 @@
 import type { RiskLevel } from "@/lib/types";
+import { riskLevelColor } from "@/lib/scans/severity";
 
 // Rule-based risk score shown as a donut gauge. Score and level come from
 // `getRiskAssessment` (deterministic, AI-independent), so this stays comparable
@@ -9,15 +10,6 @@ const SIZE = 92;
 const STROKE = 9;
 const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-// Ring stroke per level, aligned with the severity badge palette.
-const ringColor: Record<RiskLevel, string> = {
-  critical: "#dc2626", // red-600
-  high: "#ef4444", // red-500
-  medium: "#f59e0b", // amber-500
-  low: "#10b981", // emerald-500
-  info: "#0ea5e9", // sky-500
-};
 
 const sectionLabel =
   "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
@@ -57,7 +49,7 @@ export function RiskScoreGauge({ score, level }: RiskScoreGaugeProps) {
               cy={SIZE / 2}
               r={RADIUS}
               fill="none"
-              stroke={ringColor[level]}
+              stroke={riskLevelColor[level]}
               strokeWidth={STROKE}
               strokeLinecap="round"
               strokeDasharray={CIRCUMFERENCE}
