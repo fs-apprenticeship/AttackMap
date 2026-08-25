@@ -11,6 +11,8 @@
 // KEV membership answers the prioritization question CVSS can't: of the CVEs a
 // service exposes, which are *actively being exploited right now*.
 
+import { TtlCache } from "@/lib/cache/ttl-cache";
+
 const KEV_CATALOG_URL =
   "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours — catalog updates ~daily
@@ -99,12 +101,14 @@ interface Catalog {
   byId: Map<string, KevEntry>;
 }
 
-// A single cached catalog (not a per-query map): the whole file serves every
-// lookup until the TTL expires.
-let cache: { at: number; data: Catalog } | null = null;
+// A single cached catalog under one fixed key (not a per-query map): the
+// whole file serves every lookup until the TTL expires.
+const CATALOG_KEY = "catalog";
+const cache = new TtlCache<typeof CATALOG_KEY, Catalog>(CACHE_TTL_MS);
 
 async function loadCatalog(): Promise<Catalog> {
-  if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.data;
+  const cached = cache.get(CATALOG_KEY);
+  if (cached) return cached;
 
   let res: Response;
   try {
@@ -134,7 +138,7 @@ async function loadCatalog(): Promise<Catalog> {
   }
 
   const data: Catalog = { version: body.catalogVersion ?? "", byId };
-  cache = { at: Date.now(), data };
+  cache.set(CATALOG_KEY, data);
   return data;
 }
 
@@ -165,5 +169,5 @@ export async function checkKev(cveIds: string[]): Promise<KevCheckResult> {
 
 /** Clears the in-memory KEV catalog cache. Exposed for tests. */
 export function clearKevCache(): void {
-  cache = null;
+  cache.clear();
 }

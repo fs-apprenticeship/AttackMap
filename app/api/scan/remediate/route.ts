@@ -6,12 +6,17 @@ import { generateRemediationPlan } from "@/lib/ai/remediate";
 import { db } from "@/lib/db";
 import { setSentryRequestUser } from "@/lib/observability/sentry-request-user";
 import { captureSanitizedException } from "@/lib/observability/capture-sanitized-exception";
+import { REMEDIATE_RATE_LIMIT } from "@/lib/rate-limit/config";
+import { enforceRateLimit } from "@/lib/rate-limit/guard";
 
 export async function POST(request: NextRequest) {
   const { userId } = await auth();
   if (!userId)
     return NextResponse.json({ error: "Sign in to use AI remediation." }, { status: 401 });
   setSentryRequestUser(userId);
+
+  const limited = await enforceRateLimit(userId, REMEDIATE_RATE_LIMIT);
+  if (limited) return limited;
 
   let body: unknown;
   try {

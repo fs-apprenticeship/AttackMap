@@ -5,7 +5,7 @@ import {
   readValidatedNmapXml,
   statusForUploadValidationIssue,
 } from "@/lib/nmap/upload-validation";
-import { saveScan } from "@/lib/scans/store";
+import { saveScanChunked } from "@/lib/scans/store";
 import { invalidateScansCache } from "@/lib/scans/cache";
 import { getOptionalAuth } from "@/lib/auth/sync";
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     const scan = parseNmapScanFromParsed(validated.raw, file.name);
-    await saveScan(scan, userId);
+    await saveScanChunked(scan, userId);
     invalidateScansCache(userId);
     return NextResponse.json(scan, { status: 201 });
   } catch (error) {

@@ -20,6 +20,7 @@ import {
   getSummaryCards,
 } from "@/lib/scans/metrics";
 import { DashboardHeader } from "@/features/scans/detail/dashboard-header";
+import { RiskTrendCard } from "@/features/scans/detail/risk-trend-card";
 
 type DashboardProps = {
   scan: Scan;
@@ -102,6 +103,8 @@ export function Dashboard({ scan }: DashboardProps) {
           </Link>
         ))}
       </div>
+
+      <RiskTrendCard target={scan.target} currentScanId={scan.id} />
     </div>
   );
 }

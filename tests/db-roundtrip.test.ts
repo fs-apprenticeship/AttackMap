@@ -1,6 +1,6 @@
 // Integration test: scan store round-trip against a real Postgres.
 //
-// Exercises the normalized schema end to end — saveScan() decomposes a Scan
+// Exercises the normalized schema end to end — saveScanChunked() decomposes a Scan
 // into scan/host/service/finding rows, getScan() recomposes them back into the
 // Zod Scan shape. This is the highest-value check on the AUTH-and-DB migration:
 // it catches silent mapping drift (dropped fields, null vs undefined, enum
@@ -92,7 +92,7 @@ describe.skipIf(!runDbTests)(
       "preserves scan/host/service/finding data for %s",
       async (name) => {
         const scan = loadFixture(name);
-        await store.saveScan(scan);
+        await store.saveScanChunked(scan);
         const reloaded = await store.getScan(scan.id);
 
         expect(reloaded).toBeDefined();
@@ -106,7 +106,7 @@ describe.skipIf(!runDbTests)(
       "derives the rule-based summary + remediation on read for %s (not blank, not stored)",
       async (name) => {
         const scan = loadFixture(name);
-        await store.saveScan(scan);
+        await store.saveScanChunked(scan);
         const reloaded = await store.getScan(scan.id);
 
         expect(reloaded).toBeDefined();
@@ -152,7 +152,7 @@ describe.skipIf(!runDbTests)(
       });
 
       const scan = loadFixture("simple-web-server");
-      await store.saveScan(scan, "user_a");
+      await store.saveScanChunked(scan, "user_a");
 
       // Owner sees it; a different user does not.
       expect(await store.getScan(scan.id, "user_a")).toBeDefined();
@@ -164,7 +164,7 @@ describe.skipIf(!runDbTests)(
       expect(userBScans.some((s) => s.id === scan.id)).toBe(false);
 
       // user_b must not be able to overwrite / hijack user_a's scan.
-      await expect(store.saveScan(scan, "user_b")).rejects.toThrow();
+      await expect(store.saveScanChunked(scan, "user_b")).rejects.toThrow();
       // ...and user_a still owns it, untouched.
       expect((await store.getScan(scan.id, "user_a"))?.id).toBe(scan.id);
 

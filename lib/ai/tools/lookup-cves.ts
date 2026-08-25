@@ -11,6 +11,8 @@
 // the CPE when one was supplied). Results are normalized to a small,
 // model-friendly shape and cached in-memory to respect NVD's rate limits.
 
+import { TtlCache } from "@/lib/cache/ttl-cache";
+
 const NVD_API = "https://services.nvd.nist.gov/rest/json/cves/2.0";
 const DEFAULT_MAX_RESULTS = 10;
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -158,7 +160,7 @@ function normalizeCve(entry: NvdVulnerability): Cve | null {
 
 // ── NVD request ─────────────────────────────────────────────────────────────
 
-const cache = new Map<string, { at: number; data: Cve[] }>();
+const cache = new TtlCache<string, Cve[]>(CACHE_TTL_MS);
 
 /**
  * Run a single NVD query and return normalized results sorted by CVSS, capped to
@@ -177,9 +179,7 @@ async function queryNvd(
   const url = `${NVD_API}?${search.toString()}`;
 
   const cached = cache.get(url);
-  if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
-    return cached.data.slice(0, maxResults);
-  }
+  if (cached) return cached.slice(0, maxResults);
 
   // An API key raises NVD's rate limit from 5 to 50 requests per 30s.
   const apiKey = process.env.NVD_API_KEY;
@@ -209,7 +209,7 @@ async function queryNvd(
 
   // Cache the full ranked window so different `maxResults` are served from one
   // fetch; slice per call.
-  cache.set(url, { at: Date.now(), data: ranked });
+  cache.set(url, ranked);
   return ranked.slice(0, maxResults);
 }
 

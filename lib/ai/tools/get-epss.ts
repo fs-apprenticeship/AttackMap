@@ -11,6 +11,8 @@
 // model `date`. A CVE absent from the response has no EPSS record (too new or
 // reserved) — we omit it rather than inventing a zero.
 
+import { TtlCache } from "@/lib/cache/ttl-cache";
+
 const EPSS_API = "https://api.first.org/data/v1/epss";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours — EPSS republishes daily
 
@@ -82,7 +84,7 @@ function normalizeId(id: string): string {
 
 // Per-CVE cache: EPSS is keyed by CVE, so caching individual scores lets
 // overlapping batches (different services sharing a CVE) reuse fetched values.
-const cache = new Map<string, { at: number; score: EpssScore }>();
+const cache = new TtlCache<string, EpssScore>(CACHE_TTL_MS);
 
 /** Batch-fetch EPSS scores for the given IDs in a single request. */
 async function fetchScores(cveIds: string[]): Promise<EpssScore[]> {
@@ -129,18 +131,17 @@ export async function getEpss(cveIds: string[]): Promise<EpssResult> {
   const checked = [...new Set(cveIds.map(normalizeId).filter(Boolean))];
   if (checked.length === 0) return { scores: [], checked: [] };
 
-  const now = Date.now();
   const scores: EpssScore[] = [];
   const missing: string[] = [];
   for (const id of checked) {
     const hit = cache.get(id);
-    if (hit && now - hit.at < CACHE_TTL_MS) scores.push(hit.score);
+    if (hit) scores.push(hit);
     else missing.push(id);
   }
 
   if (missing.length > 0) {
     for (const score of await fetchScores(missing)) {
-      cache.set(score.cve, { at: now, score });
+      cache.set(score.cve, score);
       scores.push(score);
     }
   }

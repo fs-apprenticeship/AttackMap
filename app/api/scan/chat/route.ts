@@ -11,6 +11,8 @@ import { streamScanChat } from "@/lib/ai/chat";
 import { getScan } from "@/lib/scans/store";
 import { setSentryRequestUser } from "@/lib/observability/sentry-request-user";
 import { captureSanitizedException } from "@/lib/observability/capture-sanitized-exception";
+import { CHAT_RATE_LIMIT } from "@/lib/rate-limit/config";
+import { enforceRateLimit } from "@/lib/rate-limit/guard";
 
 // Chat endpoint for asking questions about a single scan. The client sends the
 // conversation plus a `scanId`; we load that scan server-side (ownership-scoped)
@@ -20,6 +22,9 @@ export async function POST(request: NextRequest) {
   if (!userId)
     return NextResponse.json({ error: "Sign in to use the scan chat." }, { status: 401 });
   setSentryRequestUser(userId);
+
+  const limited = await enforceRateLimit(userId, CHAT_RATE_LIMIT);
+  if (limited) return limited;
 
   let body: unknown;
   try {
