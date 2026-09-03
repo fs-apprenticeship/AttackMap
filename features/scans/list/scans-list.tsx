@@ -123,6 +123,7 @@ export function ScansList({ scans }: ScansListProps) {
         totalCount={scans.length}
         hasActiveFilters={hasActiveFilters}
         searchResetKey={searchResetKey}
+        currentState={urlState}
         onQueryChange={(nextQuery) =>
           replaceUrlState({ ...urlState, query: nextQuery })
         }
@@ -135,6 +136,7 @@ export function ScansList({ scans }: ScansListProps) {
         onRiskFilterChange={toggleRiskFilter}
         onAiStatusFilterChange={toggleAiStatusFilter}
         onResetFilters={resetFilters}
+        onApplyPreset={replaceUrlState}
       />
 
       {filteredScans.length === 0 ? (

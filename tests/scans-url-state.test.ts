@@ -95,4 +95,21 @@ describe("scan list URL state", () => {
 
     expect(parseScansUrlState(params)).toEqual(state);
   });
+
+  it("applies a saved state without discarding unrelated parameters", () => {
+    const params = writeScansUrlState(
+      new URLSearchParams("from=dashboard&q=old&risk=high"),
+      {
+        query: "gateway",
+        riskFilters: ["critical", "medium"],
+        aiStatusFilters: [],
+        dateRange: "7d",
+        sort: "findings-desc",
+      },
+    );
+
+    expect(params.toString()).toBe(
+      "from=dashboard&q=gateway&risk=critical%2Cmedium&ai=none&date=7d&sort=findings-desc",
+    );
+  });
 });
